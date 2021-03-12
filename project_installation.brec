@@ -1,0 +1,28 @@
+Installation instructions for PROJECT NAME
+
+    initial set-up
+        1+ Ensure the following projects are installed.
+            • Makeshift
+                : see http://reluk.ca/project/building/Makeshift/
+            • Breccia Parser
+                : see http://reluk.ca/project/Breccia/parser/
+            • The Java programming project
+                : see http://reluk.ca/project/Java/
+        2+ Install the files of the present project.
+            >+ cd <command-directory>/
+                / The command directory is where project installations are accessible by their
+                  proper paths.  The present project, for example, will shortly be accessible
+                  at `Breccia/parser/plain`.
+                    : see `^^command directory$` @ http://reluk.ca/project/lexicon.brec
+            >+ git clone http://reluk.ca/var/repo/git/Breccia.parser.plain.git Breccia/parser/plain
+        + Build the software.
+            : see http://reluk.ca/project/building/Makeshift/bin/build.brec
+            >+ build Breccia/parser/plain class-files
+
+    Web publication
+        • Breccian files
+            : join @ http://reluk.ca/project/Breccia/project_installation.brec
+
+
+
+                                                    \ Copyright © 2020-2021  Michael Allan.  Licence MIT.

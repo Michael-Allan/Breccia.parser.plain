@@ -29,48 +29,12 @@ import static Breccia.parser.plain.MalformedMarkup.*;
 import static Breccia.parser.plain.Project.newSourceReader;
 
 
-public class BrecciaCursor implements FileCursor {
+/** A reusable, pull parser of plain Breccia as reflected through a cursor.
+  */
+public class BrecciaCursor implements ReusableCursor {
 
 
-   // ━━━  F i l e   C u r s o r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-    public @Override final void markupSource( final Reader r ) throws ParseError {
-        try { _markupSource( r ); }
-        catch( ParseError x ) {
-            disable();
-            throw x; }}
-
-
-
-    public @Override final void perState( final Path sourceFile, final Consumer<ParseState> sink )
-          throws ParseError {
-        try( final Reader r = newSourceReader​( sourceFile )) {
-            markupSource( r );
-            for( ;; ) {
-                sink.accept( state );
-                if( state.isFinal() ) break;
-                _next(); }}
-        catch( IOException x ) { throw new Unhandled( x ); }
-        catch( ParseError x ) {
-            disable();
-            throw x; }}
-
-
-
-    public @Override final void perStateConditionally( final Path sourceFile,
-          final Predicate<ParseState> sink ) throws ParseError {
-        try( final Reader r = newSourceReader​( sourceFile )) {
-            markupSource( r );
-            while( sink.test(state) && !state.isFinal() ) _next(); }
-        catch( IOException x ) { throw new Unhandled( x ); }
-        catch( ParseError x ) {
-            disable();
-            throw x; }}
-
-
-
-   // ━━━  M a r k u p   C u r s o r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  C u r s o r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     public final @Override @DataReflector AssociativeReference asAssociativeReference() {
@@ -214,6 +178,44 @@ public class BrecciaCursor implements FileCursor {
 
 
     public final @Override @DataReflector ParseState state() { return state; }
+
+
+
+   // ━━━  R e u s a b l e   C u r s o r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public @Override final void markupSource( final Reader r ) throws ParseError {
+        try { _markupSource( r ); }
+        catch( ParseError x ) {
+            disable();
+            throw x; }}
+
+
+
+    public @Override final void perState( final Path sourceFile, final Consumer<ParseState> sink )
+          throws ParseError {
+        try( final Reader r = newSourceReader​( sourceFile )) {
+            markupSource( r );
+            for( ;; ) {
+                sink.accept( state );
+                if( state.isFinal() ) break;
+                _next(); }}
+        catch( IOException x ) { throw new Unhandled( x ); }
+        catch( ParseError x ) {
+            disable();
+            throw x; }}
+
+
+
+    public @Override final void perStateConditionally( final Path sourceFile,
+          final Predicate<ParseState> sink ) throws ParseError {
+        try( final Reader r = newSourceReader​( sourceFile )) {
+            markupSource( r );
+            while( sink.test(state) && !state.isFinal() ) _next(); }
+        catch( IOException x ) { throw new Unhandled( x ); }
+        catch( ParseError x ) {
+            disable();
+            throw x; }}
 
 
 

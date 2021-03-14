@@ -1,15 +1,13 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.Fractum;
-import Breccia.parser.Markup;
 import Java.DelimitableCharSequence;
-import java.util.List;
 
 import static Java.CharBuffers.newDelimitableCharSequence;
 import static Java.Classes.nameWithoutPackageLeader;
 
 
-public abstract class Fractum_ extends Markup_ implements Fractum {
+public abstract class Fractum_ extends DeepMarkup implements Fractum {
 
 
     protected Fractum_( final BrecciaCursor cursor, final End_ end ) {
@@ -30,10 +28,6 @@ public abstract class Fractum_ extends Markup_ implements Fractum {
 
 
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-    public final @Override List<Markup> components() { throw new UnsupportedOperationException(); }
-
 
 
     public final @Override int lineNumber() { return cursor.fractumLineNumber(); }

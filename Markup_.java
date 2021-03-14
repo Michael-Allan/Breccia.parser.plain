@@ -35,7 +35,16 @@ public abstract class Markup_ implements Markup {
                 if( cBreak != 0 ) b.insert( cBreak, '\\' ); // One backslash for the whole sequence.
                 break; }}
         b.append( '}' );
-        return b.toString(); }}
+        return b.toString(); }
+
+
+
+   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    /** The default implementation returns ‘Markup’.
+      */
+    public @Override String tagName() { return "Markup"; }}
 
 
 

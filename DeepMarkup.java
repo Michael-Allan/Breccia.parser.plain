@@ -4,23 +4,21 @@ import Breccia.parser.Markup;
 import java.util.List;
 
 
-/** Markup that is non-composite, having no parsed components.
+/** Composite markup; markup that has parsed components.
   *
-  *     @see DeepMarkup
+  *     @see FlatMarkup
   */
-public abstract class FlatMarkup extends Markup_ {
+public abstract class DeepMarkup extends Markup_ {
 
 
-    protected FlatMarkup() {}
+    protected DeepMarkup() {}
 
 
 
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    /** Returns an empty list: this markup has no parsed components, only {@linkplain #text() flat text}.
-      */
-    public @Override List<Markup> components() { return List.of(); }}
+    public @Override List<Markup> components() { throw new UnsupportedOperationException(); }}
 
 
 

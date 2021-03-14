@@ -37,7 +37,7 @@ public class BrecciaCursor implements ReusableCursor {
    // ━━━  C u r s o r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override @DataReflector AssociativeReference asAssociativeReference() {
+    public final @Override AssociativeReference asAssociativeReference() {
         return state == associativeReference? associativeReference : null; }
 
 
@@ -47,7 +47,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @DataReflector BodyFractum asBodyFractum() {
+    public final @Override BodyFractum asBodyFractum() {
         return state == bodyFractum? bodyFractum : null; }
 
 
@@ -57,7 +57,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @DataReflector CommandPoint asCommandPoint() {
+    public final @Override CommandPoint asCommandPoint() {
         return state == commandPoint? commandPoint : null; }
 
 
@@ -67,8 +67,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @DataReflector Division asDivision() {
-        return state == division? division : null; }
+    public final @Override Division asDivision() { return state == division? division : null; }
 
 
 
@@ -83,7 +82,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @DataReflector FileFractum asFileFractum() {
+    public final @Override FileFractum asFileFractum() {
         return state == fileFractum? fileFractum : null; }
 
 
@@ -93,8 +92,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @DataReflector Fractum asFractum() {
-        return state == fractum? fractum : null; }
+    public final @Override Fractum asFractum() { return state == fractum? fractum : null; }
 
 
 
@@ -106,7 +104,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @DataReflector PlainCommandPoint asPlainCommandPoint() {
+    public final @Override PlainCommandPoint asPlainCommandPoint() {
         return state == plainCommandPoint? plainCommandPoint : null; }
 
 
@@ -116,8 +114,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @DataReflector PlainPoint asPlainPoint() {
-        return state == plainPoint? plainPoint : null; }
+    public final @Override PlainPoint asPlainPoint() { return state == plainPoint? plainPoint : null; }
 
 
 
@@ -126,7 +123,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @DataReflector Point asPoint() { return state == point? point : null; }
+    public final @Override Point asPoint() { return state == point? point : null; }
 
 
 
@@ -134,8 +131,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @DataReflector Privatizer asPrivatizer() {
-        return state == privatizer? privatizer : null; }
+    public final @Override Privatizer asPrivatizer() { return state == privatizer? privatizer : null; }
 
 
 
@@ -144,7 +140,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @DataReflector ParseState next() throws ParseError {
+    public final @Override ParseState next() throws ParseError {
         if( state.isFinal() ) throw new NoSuchElementException();
         try { _next(); }
         catch( ParseError x ) {
@@ -177,7 +173,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @DataReflector ParseState state() { return state; }
+    public final @Override ParseState state() { return state; }
 
 
 

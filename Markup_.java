@@ -12,19 +12,20 @@ public abstract class Markup_ implements Markup {
 
 
 
-    /** @see Object#toString()
-      */
-    public static String toString( final Markup m ) {
-        final StringBuilder b = new StringBuilder();
-        final int column = m.column();
-        b.append( m.tagName() );
+   // ━━━  O b j e c t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public @Override String toString() {
+        final var b = new StringBuilder();
+        final int column = column();
+        b.append( getClass().getSimpleName() );
         b.append( ':' );
-        b.append( m.lineNumber() );
+        b.append( lineNumber() );
         if( column != 0 ) {
             b.append( ':' );
-            b.append( m.column() ); }
+            b.append( column() ); }
         b.append( ':' ).append( ' ' ).append( '{' );
-        b.append( m.text() );
+        b.append( text() );
         for( int c = b.length() - 1, cBreak = 0;; --c ) { // Escape any trailing sequence of line breaks
             final char ch = b.charAt( c );               // for sake of readability.
             if( ch == '\n' ) b.setCharAt( cBreak = c, 'n' );

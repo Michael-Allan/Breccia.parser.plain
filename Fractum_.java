@@ -6,6 +6,7 @@ import Java.DelimitableCharSequence;
 import java.util.List;
 
 import static Java.CharBuffers.newDelimitableCharSequence;
+import static Java.Classes.nameWithoutPackageLeader;
 
 
 public abstract class Fractum_ extends Markup_ implements Fractum {
@@ -43,13 +44,6 @@ public abstract class Fractum_ extends Markup_ implements Fractum {
 
 
 
-   // ━━━  O b j e c t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-    public @Override String toString() { return toString( this ); }
-
-
-
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
@@ -66,7 +60,14 @@ public abstract class Fractum_ extends Markup_ implements Fractum {
 
 
 
-        protected final BrecciaCursor cursor; }
+        protected final BrecciaCursor cursor;
+
+
+
+       // ━━━  O b j e c t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override String toString() { return nameWithoutPackageLeader( getClass() ); }}
 
 
 

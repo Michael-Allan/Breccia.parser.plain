@@ -6,7 +6,17 @@ import Breccia.parser.FileFractum;
 public class FileFractum_ extends Fractum_ implements FileFractum {
 
 
-    protected FileFractum_( BrecciaCursor cursor ) { super( cursor ); }
+    public FileFractum_( BrecciaCursor cursor ) { super( cursor, new End_( cursor )); }
+
+
+
+    protected FileFractum_( BrecciaCursor cursor, End_ end ) { super( cursor, end ); }
+
+
+
+    public @Override void commit() {
+        super.commit();
+        cursor.fileFractum( this ); }
 
 
 
@@ -16,7 +26,13 @@ public class FileFractum_ extends Fractum_ implements FileFractum {
     public static class End_ extends Fractum_.End_ implements FileFractum.End {
 
 
-        protected End_() {}}}
+        protected End_( BrecciaCursor cursor ) { super( cursor ); }
+
+
+
+        public @Override void commit() {
+            super.commit();
+            cursor.fileFractumEnd( this ); }}}
 
 
 

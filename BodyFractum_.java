@@ -6,7 +6,13 @@ import Breccia.parser.BodyFractum;
 public abstract class BodyFractum_ extends Fractum_ implements BodyFractum {
 
 
-    protected BodyFractum_( BrecciaCursor cursor ) { super( cursor ); }
+    protected BodyFractum_( BrecciaCursor cursor, End_ end ) { super( cursor, end ); }
+
+
+
+    public @Override void commit() {
+        super.commit();
+        cursor.bodyFractum( this ); }
 
 
 
@@ -16,18 +22,13 @@ public abstract class BodyFractum_ extends Fractum_ implements BodyFractum {
     public static abstract class End_ extends Fractum_.End_ implements BodyFractum.End {
 
 
-        protected End_() {}}
+        protected End_( BrecciaCursor cursor ) { super( cursor ); }
 
 
 
-////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
-
-
-    /** Sets within the cursor the corresponding end state.
-      *
-      *     @see BrecciaCursor
-      */
-    protected abstract void commitEnd(); }
+        public @Override void commit() {
+            super.commit();
+            cursor.bodyFractumEnd( this ); }}}
 
 
 

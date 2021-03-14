@@ -6,7 +6,13 @@ import Breccia.parser.CommandPoint;
 public abstract class CommandPoint_ extends Point_ implements CommandPoint {
 
 
-    protected CommandPoint_( BrecciaCursor cursor ) { super( cursor ); }
+    protected CommandPoint_( BrecciaCursor cursor, End_ end ) { super( cursor, end ); }
+
+
+
+    public @Override void commit() {
+        super.commit();
+        cursor.commandPoint( this ); }
 
 
 
@@ -16,7 +22,13 @@ public abstract class CommandPoint_ extends Point_ implements CommandPoint {
     public static abstract class End_ extends Point_.End_ implements CommandPoint.End {
 
 
-        protected End_() {}}}
+        protected End_( BrecciaCursor cursor ) { super( cursor ); }
+
+
+
+        public @Override void commit() {
+            super.commit();
+            cursor.commandPointEnd( this ); }}}
 
 
 

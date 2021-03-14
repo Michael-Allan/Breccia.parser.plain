@@ -6,7 +6,13 @@ import Breccia.parser.Point;
 public abstract class Point_ extends BodyFractum_ implements Point {
 
 
-    protected Point_( BrecciaCursor cursor ) { super( cursor ); }
+    protected Point_( BrecciaCursor cursor, End_ end ) { super( cursor, end ); }
+
+
+
+    public @Override void commit() {
+        super.commit();
+        cursor.point( this ); }
 
 
 
@@ -16,7 +22,13 @@ public abstract class Point_ extends BodyFractum_ implements Point {
     public static abstract class End_ extends BodyFractum_.End_ implements Point.End {
 
 
-        protected End_() {}}}
+        protected End_( BrecciaCursor cursor ) { super( cursor ); }
+
+
+
+        public @Override void commit() {
+            super.commit();
+            cursor.pointEnd( this ); }}}
 
 
 

@@ -306,22 +306,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Commit methods for command-point keywords, ordered such that each is at the same index
-      * as its keyord in `commandPointKeywords`.  Parser extensions may overwrite these two arrays:
-      * each declaring its own version of the two, merge-sorting them with these, and overwriting these.
-      */
-    protected Runnable[] commandPointCommitters = {
-        this::commitPrivatizer }; // ‘private’
-
-
-
-    /** The keywords of all command points in lexicographic order as defined by `CharSequence.compare`.
-      * A keyword is any term that may appear first in the command.
-      *
-      *     @see CharSequence#compare(CharSequence,CharSequence)
-      */
-    protected String[] commandPointKeywords = {
-        "private" };
+ // `commandPointCommitters`, `commandPointKeywords` // See late declaration § further below.
 
 
 
@@ -503,7 +488,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private void disable() {
         if( state != null && state.isFinal() ) return; // Already this cursor is effectively unusable.
-        commitHalt(); }
+        basicHalt.commit(); }
 
 
 
@@ -575,7 +560,7 @@ public class BrecciaCursor implements ReusableCursor {
             catch( IOException x ) { throw new Unhandled( x ); }}
         if( count < 0 ) {
             buffer.limit( 0 );
-            commitEmpty();
+            basicEmpty.commit();
             return; }
         if( count == 0 ) throw new IllegalStateException(); // Forbidden by `Reader` for array reads.
         buffer.flip();
@@ -589,7 +574,7 @@ public class BrecciaCursor implements ReusableCursor {
             segmentStart = segmentEnd = segmentEndIndicator = 0;
             delimitSegment(); }
         buffer.rewind(); // As per `buffer` contract.
-        commitFileFractum();
+        basicFileFractum.commit();
         hierarchy.clear(); }
 
 
@@ -602,9 +587,9 @@ public class BrecciaCursor implements ReusableCursor {
                 fractumIndentWidth -= 4;
                 final BodyFractum_ past = hierarchy.remove( hierarchy.size() - 1 );
                 if( past != null ) {
- /**/               past.commitEnd();
+ /**/               past.end.commit();
                     return; }}
- /**/       commitFileFractumEnd();
+ /**/       basicFileFractum.end.commit();
             return; }
         final int nextIndentWidth = segmentEndIndicator - segmentEnd; /* The offset from the start of
           the next fractum (`segmentEnd`) to its first non-space character (`segmentEndIndicator`). */
@@ -616,7 +601,7 @@ public class BrecciaCursor implements ReusableCursor {
                 fractumIndentWidth -= 4;
                 final BodyFractum_ pastSibling = hierarchy.remove( hierarchy.size() - 1 );
                 if( pastSibling != null ) {
- /**/               pastSibling.commitEnd();
+ /**/               pastSibling.end.commit();
                     return; }}}
 
         // Changing what follows?  Sync → `markupSource`.
@@ -629,7 +614,7 @@ public class BrecciaCursor implements ReusableCursor {
               starting a division whose head comprises all contiguous divider segments. */
             do nextSegment(); while( isDividerDrawing( segmentEndIndicatorChar )); // Scan through each.
             buffer.rewind(); // As per `buffer` contract.
- /**/       commitDivision(); }
+ /**/       basicDivision.commit(); }
         else { // Next is a point.
             nextSegment(); // Scan through to the end boundary of its head.
             buffer.rewind(); // As per `buffer` contract.
@@ -667,7 +652,7 @@ public class BrecciaCursor implements ReusableCursor {
             xSeq.delimit( c, c = throughTerm(c) ); }
         c = binarySearch( commandPointKeywords, xSeq, CharSequence::compare );
         if( c >= 0 ) commandPointCommitters[c].run();
-        else commitPlainCommandPoint(); }
+        else basicPlainCommandPoint.commit(); }
 
 
 
@@ -769,7 +754,7 @@ public class BrecciaCursor implements ReusableCursor {
                 throw termExpected( bufferPointer( c )); } // command between the two.
             assert buffer.get(bulletEnd) == ' '; // The only remaining case.
             parseCommandPoint( bulletEnd ); }
-        else commitPlainPoint(); }
+        else basicPlainPoint.commit(); }
 
 
 
@@ -868,281 +853,208 @@ public class BrecciaCursor implements ReusableCursor {
    // ┈┈┈  s t a t e   t y p i n g  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
 
-    private AssociativeReference_ associativeReference;
+    protected final void associativeReference( AssociativeReference r ) { associativeReference = r; }
+
+
+        private AssociativeReference associativeReference;
 
 
         private final AssociativeReference_ basicAssociativeReference // [CIC]
-          = new AssociativeReference_( this ) {
-
-            protected @Override void commitEnd() {
-                commitAssociativeReferenceEnd( basicAssociativeReferenceEnd ); }};
-
-
-        private void commitAssociativeReference() {
-            commitAssociativeReference( basicAssociativeReference ); }
-
-
-        protected final void commitAssociativeReference( final AssociativeReference_ r ) {
-            associativeReference = r;
-            commitCommandPoint( r ); }
+          = new AssociativeReference_( this );
 
 
 
-    private AssociativeReference.End associativeReferenceEnd;
+    protected final void associativeReferenceEnd( AssociativeReference.End e ) {
+        associativeReferenceEnd = e; }
 
 
-        private final AssociativeReference.End basicAssociativeReferenceEnd // [CIC]
-          = new AssociativeReference_.End_();
-
-
-        protected final void commitAssociativeReferenceEnd( final AssociativeReference.End e ) {
-            associativeReferenceEnd = e;
-            commitCommandPointEnd( e ); }
+        private AssociativeReference.End associativeReferenceEnd;
 
 
 
-    private BodyFractum_ bodyFractum;
+    protected final void bodyFractum( BodyFractum_ f ) { bodyFractum = f; }
 
 
-        protected final void commitBodyFractum( final BodyFractum_ f ) {
-            bodyFractum = f;
-            commitFractum( f ); }
-
-
-
-    private BodyFractum.End bodyFractumEnd;
-
-
-        protected final void commitBodyFractumEnd( final BodyFractum.End e ) {
-            bodyFractumEnd = e;
-            commitFractumEnd( e ); }
+        private BodyFractum_ bodyFractum;
 
 
 
-    private CommandPoint_ commandPoint;
+    protected final void bodyFractumEnd( BodyFractum.End e ) { bodyFractumEnd = e; }
 
 
-        protected final void commitCommandPoint( final CommandPoint_ p ) {
-            commandPoint = p;
-            commitPoint( p ); }
-
-
-
-    private CommandPoint.End commandPointEnd;
-
-
-        protected final void commitCommandPointEnd( final CommandPoint.End e ) {
-            commandPointEnd = e;
-            commitPointEnd( e ); }
+        private BodyFractum.End bodyFractumEnd;
 
 
 
-    private Division_ division;
+    protected final void commandPoint( CommandPoint p ) { commandPoint = p; }
 
 
-        private final Division_ basicDivision = new Division_( this ) { // [CIC]
-
-            protected @Override void commitEnd() { commitDivisionEnd( basicDivisionEnd ); }};
-
-
-        private void commitDivision() { commitDivision( basicDivision ); }
-
-
-        protected final void commitDivision( final Division_ d ) {
-            division = d;
-            commitBodyFractum( d ); }
+        private CommandPoint commandPoint;
 
 
 
-    private Division.End divisionEnd;
+    protected final void commandPointEnd( CommandPoint.End e ) { commandPointEnd = e; }
 
 
-        private final Division.End basicDivisionEnd = new Division_.End_(); // [CIC]
-
-
-        protected final void commitDivisionEnd( final Division.End e ) {
-            divisionEnd = e;
-            commitBodyFractumEnd( e ); }
+        private CommandPoint.End commandPointEnd;
 
 
 
-    private Empty empty;
+    protected final void division( Division d ) { division = d; }
 
 
-        private final Empty basicEmpty = new Empty_(); // [CIC]
+        private Division division;
 
 
-        private void commitEmpty() { commitEmpty( basicEmpty ); }
-
-
-        protected final void commitEmpty( final Empty e ) { state = empty = e; }
+        private final Division_ basicDivision = new Division_( this ); // [CIC]
 
 
 
-    private FileFractum fileFractum;
+    protected final void divisionEnd( Division.End e ) { divisionEnd = e; }
+
+
+        private Division.End divisionEnd;
+
+
+
+    protected final void empty( Empty e ) { state = empty = e; }
+
+
+        private Empty empty;
+
+
+        private final Empty_ basicEmpty = new Empty_( this ); // [CIC]
+
+
+
+    protected final void fileFractum( FileFractum f ) { fileFractum = f; }
+
+
+        private FileFractum fileFractum;
 
 
         private final FileFractum_ basicFileFractum = new FileFractum_( this ); // [CIC]
 
 
-        private void commitFileFractum() { commitFileFractum( basicFileFractum ); }
+
+    protected final void fileFractumEnd( FileFractum.End e ) { fileFractumEnd = e; }
 
 
-        protected final void commitFileFractum( final FileFractum_ f ) {
-            fileFractum = f;
-            commitFractum( f ); }
-
-
-
-    private FileFractum.End fileFractumEnd;
-
-
-        private final FileFractum.End basicFileFractumEnd = new FileFractum_.End_(); // [CIC]
-
-
-        private void commitFileFractumEnd() { commitFileFractumEnd( basicFileFractumEnd ); }
-
-
-        protected final void commitFileFractumEnd( final FileFractum.End e ) {
-            fileFractumEnd = e;
-            commitFractumEnd( e ); }
+        private FileFractum.End fileFractumEnd;
 
 
 
-    private Fractum fractum;
+    protected final void fractum( Fractum_ f ) {
+        f.text.delimit( fractumStart, segmentEnd );
+        state = fractum = f; }
 
 
-        protected final void commitFractum( final Fractum_ f ) {
-            f.text.delimit( fractumStart, segmentEnd );
-            state = fractum = f; }
-
-
-
-    private Fractum.End fractumEnd;
-
-
-        protected final void commitFractumEnd( final Fractum.End e ) { state = fractumEnd = e; }
+        private Fractum fractum;
 
 
 
-    private Halt halt;
+    protected final void fractumEnd( Fractum.End e ) { state = fractumEnd = e; }
 
 
-        private final Halt basicHalt = new Halt_(); // [CIC]
-
-
-        private void commitHalt() { commitHalt( basicHalt ); }
-
-
-        protected final void commitHalt( final Halt e ) { state = halt = e; }
+        private Fractum.End fractumEnd;
 
 
 
-    private PlainCommandPoint_ plainCommandPoint;
+    protected final void halt( Halt e ) { state = halt = e; }
+
+
+        private Halt halt;
+
+
+        private final Halt_ basicHalt = new Halt_( this ); // [CIC]
+
+
+
+    protected final void plainCommandPoint( PlainCommandPoint p ) { plainCommandPoint = p; }
+
+
+        private PlainCommandPoint plainCommandPoint;
 
 
         private final PlainCommandPoint_ basicPlainCommandPoint // [CIC]
-          = new PlainCommandPoint_( this ) {
-
-            protected @Override void commitEnd() {
-                commitPlainCommandPointEnd( basicPlainCommandPointEnd ); }};
-
-
-        private void commitPlainCommandPoint() { commitPlainCommandPoint( basicPlainCommandPoint ); }
-
-
-        protected final void commitPlainCommandPoint( final PlainCommandPoint_ p ) {
-            plainCommandPoint = p;
-            commitCommandPoint( p ); }
+          = new PlainCommandPoint_( this );
 
 
 
-    private PlainCommandPoint.End plainCommandPointEnd;
+    protected final void plainCommandPointEnd( PlainCommandPoint.End e ) { plainCommandPointEnd = e; }
 
 
-        private final PlainCommandPoint.End basicPlainCommandPointEnd // [CIC]
-           = new PlainCommandPoint_.End_();
-
-
-        protected final void commitPlainCommandPointEnd( final PlainCommandPoint.End e ) {
-            plainCommandPointEnd = e;
-            commitCommandPointEnd( e ); }
+        private PlainCommandPoint.End plainCommandPointEnd;
 
 
 
-    private PlainPoint_ plainPoint;
+    protected final void plainPoint( PlainPoint p ) { plainPoint = p; }
 
 
-        private final PlainPoint_ basicPlainPoint = new PlainPoint_( this ) { // [CIC]
-
-            protected @Override void commitEnd() { commitPlainPointEnd( basicPlainPointEnd ); }};
+        private PlainPoint plainPoint;
 
 
-        private void commitPlainPoint() { commitPlainPoint( basicPlainPoint ); }
-
-
-        protected final void commitPlainPoint( final PlainPoint_ p ) {
-            plainPoint = p;
-            commitPoint( p ); }
+        private final PlainPoint_ basicPlainPoint = new PlainPoint_( this ); // [CIC]
 
 
 
-    private PlainPoint.End plainPointEnd;
+    protected final void plainPointEnd( PlainPoint.End e ) { plainPointEnd = e; }
 
 
-        private final PlainPoint.End basicPlainPointEnd = new PlainPoint_.End_(); // [CIC]
-
-
-        protected final void commitPlainPointEnd( final PlainPoint.End e ) {
-            plainPointEnd = e;
-            commitPointEnd( e ); }
+        private PlainPoint.End plainPointEnd;
 
 
 
-    private Point_ point;
+    protected final void point( Point p ) { point = p; }
 
 
-        protected final void commitPoint( final Point_ p ) {
-            point = p;
-            commitBodyFractum( p ); }
-
-
-
-    private Point.End pointEnd;
-
-
-        protected final void commitPointEnd( final Point.End e ) {
-            pointEnd = e;
-            commitBodyFractumEnd( e ); }
+        private Point point;
 
 
 
-    private Privatizer_ privatizer;
+    protected final void pointEnd( Point.End e ) { pointEnd = e; }
 
 
-        private final Privatizer_ basicPrivatizer = new Privatizer_( this ) { // [CIC]
-
-            protected @Override void commitEnd() { commitPrivatizerEnd( basicPrivatizerEnd ); }};
-
-
-        private void commitPrivatizer() { commitPrivatizer( basicPrivatizer ); }
-
-
-        protected final void commitPrivatizer( final Privatizer_ p ) {
-            privatizer = p;
-            commitCommandPoint( p ); }
+        private Point.End pointEnd;
 
 
 
-    private Privatizer.End privatizerEnd;
+    protected final void privatizer( Privatizer p ) { privatizer = p; }
 
 
-        private final Privatizer.End basicPrivatizerEnd = new Privatizer_.End_(); // [CIC]
+        private Privatizer privatizer;
 
 
-        protected final void commitPrivatizerEnd( final Privatizer.End e ) {
-            privatizerEnd = e;
-            commitCommandPointEnd( e ); }
+        private final Privatizer_ basicPrivatizer = new Privatizer_( this ); // [CIC]
+
+
+
+    protected final void privatizerEnd( Privatizer.End e ) { privatizerEnd = e; }
+
+
+        private Privatizer.End privatizerEnd;
+
+
+
+   // ┈┈┈  l a t e   d e c l a r a t i o n s  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+
+
+    /** The keywords of all command points in lexicographic order as defined by `CharSequence.compare`.
+      * A keyword is any term that may appear first in the command.
+      *
+      *     @see CharSequence#compare(CharSequence,CharSequence)
+      */
+    protected String[] commandPointKeywords = {
+        "private" };
+
+
+
+    /** Commit methods for command-point keywords, ordered such that each is at the same index
+      * as its keyord in `commandPointKeywords`.  Parser extensions may overwrite these two arrays:
+      * each declaring its own version of the two, merge-sorting them with these, and overwriting these.
+      */
+    protected Runnable[] commandPointCommitters = {
+        basicPrivatizer::commit }; // ‘private’
 
 
 

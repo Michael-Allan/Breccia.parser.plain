@@ -11,9 +11,20 @@ import static Java.CharBuffers.newDelimitableCharSequence;
 public abstract class Fractum_ extends Markup_ implements Fractum {
 
 
-    protected Fractum_( BrecciaCursor cursor ) {
+    protected Fractum_( final BrecciaCursor cursor, final End_ end ) {
         this.cursor = cursor;
+        this.end = end;
         text = newDelimitableCharSequence( cursor.buffer ); }
+
+
+
+    public void commit() { cursor.fractum( this ); }
+
+
+
+    /** The corresponding end state of this fractum.
+      */
+    public final End_ end;
 
 
 
@@ -47,7 +58,15 @@ public abstract class Fractum_ extends Markup_ implements Fractum {
     public static abstract class End_ implements Fractum.End {
 
 
-        protected End_() {}}
+        protected End_( BrecciaCursor cursor ) { this.cursor = cursor; }
+
+
+
+        public void commit() { cursor.fractumEnd( this ); }
+
+
+
+        protected final BrecciaCursor cursor; }
 
 
 

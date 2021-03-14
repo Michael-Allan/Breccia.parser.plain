@@ -151,7 +151,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public @Override final void perState( final Consumer<ParseState> sink ) throws ParseError {
+    public final @Override void perState( final Consumer<ParseState> sink ) throws ParseError {
         try {
             for( ;; ) {
                 sink.accept( state );
@@ -163,7 +163,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public @Override final void perStateConditionally( final Predicate<ParseState> sink )
+    public final @Override void perStateConditionally( final Predicate<ParseState> sink )
           throws ParseError {
         try {
             while( sink.test(state) && !state.isFinal() ) _next(); }
@@ -180,7 +180,7 @@ public class BrecciaCursor implements ReusableCursor {
    // ━━━  R e u s a b l e   C u r s o r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override final void markupSource( final Reader r ) throws ParseError {
+    public final @Override void markupSource( final Reader r ) throws ParseError {
         try { _markupSource( r ); }
         catch( ParseError x ) {
             disable();
@@ -188,7 +188,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public @Override final void perState( final Path sourceFile, final Consumer<ParseState> sink )
+    public final @Override void perState( final Path sourceFile, final Consumer<ParseState> sink )
           throws ParseError {
         try( final Reader r = newSourceReader​( sourceFile )) {
             markupSource( r );
@@ -203,7 +203,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public @Override final void perStateConditionally( final Path sourceFile,
+    public final @Override void perStateConditionally( final Path sourceFile,
           final Predicate<ParseState> sink ) throws ParseError {
         try( final Reader r = newSourceReader​( sourceFile )) {
             markupSource( r );

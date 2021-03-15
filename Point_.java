@@ -88,7 +88,8 @@ public abstract class Point_ extends BodyFractum_ implements Point {
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override int column() { return text.start() - cursor.fractumStart; }
+        public @Override int column() {
+          return bullet.column() + cursor.bufferColumnarSpan(bullet.text.start(),text.start()); }
 
 
 

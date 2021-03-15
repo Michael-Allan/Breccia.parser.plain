@@ -759,7 +759,13 @@ public class BrecciaCursor implements ReusableCursor {
         else basicPlainPoint.commit();
         point.perfectIndent.text.delimit( fractumStart, bullet );
         point.bullet       .text.delimit(               bullet, bulletEnd );
-        point.descriptor   .text.delimit(                       bulletEnd, segmentEnd ); }
+        if( bulletEnd < segmentEnd ) {
+            final var d = point.descriptorWhenPresent;
+            d              .text.delimit(                       bulletEnd, segmentEnd );
+            point.descriptor = d; }
+        else {
+            assert bulletEnd == segmentEnd;
+            point.descriptor = null; }}
 
 
 

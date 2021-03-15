@@ -50,7 +50,11 @@ public abstract class Point_ extends BodyFractum_ implements Point {
 
 
 
-    protected final Descriptor_ descriptor = new Descriptor_();
+    protected Descriptor descriptor;
+
+
+
+    protected final Descriptor_ descriptorWhenPresent = new Descriptor_();
 
 
 

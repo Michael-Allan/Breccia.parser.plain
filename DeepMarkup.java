@@ -1,6 +1,7 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.Markup;
+import java.nio.CharBuffer;
 import java.util.List;
 
 
@@ -11,7 +12,11 @@ import java.util.List;
 public abstract class DeepMarkup extends Markup_ {
 
 
-    protected DeepMarkup() {}
+    protected DeepMarkup( CharBuffer b ) { super( b ); }
+
+
+
+    protected DeepMarkup( Fractum_ f ) { super( f ); }
 
 
 

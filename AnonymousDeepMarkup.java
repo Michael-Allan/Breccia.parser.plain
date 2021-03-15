@@ -4,7 +4,7 @@ package Breccia.parser.plain;
 public abstract class AnonymousDeepMarkup extends DeepMarkup {
 
 
-    protected AnonymousDeepMarkup() {}
+    protected AnonymousDeepMarkup( Fractum_ f ) { super( f ); }
 
 
 

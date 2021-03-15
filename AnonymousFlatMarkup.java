@@ -4,7 +4,7 @@ package Breccia.parser.plain;
 public abstract class AnonymousFlatMarkup extends FlatMarkup {
 
 
-    protected AnonymousFlatMarkup() {}
+    protected AnonymousFlatMarkup( Fractum_ f ) { super( f ); }
 
 
 

@@ -306,6 +306,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    private void delimitFractumText() { fractum.text.delimit( fractumStart, segmentEnd ); }
+
+
+
     /** Reads through any fractal segment located at `segmentStart`, beginning at the present buffer
       * position, and sets the remainder of its determining bounds.  Ensure before calling this method
       * that the following are updated.
@@ -571,6 +575,7 @@ public class BrecciaCursor implements ReusableCursor {
             delimitSegment(); }
         buffer.rewind(); // As per `buffer` contract.
         basicFileFractum.commit();
+        delimitFractumText();
         hierarchy.clear(); }
 
 
@@ -589,7 +594,7 @@ public class BrecciaCursor implements ReusableCursor {
             return; }
         final int nextIndentWidth = segmentEndIndicator - segmentEnd; /* The offset from the start of
           the next fractum (`segmentEnd`) to its first non-space character (`segmentEndIndicator`). */
-        assert nextIndentWidth >= 0 && nextIndentWidth % 4 == 0;
+        assert nextIndentWidth >= 0 && nextIndentWidth % 4 == 0; // A body fractum, perfectly indented.
         if( !state.isInitial() ) { // Then unwind any past siblings from `hierarchy`, ending each.
             while( fractumIndentWidth >= nextIndentWidth ) { /* For its own purposes, this loop maintains
                   the records of `fractumIndentWidth` and `hierarchy` even through the ending states
@@ -610,11 +615,13 @@ public class BrecciaCursor implements ReusableCursor {
               starting a division whose head comprises all contiguous divider segments. */
             do nextSegment(); while( isDividerDrawing( segmentEndIndicatorChar )); // Scan through each.
             buffer.rewind(); // As per `buffer` contract.
- /**/       basicDivision.commit(); }
+ /**/       basicDivision.commit();
+            division.perfectIndent.text.delimit( fractumStart, fractumStart + fractumIndentWidth ); }
         else { // Next is a point.
             nextSegment(); // Scan through to the end boundary of its head.
             buffer.rewind(); // As per `buffer` contract.
- /**/       parsePoint( /*bullet position*/fractumStart + fractumIndentWidth ); }
+ /**/       parsePoint(); }
+        delimitFractumText();
         final int i = fractumIndentWidth / 4; // Indent in perfect units, that is.
         while( hierarchy.size() < i ) hierarchy.add( null ); // Padding for unoccupied ancestral indents.
         assert state == bodyFractum;
@@ -631,8 +638,8 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses enough of a command point to learn its concrete type, then sets the state-typing fields
-      * to the corresponding parse state.  This method is a subroutine of `parsePoint`.
+    /** Parses enough of a command point to learn its concrete type, then commits
+      * the corresponding parse state.  This method is a subroutine of `parsePoint`.
       *
       *     @param bulletEnd The buffer position just after the bullet, viz. its end boundary.
       *       Already it is known (and asserted) to hold a plain space character. *//*
@@ -652,17 +659,16 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses enough of a point to learn its concrete type, then sets the state-typing fields
-      * to the corresponding parse state.  Ensure before calling this method that all other fields
-      * are initialized save for `hierarchy`.
+    /** Parses enough of a point to learn its concrete type, then commits the corresponding parse state.
+      * Ensure before calling this method that all other fields are initialized save for `hierarchy`.
       *
-      *     @param bullet The buffer position of the bullet.
       *     @throws MalformedMarkup For any misplaced no-break space occuring on the same line.  Note
       *       that elsewhere `{@linkplain #delimitSegment() delimitSegment}` polices this offence. *//*
       *
       *     @uses #xSeq
       */
-    protected void parsePoint( final int bullet ) throws MalformedMarkup {
+    protected void parsePoint() throws MalformedMarkup {
+        final int bullet = fractumStart + fractumIndentWidth;
         assert buffer.position() == 0;
 
       // Find the end boundary of the bullet
@@ -750,7 +756,10 @@ public class BrecciaCursor implements ReusableCursor {
                 throw termExpected( bufferPointer( c )); } // command between the two.
             assert buffer.get(bulletEnd) == ' '; // The only remaining case.
             parseCommandPoint( bulletEnd ); }
-        else basicPlainPoint.commit(); }
+        else basicPlainPoint.commit();
+        point.perfectIndent.text.delimit( fractumStart, bullet );
+        point.bullet       .text.delimit(               bullet, bulletEnd );
+        point.descriptor   .text.delimit(                       bulletEnd, segmentEnd ); }
 
 
 
@@ -896,10 +905,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final void division( Division d ) { division = d; }
+    protected final void division( Division_ d ) { division = d; }
 
 
-        private Division division;
+        private Division_ division;
 
 
         private final Division_ basicDivision = new Division_( this ); // [CIC]
@@ -940,12 +949,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final void fractum( Fractum_ f ) {
-        f.text.delimit( fractumStart, segmentEnd );
-        state = fractum = f; }
+    protected final void fractum( Fractum_ f ) { state = fractum = f; }
 
 
-        private Fractum fractum;
+        private Fractum_ fractum;
 
 
 
@@ -1001,10 +1008,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final void point( Point p ) { point = p; }
+    protected final void point( Point_ p ) { point = p; }
 
 
-        private Point point;
+        private Point_ point;
 
 
 

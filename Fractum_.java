@@ -1,9 +1,7 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.Fractum;
-import Java.DelimitableCharSequence;
 
-import static Java.CharBuffers.newDelimitableCharSequence;
 import static Java.Classes.nameWithoutPackageLeader;
 
 
@@ -11,9 +9,9 @@ public abstract class Fractum_ extends DeepMarkup implements Fractum {
 
 
     protected Fractum_( final BrecciaCursor cursor, final End_ end ) {
+        super( cursor.buffer );
         this.cursor = cursor;
-        this.end = end;
-        text = newDelimitableCharSequence( cursor.buffer ); }
+        this.end = end; }
 
 
 
@@ -31,10 +29,6 @@ public abstract class Fractum_ extends DeepMarkup implements Fractum {
 
 
     public final @Override int lineNumber() { return cursor.fractumLineNumber(); }
-
-
-
-    public final @Override CharSequence text() { return text; }
 
 
 
@@ -68,11 +62,7 @@ public abstract class Fractum_ extends DeepMarkup implements Fractum {
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
 
 
-    protected final BrecciaCursor cursor;
-
-
-
-    final DelimitableCharSequence text; }
+    protected final BrecciaCursor cursor; }
 
 
 

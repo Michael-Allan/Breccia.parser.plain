@@ -11,7 +11,7 @@ import java.util.List;
 public abstract class FlatMarkup extends Markup_ {
 
 
-    protected FlatMarkup() {}
+    protected FlatMarkup( Fractum_ f ) { super( f ); }
 
 
 
@@ -20,7 +20,7 @@ public abstract class FlatMarkup extends Markup_ {
 
     /** Returns an empty list: this markup has no parsed components, only {@linkplain #text() flat text}.
       */
-    public @Override List<Markup> components() { return List.of(); }}
+    public final @Override List<Markup> components() { return List.of(); }}
 
 
 

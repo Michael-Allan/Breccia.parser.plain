@@ -16,6 +16,13 @@ public abstract class BodyFractum_ extends Fractum_ implements BodyFractum {
 
 
 
+   // ━━━  B o d y   F r a c t u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public @Override PerfectIndent perfectIndent() { return perfectIndent; }
+
+
+
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
@@ -28,7 +35,31 @@ public abstract class BodyFractum_ extends Fractum_ implements BodyFractum {
 
         public @Override void commit() {
             super.commit();
-            cursor.bodyFractumEnd( this ); }}}
+            cursor.bodyFractumEnd( this ); }}
+
+
+
+////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
+
+
+    protected final PerfectIndent_ perfectIndent = new PerfectIndent_();
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    final class PerfectIndent_ extends FlatMarkup implements PerfectIndent {
+
+
+        PerfectIndent_() { super( BodyFractum_.this ); }
+
+
+
+       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override int lineNumber() { return BodyFractum_.this.lineNumber(); }}}
 
 
 

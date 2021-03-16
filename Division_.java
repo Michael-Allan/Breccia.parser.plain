@@ -1,6 +1,8 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.Division;
+import Breccia.parser.Markup;
+import java.util.List;
 
 
 public class Division_ extends BodyFractum_ implements Division {
@@ -17,6 +19,13 @@ public class Division_ extends BodyFractum_ implements Division {
     public @Override void commit() {
         super.commit();
         cursor.division( this ); }
+
+
+
+   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public final @Override List<Markup> components() { return List.of(); } // TEST
 
 
 

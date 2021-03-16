@@ -4,9 +4,7 @@ import Breccia.parser.Markup;
 import java.util.List;
 
 
-/** Markup that is non-composite, having no parsed components.
-  *
-  *     @see DeepMarkup
+/** Non-composite markup; markup that has no parsed components.
   */
 public abstract class FlatMarkup extends Markup_ {
 

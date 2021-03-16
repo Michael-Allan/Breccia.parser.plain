@@ -5,7 +5,7 @@ import Breccia.parser.Fractum;
 import static Java.Classes.nameWithoutPackageLeader;
 
 
-public abstract class Fractum_ extends DeepMarkup implements Fractum {
+public abstract class Fractum_ extends Markup_ implements Fractum {
 
 
     protected Fractum_( final BrecciaCursor cursor, final End_ end ) {

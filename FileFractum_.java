@@ -1,6 +1,8 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.FileFractum;
+import Breccia.parser.Markup;
+import java.util.List;
 
 
 public class FileFractum_ extends Fractum_ implements FileFractum {
@@ -17,6 +19,13 @@ public class FileFractum_ extends Fractum_ implements FileFractum {
     public @Override void commit() {
         super.commit();
         cursor.fileFractum( this ); }
+
+
+
+   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public final @Override List<Markup> components() { return List.of(); } // TEST
 
 
 

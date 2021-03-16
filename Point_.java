@@ -1,18 +1,33 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.Markup;
 import Breccia.parser.Point;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public abstract class Point_ extends BodyFractum_ implements Point {
 
 
-    protected Point_( BrecciaCursor cursor, End_ end ) { super( cursor, end ); }
+    protected Point_( BrecciaCursor cursor, End_ end ) {
+        super( cursor, end );
+        components.add( perfectIndent );
+        components.add( bullet );
+        components.add( descriptorWhenPresent ); // Absent at most once per file.
+        assert components.size() == componentsMax; }
 
 
 
     public @Override void commit() {
         super.commit();
         cursor.point( this ); }
+
+
+
+   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public final @Override List<Markup> components() { return components; }
 
 
 
@@ -50,6 +65,14 @@ public abstract class Point_ extends BodyFractum_ implements Point {
 
 
 
+    final ArrayList<Markup> components = new ArrayList<>( /*initial capacity*/componentsMax );
+
+
+
+    protected static final int componentsMax = 3;
+
+
+
     protected Descriptor descriptor;
 
 
@@ -61,7 +84,7 @@ public abstract class Point_ extends BodyFractum_ implements Point {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class Bullet_ extends FlatMarkup implements Bullet {
+    protected final class Bullet_ extends FlatMarkup implements Bullet {
 
 
         Bullet_() { super( Point_.this ); }
@@ -82,7 +105,7 @@ public abstract class Point_ extends BodyFractum_ implements Point {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class Descriptor_ extends DeepMarkup implements Descriptor {
+    protected final class Descriptor_ extends FlatMarkup/*TEST*/ implements Descriptor {
 
 
         Descriptor_() { super( Point_.this ); }

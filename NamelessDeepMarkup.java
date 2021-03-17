@@ -14,12 +14,16 @@ import java.util.List;
   * parameters up through the class hierarchy, each composite declares the `components` method and field
   * at whatever depth in the hierarchy a suitable type for it becomes known.
   */
-public abstract class NamelessDeepMarkup<L extends List<Markup>> extends Markup_ {
+abstract class NamelessDeepMarkup<L extends List<Markup>> extends Markup_ {
 
 
-    protected NamelessDeepMarkup( Fractum_ f, L components ) {
+    NamelessDeepMarkup( Fractum_ f, L components ) {
         super( f );
         this.components = components; }
+
+
+
+    final L components;
 
 
 
@@ -32,16 +36,9 @@ public abstract class NamelessDeepMarkup<L extends List<Markup>> extends Markup_
 
     /** Returns ‘Markup’.
       */
-    public final @Override String tagName() { return "Markup"; } /* `Markup_` could not declare this,
+    public final @Override String tagName() { return "Markup"; }} /* `Markup_` could not declare this,
       e.g. as a default implementation, without inadvertently overriding the default implementations
       of the `Breccia.parser` interfaces. */
-
-
-
-////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
-
-
-    final L components; }
 
 
                                                         // Copyright © 2021  Michael Allan.  Licence MIT.

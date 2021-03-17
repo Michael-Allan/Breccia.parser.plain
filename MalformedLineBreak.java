@@ -7,7 +7,7 @@ public class MalformedLineBreak extends MalformedMarkup {
     /** @see #pointer
       * @see #getMessage()
       */
-    public MalformedLineBreak( Pointer pointer, String message ) { super( pointer, message ); }
+    MalformedLineBreak( Pointer pointer, String message ) { super( pointer, message ); }
 
 
 

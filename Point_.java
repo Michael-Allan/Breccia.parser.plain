@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public abstract class Point_ extends BodyFractum_ implements Point {
+abstract class Point_ extends BodyFractum_ implements Point {
 
 
-    protected Point_( BrecciaCursor cursor, End_ end ) {
+    Point_( BrecciaCursor cursor, End_ end ) {
         super( cursor, end );
         components.add( perfectIndent );
         components.add( bullet );
@@ -18,7 +18,30 @@ public abstract class Point_ extends BodyFractum_ implements Point {
 
 
 
-    public @Override void commit() {
+    final Bullet_ bullet = new Bullet_();
+
+
+
+    final ArrayList<Markup> components = new ArrayList<>( /*initial capacity*/componentsMax );
+
+
+
+    static final int componentsMax = 3;
+
+
+
+    Descriptor descriptor;
+
+
+
+    final Descriptor_ descriptorWhenPresent = new Descriptor_();
+
+
+
+   // ━━━  F r a c t u m _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    @Override void commit() {
         super.commit();
         cursor.point( this ); }
 
@@ -45,46 +68,7 @@ public abstract class Point_ extends BodyFractum_ implements Point {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    public static abstract class End_ extends BodyFractum_.End_ implements Point.End {
-
-
-        protected End_( BrecciaCursor cursor ) { super( cursor ); }
-
-
-
-        public @Override void commit() {
-            super.commit();
-            cursor.pointEnd( this ); }}
-
-
-
-////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
-
-
-    protected final Bullet_ bullet = new Bullet_();
-
-
-
-    final ArrayList<Markup> components = new ArrayList<>( /*initial capacity*/componentsMax );
-
-
-
-    protected static final int componentsMax = 3;
-
-
-
-    protected Descriptor descriptor;
-
-
-
-    protected final Descriptor_ descriptorWhenPresent = new Descriptor_();
-
-
-
-   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-
-
-    protected final class Bullet_ extends FlatMarkup implements Bullet {
+    final class Bullet_ extends FlatMarkup implements Bullet {
 
 
         Bullet_() { super( Point_.this ); }
@@ -105,7 +89,7 @@ public abstract class Point_ extends BodyFractum_ implements Point {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    protected final class Descriptor_ extends FlatMarkup/*TEST*/ implements Descriptor {
+    final class Descriptor_ extends FlatMarkup/*TEST*/ implements Descriptor {
 
 
         Descriptor_() { super( Point_.this ); }
@@ -120,8 +104,27 @@ public abstract class Point_ extends BodyFractum_ implements Point {
 
 
 
-        public @Override int lineNumber() { return Point_.this.lineNumber(); }}} /* Always the descriptor
+        public @Override int lineNumber() { return Point_.this.lineNumber(); }} /* Always the descriptor
           begins on the first line of the point, if only because it comprises that line’s terminator. */
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    static abstract class End_ extends BodyFractum_.End_ implements Point.End {
+
+
+        End_( BrecciaCursor cursor ) { super( cursor ); }
+
+
+
+       // ━━━  F r a c t u m _   .   E n d _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        @Override void commit() {
+            super.commit();
+            cursor.pointEnd( this ); }}}
 
 
 

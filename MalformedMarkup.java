@@ -12,7 +12,7 @@ public class MalformedMarkup extends ParseError {
     /** @see #pointer
       * @see #getMessage()
       */
-    public MalformedMarkup( final Pointer pointer, final String message ) {
+    MalformedMarkup( final Pointer pointer, final String message ) {
         super( pointer.lineNumber, message + '\n' + pointer.markedLine() );
         this.pointer = pointer; }
 
@@ -57,7 +57,7 @@ public class MalformedMarkup extends ParseError {
           * @see #line
           * @see #column
           */
-        public Pointer( int lineNumber, String line, int column ) {
+        Pointer( int lineNumber, String line, int column ) {
             this.lineNumber = lineNumber;
             this.line = line;
             this.column = column; }

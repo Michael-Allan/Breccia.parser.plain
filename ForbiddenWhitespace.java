@@ -9,7 +9,7 @@ public class ForbiddenWhitespace extends MalformedMarkup {
     /** @see #pointer
       * @see #ch
       */
-    public ForbiddenWhitespace( final Pointer pointer, final char ch ) {
+    ForbiddenWhitespace( final Pointer pointer, final char ch ) {
         super( pointer, "Unicode " + format( "%04x", Integer.valueOf(ch) ));
         this.ch = ch; }
 

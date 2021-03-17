@@ -3,18 +3,17 @@ package Breccia.parser.plain;
 import Breccia.parser.PlainPoint;
 
 
-public class PlainPoint_ extends Point_ implements PlainPoint {
+class PlainPoint_ extends Point_ implements PlainPoint {
 
 
-    public PlainPoint_( BrecciaCursor cursor ) { super( cursor, new End_( cursor )); }
-
-
-
-    public PlainPoint_( BrecciaCursor cursor, End_ end ) { super( cursor, end ); }
+    PlainPoint_( BrecciaCursor cursor ) { super( cursor, new End_( cursor )); }
 
 
 
-    public @Override void commit() {
+   // ━━━  F r a c t u m _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    @Override void commit() {
         super.commit();
         cursor.plainPoint( this ); }
 
@@ -23,14 +22,17 @@ public class PlainPoint_ extends Point_ implements PlainPoint {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    public static class End_ extends Point_.End_ implements PlainPoint.End {
+    static class End_ extends Point_.End_ implements PlainPoint.End {
 
 
-        protected End_( BrecciaCursor cursor ) { super( cursor ); }
+        End_( BrecciaCursor cursor ) { super( cursor ); }
 
 
 
-        public @Override void commit() {
+       // ━━━  F r a c t u m _   .   E n d _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        @Override void commit() {
             super.commit();
             cursor.plainPointEnd( this ); }}}
 

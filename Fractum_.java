@@ -5,23 +5,27 @@ import Breccia.parser.Fractum;
 import static Java.Classes.nameWithoutPackageLeader;
 
 
-public abstract class Fractum_ extends Markup_ implements Fractum {
+abstract class Fractum_ extends Markup_ implements Fractum {
 
 
-    protected Fractum_( final BrecciaCursor cursor, final End_ end ) {
+    Fractum_( final BrecciaCursor cursor, final End_ end ) {
         super( cursor.buffer );
         this.cursor = cursor;
         this.end = end; }
 
 
 
-    public void commit() { cursor.fractum( this ); }
+    void commit() { cursor.fractum( this ); }
+
+
+
+    final BrecciaCursor cursor;
 
 
 
     /** The corresponding end state of this fractum.
       */
-    public final End_ end;
+    final End_ end;
 
 
 
@@ -37,32 +41,25 @@ public abstract class Fractum_ extends Markup_ implements Fractum {
 
     /** The end of a fractum.
       */
-    public static abstract class End_ implements Fractum.End {
+    static abstract class End_ implements Fractum.End {
 
 
-        protected End_( BrecciaCursor cursor ) { this.cursor = cursor; }
-
-
-
-        public void commit() { cursor.fractumEnd( this ); }
+        End_( BrecciaCursor cursor ) { this.cursor = cursor; }
 
 
 
-        protected final BrecciaCursor cursor;
+        void commit() { cursor.fractumEnd( this ); }
+
+
+
+        final BrecciaCursor cursor;
 
 
 
        // ━━━  O b j e c t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override String toString() { return nameWithoutPackageLeader( getClass() ); }}
-
-
-
-////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
-
-
-    protected final BrecciaCursor cursor; }
+        public @Override String toString() { return nameWithoutPackageLeader( getClass() ); }}}
 
 
 

@@ -16,14 +16,18 @@ import static Java.CharBuffers.newDelimitableCharSequence;
   *
   *     @see Breccia.parser.DataReflector
   */
-public abstract class Markup_ implements Markup {
+abstract class Markup_ implements Markup {
 
 
-    protected Markup_( final CharBuffer buffer ) { text = newDelimitableCharSequence( buffer ); }
+    Markup_( final CharBuffer buffer ) { text = newDelimitableCharSequence( buffer ); }
 
 
 
-    protected Markup_( final Fractum_ f ) { this( f.cursor.buffer ); }
+    Markup_( final Fractum_ f ) { this( f.cursor.buffer ); }
+
+
+
+    final DelimitableCharSequence text;
 
 
 
@@ -57,14 +61,7 @@ public abstract class Markup_ implements Markup {
                 if( cBreak != 0 ) b.insert( cBreak, '\\' ); // One backslash for the whole sequence.
                 break; }}
         b.append( '}' );
-        return b.toString(); }
-
-
-
-////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
-
-
-    protected final DelimitableCharSequence text; }
+        return b.toString(); }}
 
 
 

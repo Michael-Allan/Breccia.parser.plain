@@ -3,16 +3,14 @@ package Breccia.parser.plain;
 import Breccia.parser.BodyFractum;
 
 
-public abstract class BodyFractum_ extends Fractum_ implements BodyFractum {
+abstract class BodyFractum_ extends Fractum_ implements BodyFractum {
 
 
-    protected BodyFractum_( BrecciaCursor cursor, End_ end ) { super( cursor, end ); }
+    BodyFractum_( BrecciaCursor cursor, End_ end ) { super( cursor, end ); }
 
 
 
-    public @Override void commit() {
-        super.commit();
-        cursor.bodyFractum( this ); }
+    final PerfectIndent_ perfectIndent = new PerfectIndent_();
 
 
 
@@ -23,26 +21,31 @@ public abstract class BodyFractum_ extends Fractum_ implements BodyFractum {
 
 
 
+   // ━━━  F r a c t u m _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    @Override void commit() {
+        super.commit();
+        cursor.bodyFractum( this ); }
+
+
+
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    public static abstract class End_ extends Fractum_.End_ implements BodyFractum.End {
+    static abstract class End_ extends Fractum_.End_ implements BodyFractum.End {
 
 
-        protected End_( BrecciaCursor cursor ) { super( cursor ); }
+        End_( BrecciaCursor cursor ) { super( cursor ); }
 
 
 
-        public @Override void commit() {
+       // ━━━  F r a c t u m _   .   E n d _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        @Override void commit() {
             super.commit();
             cursor.bodyFractumEnd( this ); }}
-
-
-
-////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
-
-
-    protected final PerfectIndent_ perfectIndent = new PerfectIndent_();
 
 
 

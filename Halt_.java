@@ -3,21 +3,21 @@ package Breccia.parser.plain;
 import Breccia.parser.Halt;
 
 
-public class Halt_ implements Halt {
+class Halt_ implements Halt {
 
 
-    protected Halt_( BrecciaCursor cursor ) { this.cursor = cursor; }
+    Halt_( BrecciaCursor cursor ) { this.cursor = cursor; }
 
 
 
-    public void commit() { cursor.halt( this ); }
+    void commit() { cursor.halt( this ); }
 
 
 
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
 
 
-    protected final BrecciaCursor cursor; }
+    private final BrecciaCursor cursor; }
 
 
 

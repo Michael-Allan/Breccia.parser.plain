@@ -11,7 +11,7 @@ public class OverlargeHead extends ParseError {
 
     /** @see #lineNumber
       */
-    public OverlargeHead( int lineNumber ) {
+    OverlargeHead( int lineNumber ) {
         super( lineNumber, """
           The size of the fractal head, together with its end boundary,
           exceeds the parser’s buffer capacity""" ); }}

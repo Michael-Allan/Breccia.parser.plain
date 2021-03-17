@@ -5,18 +5,17 @@ import Breccia.parser.Markup;
 import java.util.List;
 
 
-public class Division_ extends BodyFractum_ implements Division {
+class Division_ extends BodyFractum_ implements Division {
 
 
-    public Division_( BrecciaCursor cursor ) { super( cursor, new End_( cursor )); }
-
-
-
-    public Division_( BrecciaCursor cursor, End_ end ) { super( cursor, end ); }
+    Division_( BrecciaCursor cursor ) { super( cursor, new End_( cursor )); }
 
 
 
-    public @Override void commit() {
+   // ━━━  F r a c t u m _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    @Override void commit() {
         super.commit();
         cursor.division( this ); }
 
@@ -32,14 +31,17 @@ public class Division_ extends BodyFractum_ implements Division {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    public static class End_ extends BodyFractum_.End_ implements Division.End {
+    static class End_ extends BodyFractum_.End_ implements Division.End {
 
 
-        protected End_( BrecciaCursor cursor ) { super( cursor ); }
+        End_( BrecciaCursor cursor ) { super( cursor ); }
 
 
 
-        public @Override void commit() {
+       // ━━━  F r a c t u m _   .   E n d _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        @Override void commit() {
             super.commit();
             cursor.divisionEnd( this ); }}}
 

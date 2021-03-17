@@ -6,10 +6,10 @@ import java.util.List;
 
 /** Non-composite markup; markup that has no parsed components.
   */
-public abstract class FlatMarkup extends Markup_ {
+abstract class FlatMarkup extends Markup_ {
 
 
-    protected FlatMarkup( Fractum_ f ) { super( f ); }
+    FlatMarkup( Fractum_ f ) { super( f ); }
 
 
 

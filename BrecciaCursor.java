@@ -221,8 +221,8 @@ public class BrecciaCursor implements ReusableCursor {
     /** The source buffer.  Except where an API requires otherwise (e.g. `delimitSegment`), the buffer
       * is maintained at a default position of zero, whence it may be treated whole as a `CharSequence`.
       */
-    protected final CharBuffer buffer = CharBuffer.allocate( bufferCapacity );
- // protected final CharBuffer buffer = CharBuffer.allocate( bufferCapacity + 1 ) // TEST with a positive
+    final CharBuffer buffer = CharBuffer.allocate( bufferCapacity );
+ // final CharBuffer buffer = CharBuffer.allocate( bufferCapacity + 1 ) // TEST with a positive
  //   .slice( 1, bufferCapacity );                                               // `arrayOffset`. [BAO]
 
 
@@ -244,7 +244,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @see <a href='https://unicode.org/reports/tr29/'>
       *       Grapheme clusters in Unicode text segmentation</a>
       */
-    protected final int bufferColumnarSpan( final int start, final int end ) {
+    final int bufferColumnarSpan( final int start, final int end ) {
         bufferColumnarSpanSeq.delimit( start, end );
         graphemeClusterMatcher.reset( /*input sequence*/bufferColumnarSpanSeq );
         int count = 0;
@@ -258,8 +258,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final @Subst MalformedMarkup.Pointer bufferPointer() {
-        return bufferPointer( buffer.position() ); }
+    private @Subst MalformedMarkup.Pointer bufferPointer() { return bufferPointer( buffer.position() ); }
 
 
 
@@ -268,7 +267,7 @@ public class BrecciaCursor implements ReusableCursor {
       * then this method uses `fractumLineNumber`; if the position lies after the region already
       * parsed by `delimitSegment`, then this method uses the line number of the last parsed position.
       */
-    protected final @Subst MalformedMarkup.Pointer bufferPointer( final int position ) {
+    private @Subst MalformedMarkup.Pointer bufferPointer( final int position ) {
         final int lineIndex, lineNumber, lineStart; {
             final int[] endsArray = fractumLineEnds.array;
             int e = 0, n = fractumLineNumber(), s = fractumStart;
@@ -293,7 +292,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final @Subst MalformedMarkup.Pointer bufferPointerBack() {
+    private @Subst MalformedMarkup.Pointer bufferPointerBack() {
         return bufferPointer( buffer.position() - 1 ); }
 
 
@@ -495,13 +494,13 @@ public class BrecciaCursor implements ReusableCursor {
     /** The offset from the start of the present fractum to its first non-space character.  This is -4 in
       * the case of the file fractum, a multiple of four (including zero) in the case of body fracta.
       */
-    protected @Subst int fractumIndentWidth;
+    @Subst int fractumIndentWidth;
 
 
 
     /** The number of lines before the present fractum.
       */
-    protected @Subst int fractumLineCounter;
+    private @Subst int fractumLineCounter;
 
 
 
@@ -509,7 +508,7 @@ public class BrecciaCursor implements ReusableCursor {
       * which is either the position of the first character of the succeeding line, or `buffer.limit`
       * in the case of the final line of the markup source.  Invariably each is preceded by a newline.
       */
-    protected @Subst final IntArrayExtensor fractumLineEnds = new IntArrayExtensor( new int[0x100] );
+    private @Subst final IntArrayExtensor fractumLineEnds = new IntArrayExtensor( new int[0x100] );
       // Each an adjustable buffer position. [ABP]
 
 
@@ -517,18 +516,18 @@ public class BrecciaCursor implements ReusableCursor {
     /** The ordinal number of the first line of the present fractum.
       * Lines are numbered beginning at one.
       */
-    protected final @Subst int fractumLineNumber() { return fractumLineCounter + 1; }
+    final @Subst int fractumLineNumber() { return fractumLineCounter + 1; }
 
 
 
     /** The start position in the buffer of the present fractum, if any,
       * which is the position of its first character.
       */
-    protected @Subst int fractumStart; // [ABP]
+    private @Subst int fractumStart; // [ABP]
 
 
 
-    protected final Matcher graphemeClusterMatcher = Pattern.compile( "\\X" ).matcher( "" );
+    private final Matcher graphemeClusterMatcher = Pattern.compile( "\\X" ).matcher( "" );
       // The alternative for cluster discovery (within the JDK) is `java.txt.BreakIterator`, but
       // apparently it is outdated in this regard, wheras `java.util.regex` was updated for JDK 15.
       // https://bugs.openjdk.java.net/browse/JDK-8174266
@@ -549,7 +548,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @see #fractumIndentWidth
       */
-    protected final @Subst ArrayList<BodyFractum_> hierarchy = new ArrayList<>();
+    private final @Subst ArrayList<BodyFractum_> hierarchy = new ArrayList<>();
 
 
 
@@ -646,7 +645,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @uses #xSeq
       */
-    protected void parseCommandPoint( final int bulletEnd ) throws MalformedMarkup {
+    private void parseCommandPoint( final int bulletEnd ) throws MalformedMarkup {
         int c = bulletEnd + 1; // Past the known space character.
         c = throughAnyS( c ); // Past any others.
         xSeq.delimit( c, c = throughTerm(c) );
@@ -667,7 +666,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @uses #xSeq
       */
-    protected void parsePoint() throws MalformedMarkup {
+    private void parsePoint() throws MalformedMarkup {
         final int bullet = fractumStart + fractumIndentWidth;
         assert buffer.position() == 0;
 
@@ -783,35 +782,35 @@ public class BrecciaCursor implements ReusableCursor {
       * or headless file fractum, the only cases of a zero length fractal segment.
       * If the value here is the buffer limit, then no segment remains in the markup source.
       */
-    protected @Subst int segmentEnd;
+    private @Subst int segmentEnd;
 
 
 
     /** The buffer position of the first non-space character of the present fractal segment’s
       * linear-order successor, or the buffer limit if there is none.
       */
-    protected @Subst int segmentEndIndicator;
+    private @Subst int segmentEndIndicator;
 
 
 
     /** The character at `segmentEndIndicator`, or the null character (00) if there is none.
       */
-    protected char segmentEndIndicatorChar;
+    private char segmentEndIndicatorChar;
 
 
 
     /** The start position in the buffer of the present fractal segment, if any,
       * which is the position of its first character.
       */
-    protected @Subst int segmentStart; // [ABP]
+    private @Subst int segmentStart; // [ABP]
 
 
 
-    protected Reader sourceReader;
+    private Reader sourceReader;
 
 
 
-    protected ParseState state;
+    private ParseState state;
 
 
 
@@ -820,7 +819,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @return The end boundary of the sequence, or `c` if there is none.
       */
-    protected final int throughAnyS( int c ) {
+    private int throughAnyS( int c ) {
         while( c < segmentEnd  &&  buffer.get(c) == ' ' ) ++c;
         return c; }
 
@@ -831,7 +830,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @return The end boundary of the sequence, or `c` if there is none.
       */
-    protected final int throughAnyTerm( int c ) {
+    private int throughAnyTerm( int c ) {
         for(; c < segmentEnd; ++c ) {
             final char ch = buffer.get( c );
             if( ch == ' ' || impliesNewline(ch) ) break; }
@@ -845,7 +844,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the sequence.
       *     @throws MalformedMarkup If no such sequence occurs at `c`.
       */
-    protected final int throughS( final int c ) throws MalformedMarkup {
+    private int throughS( final int c ) throws MalformedMarkup {
         final int d = throughAnyS( c );
         if( c == d ) throw spaceExpected( bufferPointer( c ));
         return d; }
@@ -858,14 +857,14 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the sequence.
       *     @throws MalformedMarkup If no such sequence occurs at `c`.
       */
-    protected final int throughTerm( final int c ) throws MalformedMarkup {
+    private int throughTerm( final int c ) throws MalformedMarkup {
         final int d = throughAnyTerm( c );
         if( c == d ) throw termExpected( bufferPointer( c ));
         return d; }
 
 
 
-    protected final DelimitableCharSequence xSeq = newDelimitableCharSequence( buffer );
+    private final DelimitableCharSequence xSeq = newDelimitableCharSequence( buffer );
       // For use only where declared.
 
 
@@ -873,7 +872,7 @@ public class BrecciaCursor implements ReusableCursor {
    // ┈┈┈  s t a t e   t y p i n g  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
 
-    protected final void associativeReference( AssociativeReference r ) { associativeReference = r; }
+    final void associativeReference( AssociativeReference r ) { associativeReference = r; }
 
 
         private AssociativeReference associativeReference;
@@ -884,43 +883,42 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final void associativeReferenceEnd( AssociativeReference.End e ) {
-        associativeReferenceEnd = e; }
+    final void associativeReferenceEnd( AssociativeReference.End e ) { associativeReferenceEnd = e; }
 
 
         private AssociativeReference.End associativeReferenceEnd;
 
 
 
-    protected final void bodyFractum( BodyFractum_ f ) { bodyFractum = f; }
+    final void bodyFractum( BodyFractum_ f ) { bodyFractum = f; }
 
 
         private BodyFractum_ bodyFractum;
 
 
 
-    protected final void bodyFractumEnd( BodyFractum.End e ) { bodyFractumEnd = e; }
+    final void bodyFractumEnd( BodyFractum.End e ) { bodyFractumEnd = e; }
 
 
         private BodyFractum.End bodyFractumEnd;
 
 
 
-    protected final void commandPoint( CommandPoint p ) { commandPoint = p; }
+    final void commandPoint( CommandPoint p ) { commandPoint = p; }
 
 
         private CommandPoint commandPoint;
 
 
 
-    protected final void commandPointEnd( CommandPoint.End e ) { commandPointEnd = e; }
+    final void commandPointEnd( CommandPoint.End e ) { commandPointEnd = e; }
 
 
         private CommandPoint.End commandPointEnd;
 
 
 
-    protected final void division( Division_ d ) { division = d; }
+    final void division( Division_ d ) { division = d; }
 
 
         private Division_ division;
@@ -930,14 +928,14 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final void divisionEnd( Division.End e ) { divisionEnd = e; }
+    final void divisionEnd( Division.End e ) { divisionEnd = e; }
 
 
         private Division.End divisionEnd;
 
 
 
-    protected final void empty( Empty e ) { state = empty = e; }
+    final void empty( Empty e ) { state = empty = e; }
 
 
         private Empty empty;
@@ -947,7 +945,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final void fileFractum( FileFractum f ) { fileFractum = f; }
+    final void fileFractum( FileFractum f ) { fileFractum = f; }
 
 
         private FileFractum fileFractum;
@@ -957,28 +955,28 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final void fileFractumEnd( FileFractum.End e ) { fileFractumEnd = e; }
+    final void fileFractumEnd( FileFractum.End e ) { fileFractumEnd = e; }
 
 
         private FileFractum.End fileFractumEnd;
 
 
 
-    protected final void fractum( Fractum_ f ) { state = fractum = f; }
+    final void fractum( Fractum_ f ) { state = fractum = f; }
 
 
         private Fractum_ fractum;
 
 
 
-    protected final void fractumEnd( Fractum.End e ) { state = fractumEnd = e; }
+    final void fractumEnd( Fractum.End e ) { state = fractumEnd = e; }
 
 
         private Fractum.End fractumEnd;
 
 
 
-    protected final void halt( Halt e ) { state = halt = e; }
+    final void halt( Halt e ) { state = halt = e; }
 
 
         private Halt halt;
@@ -988,7 +986,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final void plainCommandPoint( PlainCommandPoint p ) { plainCommandPoint = p; }
+    final void plainCommandPoint( PlainCommandPoint p ) { plainCommandPoint = p; }
 
 
         private PlainCommandPoint plainCommandPoint;
@@ -999,14 +997,14 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final void plainCommandPointEnd( PlainCommandPoint.End e ) { plainCommandPointEnd = e; }
+    final void plainCommandPointEnd( PlainCommandPoint.End e ) { plainCommandPointEnd = e; }
 
 
         private PlainCommandPoint.End plainCommandPointEnd;
 
 
 
-    protected final void plainPoint( PlainPoint p ) { plainPoint = p; }
+    final void plainPoint( PlainPoint p ) { plainPoint = p; }
 
 
         private PlainPoint plainPoint;
@@ -1016,28 +1014,28 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final void plainPointEnd( PlainPoint.End e ) { plainPointEnd = e; }
+    final void plainPointEnd( PlainPoint.End e ) { plainPointEnd = e; }
 
 
         private PlainPoint.End plainPointEnd;
 
 
 
-    protected final void point( Point_ p ) { point = p; }
+    final void point( Point_ p ) { point = p; }
 
 
         private Point_ point;
 
 
 
-    protected final void pointEnd( Point.End e ) { pointEnd = e; }
+    final void pointEnd( Point.End e ) { pointEnd = e; }
 
 
         private Point.End pointEnd;
 
 
 
-    protected final void privatizer( Privatizer p ) { privatizer = p; }
+    final void privatizer( Privatizer p ) { privatizer = p; }
 
 
         private Privatizer privatizer;
@@ -1047,7 +1045,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    protected final void privatizerEnd( Privatizer.End e ) { privatizerEnd = e; }
+    final void privatizerEnd( Privatizer.End e ) { privatizerEnd = e; }
 
 
         private Privatizer.End privatizerEnd;
@@ -1199,7 +1197,7 @@ public class BrecciaCursor implements ReusableCursor {
       * These are the parse states of {@linkplain Typestamp Typestamp} category (a).
       *
       */ @Documented @Retention(SOURCE) @Target({ FIELD, METHOD })
-    protected static @interface Subst {}}
+    private static @interface Subst {}}
 
 
 

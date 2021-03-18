@@ -3,10 +3,16 @@ package Breccia.parser.plain;
 import Breccia.parser.AssociativeReference;
 
 
-class AssociativeReference_ extends CommandPoint_ implements AssociativeReference {
+class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implements AssociativeReference {
 
 
-    AssociativeReference_( BrecciaCursor cursor ) { super( cursor, new End_( cursor ) ); }
+    AssociativeReference_( BrecciaCursor cursor ) { super( cursor ); }
+
+
+
+    AssociativeReference_ endSet() {
+        end = new End_();
+        return this; }
 
 
 
@@ -17,7 +23,7 @@ class AssociativeReference_ extends CommandPoint_ implements AssociativeReferenc
    // ━━━  F r a c t u m _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    @Override void commit() {
+    protected @Override void commit() {
         super.commit();
         cursor.associativeReference( this ); }
 
@@ -26,17 +32,10 @@ class AssociativeReference_ extends CommandPoint_ implements AssociativeReferenc
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    static class End_ extends CommandPoint_.End_ implements AssociativeReference.End {
+    class End_ extends CommandPoint_<BrecciaCursor>.End_ implements AssociativeReference.End {
 
 
-        End_( BrecciaCursor cursor ) { super( cursor ); }
-
-
-
-       // ━━━  F r a c t u m _   .   E n d _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        @Override void commit() {
+        protected @Override void commit() {
             super.commit();
             cursor.associativeReferenceEnd( this ); }}}
 

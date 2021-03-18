@@ -3,10 +3,16 @@ package Breccia.parser.plain;
 import Breccia.parser.PlainPoint;
 
 
-class PlainPoint_ extends Point_ implements PlainPoint {
+class PlainPoint_ extends Point_<BrecciaCursor> implements PlainPoint {
 
 
-    PlainPoint_( BrecciaCursor cursor ) { super( cursor, new End_( cursor )); }
+    PlainPoint_( BrecciaCursor cursor ) { super( cursor ); }
+
+
+
+    PlainPoint_ endSet() {
+        end = new End_();
+        return this; }
 
 
 
@@ -22,14 +28,7 @@ class PlainPoint_ extends Point_ implements PlainPoint {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    static class End_ extends Point_.End_ implements PlainPoint.End {
-
-
-        End_( BrecciaCursor cursor ) { super( cursor ); }
-
-
-
-       // ━━━  F r a c t u m _   .   E n d _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    class End_ extends Point_<BrecciaCursor>.End_ implements PlainPoint.End {
 
 
         @Override void commit() {

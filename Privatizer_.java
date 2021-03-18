@@ -3,17 +3,23 @@ package Breccia.parser.plain;
 import Breccia.parser.Privatizer;
 
 
-class Privatizer_ extends CommandPoint_ implements Privatizer {
+class Privatizer_ extends CommandPoint_<BrecciaCursor> implements Privatizer {
 
 
-    Privatizer_( BrecciaCursor cursor ) { super( cursor, new End_( cursor )); }
+    Privatizer_( BrecciaCursor cursor ) { super( cursor ); }
+
+
+
+    Privatizer_ endSet() {
+        end = new End_();
+        return this; }
 
 
 
    // ━━━  F r a c t u m _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    @Override void commit() {
+    protected @Override void commit() {
         super.commit();
         cursor.privatizer( this ); }
 
@@ -22,17 +28,10 @@ class Privatizer_ extends CommandPoint_ implements Privatizer {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    static class End_ extends CommandPoint_.End_ implements Privatizer.End {
+    class End_ extends CommandPoint_<BrecciaCursor>.End_ implements Privatizer.End {
 
 
-        End_( BrecciaCursor cursor ) { super( cursor ); }
-
-
-
-       // ━━━  F r a c t u m _   .   E n d _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        @Override void commit() {
+        protected @Override void commit() {
             super.commit();
             cursor.privatizerEnd( this ); }}}
 

@@ -3,17 +3,23 @@ package Breccia.parser.plain;
 import Breccia.parser.PlainCommandPoint;
 
 
-class PlainCommandPoint_ extends CommandPoint_ implements PlainCommandPoint {
+class PlainCommandPoint_ extends CommandPoint_<BrecciaCursor> implements PlainCommandPoint {
 
 
-    PlainCommandPoint_( BrecciaCursor cursor ) { super( cursor, new End_( cursor )); }
+    PlainCommandPoint_( BrecciaCursor cursor ) { super( cursor ); }
+
+
+
+    PlainCommandPoint_ endSet() {
+        end = new End_();
+        return this; }
 
 
 
    // ━━━  F r a c t u m _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    @Override void commit() {
+    protected @Override void commit() {
         super.commit();
         cursor.plainCommandPoint( this ); }
 
@@ -22,17 +28,10 @@ class PlainCommandPoint_ extends CommandPoint_ implements PlainCommandPoint {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    static class End_ extends CommandPoint_.End_ implements PlainCommandPoint.End {
+    class End_ extends CommandPoint_<BrecciaCursor>.End_ implements PlainCommandPoint.End {
 
 
-        End_( BrecciaCursor cursor ) { super( cursor ); }
-
-
-
-       // ━━━  F r a c t u m _   .   E n d _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        @Override void commit() {
+        protected @Override void commit() {
             super.commit();
             cursor.plainCommandPointEnd( this ); }}}
 

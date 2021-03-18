@@ -23,7 +23,7 @@ abstract class Markup_ implements Markup {
 
 
 
-    Markup_( final Fractum_ f ) { this( f.cursor.buffer ); }
+    Markup_( final Fractum_<?> f ) { this( f.cursor.buffer ); }
 
 
 

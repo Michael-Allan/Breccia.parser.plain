@@ -17,7 +17,7 @@ import java.util.List;
 abstract class NamelessDeepMarkup<L extends List<Markup>> extends Markup_ {
 
 
-    NamelessDeepMarkup( Fractum_ f, L components ) {
+    NamelessDeepMarkup( Fractum_<?> f, L components ) {
         super( f );
         this.components = components; }
 

@@ -9,7 +9,7 @@ package Breccia.parser.plain;
 abstract class NamelessFlatMarkup extends FlatMarkup {
 
 
-    NamelessFlatMarkup( Fractum_ f ) { super( f ); }
+    NamelessFlatMarkup( Fractum_<?> f ) { super( f ); }
 
 
 

@@ -6,11 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-abstract class Point_ extends BodyFractum_ implements Point {
+/** @param <C> The type of cursor.
+  */
+abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implements Point {
 
 
-    Point_( BrecciaCursor cursor, End_ end ) {
-        super( cursor, end );
+    Point_( C cursor ) {
+        super( cursor );
         components.add( perfectIndent );
         components.add( bullet );
         components.add( descriptorWhenPresent ); // Absent at most once per file.
@@ -112,14 +114,7 @@ abstract class Point_ extends BodyFractum_ implements Point {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    static abstract class End_ extends BodyFractum_.End_ implements Point.End {
-
-
-        End_( BrecciaCursor cursor ) { super( cursor ); }
-
-
-
-       // ━━━  F r a c t u m _   .   E n d _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    abstract class End_ extends BodyFractum_<C>.End_ implements Point.End {
 
 
         @Override void commit() {

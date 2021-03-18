@@ -3,10 +3,12 @@ package Breccia.parser.plain;
 import Breccia.parser.BodyFractum;
 
 
-abstract class BodyFractum_ extends Fractum_ implements BodyFractum {
+/** @param <C> The type of cursor.
+  */
+abstract class BodyFractum_<C extends BrecciaCursor> extends Fractum_<C> implements BodyFractum {
 
 
-    BodyFractum_( BrecciaCursor cursor, End_ end ) { super( cursor, end ); }
+    BodyFractum_( C cursor ) { super( cursor ); }
 
 
 
@@ -33,14 +35,7 @@ abstract class BodyFractum_ extends Fractum_ implements BodyFractum {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    static abstract class End_ extends Fractum_.End_ implements BodyFractum.End {
-
-
-        End_( BrecciaCursor cursor ) { super( cursor ); }
-
-
-
-       // ━━━  F r a c t u m _   .   E n d _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    abstract class End_ extends Fractum_<C>.End_ implements BodyFractum.End {
 
 
         @Override void commit() {

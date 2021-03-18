@@ -9,7 +9,7 @@ import java.util.List;
 abstract class FlatMarkup extends Markup_ {
 
 
-    FlatMarkup( Fractum_ f ) { super( f ); }
+    FlatMarkup( Fractum_<?> f ) { super( f ); }
 
 
 

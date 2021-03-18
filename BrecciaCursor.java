@@ -8,6 +8,7 @@ import java.nio.CharBuffer;
 import java.nio.file.Path;
 import Java.*;
 import java.util.ArrayList;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.NoSuchElementException;
@@ -32,6 +33,16 @@ import static Breccia.parser.plain.Project.newSourceReader;
 /** A reusable, pull parser of plain Breccia as reflected through a cursor.
   */
 public class BrecciaCursor implements ReusableCursor {
+
+
+    public BrecciaCursor() {
+        final String[] commandPointKeywords = { // Those specific to Breccia, in lexicographic order.
+            "private" };
+        final Runnable[] commandPointCommitters = { // Each at the same index as its keyword above.
+            basicPrivatizer::commit }; // ‘private’
+        this.commandPointKeywords = commandPointKeywords;
+        this.commandPointCommitters = commandPointCommitters; }
+
 
 
    // ━━━  C u r s o r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -218,6 +229,59 @@ public class BrecciaCursor implements ReusableCursor {
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
 
 
+    /** @param aKeywords Additional keywords in lexicographic order
+      *   to merge into {@linkplain #commandPointKeywords commandPointKeywords}.
+      * @param aCommitters The corresponding commit methods,
+      *   ordered as per {@linkplain #commandPointKeywords commandPointKeywords}.
+      */
+    protected final void addCommandPoints( final String[] aKeywords, final Runnable[] aCommitters ) {
+        final String[] bKeywords = commandPointKeywords;
+        final Runnable[] bCommitters = commandPointCommitters;
+        final int aN = aKeywords.length;
+        final int bN = bKeywords.length;
+
+      // Merge sort  (a, b) → m
+      // ──────────
+        final int mN = bN + aN;
+        final String[] mKeywords = new String[ mN ];
+        final String[] rKeywords; // Remainder, one of `a` or `bKeywords`.
+        final Runnable[] mCommitters = new Runnable[ mN ];
+        final Runnable[] rCommitters; // One of `a` or `bCommitters`.
+        int m = 0;
+        int r;// Index to remainder, either of `a` or `b`.
+        String rKeyword;
+        for( int a = 0, b = 0;; ++m ) {
+            final String aKeyword = aKeywords[a];
+            final String bKeyword = bKeywords[b];
+            final int signum = CharSequence.compare( aKeyword, bKeyword );
+            if( signum < 0 ) {
+                mKeywords[m] = aKeyword;
+                mCommitters[m] = aCommitters[a];
+                if( ++a == aN ) {
+                    r = b;
+                    rKeyword = bKeyword;
+                    rKeywords = bKeywords;
+                    rCommitters = bCommitters;
+                    break; }}
+            else if( signum > 0 ) {
+                mKeywords[m] = bKeyword;
+                mCommitters[m] = bCommitters[b];
+                if( ++b == bN ) {
+                    r = a;
+                    rKeyword = aKeyword;
+                    rKeywords = aKeywords;
+                    rCommitters = aCommitters;
+                    break; }}
+            else throw new IllegalStateException(); } // Already the keyword is defined by Breccia.
+        for( ++m;; rKeyword = rKeywords[++r] ) {
+            mKeywords[m] = rKeyword;
+            mCommitters[m] = rCommitters[r];
+            if( ++m == mN ) break; }
+        commandPointKeywords = mKeywords;
+        commandPointCommitters = mCommitters; }
+
+
+
     /** The source buffer.  Except where an API requires otherwise (e.g. `delimitSegment`), the buffer
       * is maintained at a default position of zero, whence it may be treated whole as a `CharSequence`.
       */
@@ -301,7 +365,21 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
- // `commandPointCommitters`, `commandPointKeywords` // See late declaration § further below.
+    /** Commit methods for command points, each at the same index
+      * as its corresponding keyword in `commandPointKeywords`.
+      */
+    protected Runnable[] commandPointCommitters;
+
+
+
+    /** The keywords of all command points in lexicographic order as defined by `CharSequence.compare`.
+      * A keyword is any term that may appear first in the command.
+      *
+      *     @see CharSequence#compare(CharSequence,CharSequence)
+      *     @see #addCommandPoints(String[],Runnable[])
+      */
+    protected String[] commandPointKeywords;
+
 
 
 
@@ -548,7 +626,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @see #fractumIndentWidth
       */
-    private final @Subst ArrayList<BodyFractum_> hierarchy = new ArrayList<>();
+    private final @Subst ArrayList<BodyFractum_<?>> hierarchy = new ArrayList<>();
 
 
 
@@ -585,7 +663,7 @@ public class BrecciaCursor implements ReusableCursor {
         if( segmentEnd == buffer.limit() ) { // Then no fracta remain.
             while( fractumIndentWidth >= 0 ) { // Unwind any past body fracta, ending each.
                 fractumIndentWidth -= 4;
-                final BodyFractum_ past = hierarchy.remove( hierarchy.size() - 1 );
+                final BodyFractum_<?> past = hierarchy.remove( hierarchy.size() - 1 );
                 if( past != null ) {
  /**/               past.end.commit();
                     return; }}
@@ -599,7 +677,7 @@ public class BrecciaCursor implements ReusableCursor {
                   the records of `fractumIndentWidth` and `hierarchy` even through the ending states
                   of past siblings, during which they are meaningless for their intended purposes. */
                 fractumIndentWidth -= 4;
-                final BodyFractum_ pastSibling = hierarchy.remove( hierarchy.size() - 1 );
+                final BodyFractum_<?> pastSibling = hierarchy.remove( hierarchy.size() - 1 );
                 if( pastSibling != null ) {
  /**/               pastSibling.end.commit();
                     return; }}}
@@ -652,6 +730,9 @@ public class BrecciaCursor implements ReusableCursor {
         if( equalInContent( "privately", xSeq )) {
             c = throughS( c );
             xSeq.delimit( c, c = throughTerm(c) ); }
+
+      // Commit a command point of the correct type
+      // ──────────────────────
         c = binarySearch( commandPointKeywords, xSeq, CharSequence::compare );
         if( c >= 0 ) commandPointCommitters[c].run();
         else basicPlainCommandPoint.commit(); }
@@ -760,7 +841,7 @@ public class BrecciaCursor implements ReusableCursor {
       // Delimit the components proper to all types of point
       // ──────────────────────
         final var cc = point.components;
-        final int ccMax = point.componentsMax;
+        final int ccMax = Point_.componentsMax;
         point.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );
         point.bullet.text.delimit(        /*1*/bullet,       /*2*/bulletEnd );
         if( bulletEnd < segmentEnd ) {
@@ -879,7 +960,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
         private final AssociativeReference_ basicAssociativeReference // [CIC]
-          = new AssociativeReference_( this );
+          = new AssociativeReference_( this ).endSet();
 
 
 
@@ -890,10 +971,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    final void bodyFractum( BodyFractum_ f ) { bodyFractum = f; }
+    final void bodyFractum( BodyFractum_<?> f ) { bodyFractum = f; }
 
 
-        private BodyFractum_ bodyFractum;
+        private BodyFractum_<?> bodyFractum;
 
 
 
@@ -924,7 +1005,7 @@ public class BrecciaCursor implements ReusableCursor {
         private Division_ division;
 
 
-        private final Division_ basicDivision = new Division_( this ); // [CIC]
+        private final Division_ basicDivision = new Division_( this ).endSet(); // [CIC]
 
 
 
@@ -951,7 +1032,7 @@ public class BrecciaCursor implements ReusableCursor {
         private FileFractum fileFractum;
 
 
-        private final FileFractum_ basicFileFractum = new FileFractum_( this ); // [CIC]
+        private final FileFractum_ basicFileFractum = new FileFractum_( this ).endSet(); // [CIC]
 
 
 
@@ -962,10 +1043,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    final void fractum( Fractum_ f ) { state = fractum = f; }
+    final void fractum( Fractum_<?> f ) { state = fractum = f; }
 
 
-        private Fractum_ fractum;
+        private Fractum_<?> fractum;
 
 
 
@@ -993,7 +1074,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
         private final PlainCommandPoint_ basicPlainCommandPoint // [CIC]
-          = new PlainCommandPoint_( this );
+          = new PlainCommandPoint_( this ).endSet();
 
 
 
@@ -1010,7 +1091,7 @@ public class BrecciaCursor implements ReusableCursor {
         private PlainPoint plainPoint;
 
 
-        private final PlainPoint_ basicPlainPoint = new PlainPoint_( this ); // [CIC]
+        private final PlainPoint_ basicPlainPoint = new PlainPoint_( this ).endSet(); // [CIC]
 
 
 
@@ -1021,10 +1102,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    final void point( Point_ p ) { point = p; }
+    final void point( Point_<?> p ) { point = p; }
 
 
-        private Point_ point;
+        private Point_<?> point;
 
 
 
@@ -1041,7 +1122,7 @@ public class BrecciaCursor implements ReusableCursor {
         private Privatizer privatizer;
 
 
-        private final Privatizer_ basicPrivatizer = new Privatizer_( this ); // [CIC]
+        private final Privatizer_ basicPrivatizer = new Privatizer_( this ).endSet(); // [CIC]
 
 
 
@@ -1049,28 +1130,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
         private Privatizer.End privatizerEnd;
-
-
-
-   // ┈┈┈  l a t e   d e c l a r a t i o n s  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
-
-
-    /** The keywords of all command points in lexicographic order as defined by `CharSequence.compare`.
-      * A keyword is any term that may appear first in the command.
-      *
-      *     @see CharSequence#compare(CharSequence,CharSequence)
-      */
-    protected String[] commandPointKeywords = {
-        "private" };
-
-
-
-    /** Commit methods for command-point keywords, ordered such that each is at the same index
-      * as its keyord in `commandPointKeywords`.  Parser extensions may overwrite these two arrays:
-      * each declaring its own version of the two, merge-sorting them with these, and overwriting these.
-      */
-    protected Runnable[] commandPointCommitters = {
-        basicPrivatizer::commit }; // ‘private’
 
 
 
@@ -1209,7 +1268,7 @@ public class BrecciaCursor implements ReusableCursor {
 //   BAO  Backing-array offset.  This is non-zero in case of an array-backed buffer formed as a slice
 //        of another buffer, but other cases may exist.  https://stackoverflow.com/a/24601336/2402790
 //
-//   CIC  Cached instance of a concrete parse state.  Each instance is held in a constant field named
+//   CIC  Cached instance of concrete parse state.  Each instance is held in a constant field named
 //        e.g. `basicFoo`, basic meaning unextended.  It could instead be held in `foo`, except then
 //        it might be overwritten with an instance of a `Foo` subclass defined by a parser extension,
 //        leaving the basic instance unavailable for future reuse.

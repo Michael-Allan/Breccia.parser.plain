@@ -3,7 +3,7 @@ package Breccia.parser.plain;
 import Breccia.parser.Empty;
 
 
-class Empty_ implements Empty {
+final class Empty_ implements Empty {
 
 
     Empty_( BrecciaCursor cursor ) { this.cursor = cursor; }

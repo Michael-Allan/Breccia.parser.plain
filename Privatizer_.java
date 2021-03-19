@@ -3,7 +3,7 @@ package Breccia.parser.plain;
 import Breccia.parser.Privatizer;
 
 
-class Privatizer_ extends CommandPoint_<BrecciaCursor> implements Privatizer {
+final class Privatizer_ extends CommandPoint_<BrecciaCursor> implements Privatizer {
 
 
     Privatizer_( BrecciaCursor cursor ) { super( cursor ); }
@@ -28,7 +28,7 @@ class Privatizer_ extends CommandPoint_<BrecciaCursor> implements Privatizer {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    class End_ extends CommandPoint_<BrecciaCursor>.End_ implements Privatizer.End {
+    final class End_ extends CommandPoint_<BrecciaCursor>.End_ implements Privatizer.End {
 
 
         protected @Override void commit() {

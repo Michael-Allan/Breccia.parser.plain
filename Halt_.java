@@ -3,7 +3,7 @@ package Breccia.parser.plain;
 import Breccia.parser.Halt;
 
 
-class Halt_ implements Halt {
+final class Halt_ implements Halt {
 
 
     Halt_( BrecciaCursor cursor ) { this.cursor = cursor; }

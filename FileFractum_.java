@@ -5,7 +5,7 @@ import Breccia.parser.Markup;
 import java.util.List;
 
 
-class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum {
+final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum {
 
 
     FileFractum_( BrecciaCursor cursor ) { super( cursor ); }
@@ -37,7 +37,7 @@ class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    class End_ extends Fractum_<BrecciaCursor>.End_ implements FileFractum.End {
+    final class End_ extends Fractum_<BrecciaCursor>.End_ implements FileFractum.End {
 
 
         @Override void commit() {

@@ -3,7 +3,7 @@ package Breccia.parser.plain;
 import Breccia.parser.AssociativeReference;
 
 
-class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implements AssociativeReference {
+final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implements AssociativeReference {
 
 
     AssociativeReference_( BrecciaCursor cursor ) { super( cursor ); }
@@ -32,7 +32,7 @@ class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implements Asso
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    class End_ extends CommandPoint_<BrecciaCursor>.End_ implements AssociativeReference.End {
+    final class End_ extends CommandPoint_<BrecciaCursor>.End_ implements AssociativeReference.End {
 
 
         protected @Override void commit() {

@@ -5,7 +5,7 @@ import Breccia.parser.Markup;
 import java.util.List;
 
 
-class Division_ extends BodyFractum_<BrecciaCursor> implements Division {
+final class Division_ extends BodyFractum_<BrecciaCursor> implements Division {
 
 
     Division_( BrecciaCursor cursor ) { super( cursor ); }
@@ -37,7 +37,7 @@ class Division_ extends BodyFractum_<BrecciaCursor> implements Division {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    class End_ extends BodyFractum_<BrecciaCursor>.End_ implements Division.End {
+    final class End_ extends BodyFractum_<BrecciaCursor>.End_ implements Division.End {
 
 
         @Override void commit() {

@@ -59,11 +59,11 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
    // ━━━  P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override Bullet bullet() { return bullet; }
+    public final @Override Bullet bullet() { return bullet; }
 
 
 
-    public @Override Descriptor descriptor() { return descriptor; }
+    public final @Override Descriptor descriptor() { return descriptor; }
 
 
 

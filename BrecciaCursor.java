@@ -727,15 +727,24 @@ public class BrecciaCursor implements ReusableCursor {
         int c = bulletEnd + 1; // Past the known space character.
         c = throughAnyS( c ); // Past any others.
         xSeq.delimit( c, c = throughTerm(c) );
+        final boolean presentsPrivately;
         if( equalInContent( "privately", xSeq )) {
+            presentsPrivately = true;
             c = throughS( c );
             xSeq.delimit( c, c = throughTerm(c) ); }
+        else presentsPrivately = false;
 
       // Commit a command point of the correct type
       // ──────────────────────
         c = binarySearch( commandPointKeywords, xSeq, CharSequence::compare );
         if( c >= 0 ) commandPointCommitters[c].run();
-        else basicPlainCommandPoint.commit(); }
+        else basicPlainCommandPoint.commit();
+
+      // Therein delimit the components already parsed above
+      // ──────────────────────────────
+        if( presentsPrivately ) commandPoint.modifiers.add( CommandPoint.Modifier.privately );
+        else commandPoint.modifiers.clear();
+        commandPoint.keyword.delimitAs( xSeq ); }
 
 
 
@@ -838,8 +847,8 @@ public class BrecciaCursor implements ReusableCursor {
             parseCommandPoint( bulletEnd ); }
         else basicPlainPoint.commit();
 
-      // Delimit the components proper to all types of point
-      // ──────────────────────
+      // Therein delimit the components proper to all types of point
+      // ──────────────────────────────
         final var cc = point.components;
         final int ccMax = Point_.componentsMax;
         point.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );
@@ -985,10 +994,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    final void commandPoint( CommandPoint p ) { commandPoint = p; }
+    final void commandPoint( CommandPoint_<?> p ) { commandPoint = p; }
 
 
-        private CommandPoint commandPoint;
+        private CommandPoint_<?> commandPoint;
 
 
 

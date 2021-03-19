@@ -1,6 +1,10 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.CommandPoint;
+import Java.DelimitableCharSequence;
+import java.util.EnumSet;
+
+import static Java.CharBuffers.newDelimitableCharSequence;
 
 
 /** @param <C> The type of cursor.
@@ -12,7 +16,22 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
+   // ━━━  C o m m a n d   P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public final @Override EnumSet<Modifier> modifiers() { return modifiers; }
+
+
+
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
+
+
+    final DelimitableCharSequence keyword = newDelimitableCharSequence( cursor.buffer );
+
+
+
+    final EnumSet<Modifier> modifiers = EnumSet.noneOf( Modifier.class );
+
 
 
    // ━━━  F r a c t u m _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

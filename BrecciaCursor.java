@@ -272,7 +272,7 @@ public class BrecciaCursor implements ReusableCursor {
                     rKeywords = aKeywords;
                     rCommitters = aCommitters;
                     break; }}
-            else throw new IllegalStateException(); } // Already the keyword is defined by Breccia.
+            else throw new IllegalStateException(); } // Already the keyword was there.
         for( ++m;; rKeyword = rKeywords[++r] ) {
             mKeywords[m] = rKeyword;
             mCommitters[m] = rCommitters[r];
@@ -372,7 +372,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** The keywords of all command points in lexicographic order as defined by `CharSequence.compare`.
+    /** The keywords of command points in lexicographic order as defined by `CharSequence.compare`.
       * A keyword is any term that may appear first in the command.
       *
       *     @see CharSequence#compare(CharSequence,CharSequence)
@@ -742,8 +742,8 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Therein delimit the components already parsed above
       // ──────────────────────────────
-        if( presentsPrivately ) commandPoint.modifiers.add( CommandPoint.Modifier.privately );
-        else commandPoint.modifiers.clear();
+        if( presentsPrivately ) commandPoint.modifierSet.add( CommandPoint.Modifier.privately );
+        else commandPoint.modifierSet.clear();
         commandPoint.keyword.delimitAs( xSeq ); }
 
 

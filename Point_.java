@@ -107,7 +107,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
         public @Override int lineNumber() { return Point_.this.lineNumber(); }} /* Always the descriptor
-          begins on the first line of the point, if only because it comprises that line’s terminator. */
+          begins on the first line of the point, if only because it includes that line’s terminator. */
 
 
 

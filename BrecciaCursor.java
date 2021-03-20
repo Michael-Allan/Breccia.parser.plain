@@ -48,110 +48,115 @@ public class BrecciaCursor implements ReusableCursor {
    // ━━━  C u r s o r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override AssociativeReference asAssociativeReference() {
+    public final @Override @NarrowNot AssociativeReference asAssociativeReference() {
         return state == associativeReference? associativeReference : null; }
 
 
 
-    public final @Override AssociativeReference.End asAssociativeReferenceEnd() {
+    public final @Override @NarrowNot AssociativeReference.End asAssociativeReferenceEnd() {
         return state == associativeReferenceEnd? associativeReferenceEnd : null; }
 
 
 
-    public final @Override BodyFractum asBodyFractum() {
+    public final @Override @NarrowNot BodyFractum asBodyFractum() {
         return state == bodyFractum? bodyFractum : null; }
 
 
 
-    public final @Override BodyFractum.End asBodyFractumEnd() {
+    public final @Override @NarrowNot BodyFractum.End asBodyFractumEnd() {
         return state == bodyFractumEnd? bodyFractumEnd : null; }
 
 
 
-    public final @Override CommandPoint asCommandPoint() {
+    public final @Override @NarrowNot CommandPoint asCommandPoint() {
         return state == commandPoint? commandPoint : null; }
 
 
 
-    public final @Override CommandPoint.End asCommandPointEnd() {
+    public final @Override @NarrowNot CommandPoint.End asCommandPointEnd() {
         return state == commandPointEnd? commandPointEnd : null; }
 
 
 
-    public final @Override Division asDivision() { return state == division? division : null; }
+    public final @Override @NarrowNot Division asDivision() {
+        return state == division? division : null; }
 
 
 
-    public final @Override Division.End asDivisionEnd() {
+    public final @Override @NarrowNot Division.End asDivisionEnd() {
         return state == divisionEnd? divisionEnd : null; }
 
 
 
     /** Returns the present parse state as `Empty`, or null if the markup source is not empty.
       */
-    public final @Override Empty asEmpty() { return state == empty? empty : null; }
+    public final @Override @NarrowNot Empty asEmpty() { return state == empty? empty : null; }
 
 
 
-    public final @Override FileFractum asFileFractum() {
+    public final @Override @NarrowNot FileFractum asFileFractum() {
         return state == fileFractum? fileFractum : null; }
 
 
 
-    public final @Override FileFractum.End asFileFractumEnd() {
+    public final @Override @NarrowNot FileFractum.End asFileFractumEnd() {
         return state == fileFractumEnd? fileFractumEnd : null; }
 
 
 
-    public final @Override Fractum asFractum() { return state == fractum? fractum : null; }
+    public final @Override @NarrowNot Fractum asFractum() { return state == fractum? fractum : null; }
 
 
 
-    public final @Override Fractum.End asFractumEnd() { return state == fractumEnd? fractumEnd : null; }
+    public final @Override @NarrowNot Fractum.End asFractumEnd() {
+        return state == fractumEnd? fractumEnd : null; }
 
 
 
-    public final @Override Halt asHalt() { return state == halt? halt : null; }
+    public final @Override @NarrowNot Halt asHalt() { return state == halt? halt : null; }
 
 
 
-    public final @Override PlainCommandPoint asPlainCommandPoint() {
+    public final @Override @NarrowNot PlainCommandPoint asPlainCommandPoint() {
         return state == plainCommandPoint? plainCommandPoint : null; }
 
 
 
-    public final @Override PlainCommandPoint.End asPlainCommandPointEnd() {
+    public final @Override @NarrowNot PlainCommandPoint.End asPlainCommandPointEnd() {
         return state == plainCommandPointEnd? plainCommandPointEnd : null; }
 
 
 
-    public final @Override PlainPoint asPlainPoint() { return state == plainPoint? plainPoint : null; }
+    public final @Override @NarrowNot PlainPoint asPlainPoint() {
+        return state == plainPoint? plainPoint : null; }
 
 
 
-    public final @Override PlainPoint.End asPlainPointEnd() {
+    public final @Override @NarrowNot PlainPoint.End asPlainPointEnd() {
         return state == plainPointEnd? plainPointEnd : null; }
 
 
 
-    public final @Override Point asPoint() { return state == point? point : null; }
+    public final @Override @NarrowNot Point asPoint() { return state == point? point : null; }
 
 
 
-    public final @Override Point.End asPointEnd() { return state == pointEnd? pointEnd : null; }
+    public final @Override @NarrowNot Point.End asPointEnd() {
+        return state == pointEnd? pointEnd : null; }
 
 
 
-    public final @Override Privatizer asPrivatizer() { return state == privatizer? privatizer : null; }
+    public final @Override @NarrowNot Privatizer asPrivatizer() {
+        return state == privatizer? privatizer : null; }
 
 
 
-    public final @Override Privatizer.End asPrivatizerEnd() {
+    public final @Override @NarrowNot Privatizer.End asPrivatizerEnd() {
         return state == privatizerEnd? privatizerEnd : null; }
 
 
 
-    public final @Override ParseState next() throws ParseError {
+    public final @Override @NarrowNot ParseState next() throws ParseError {
         if( state.isFinal() ) throw new NoSuchElementException();
         try { _next(); }
         catch( ParseError x ) {
@@ -184,7 +189,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override ParseState state() { return state; }
+    public final @Override @NarrowNot ParseState state() { return state; }
 
 
 

@@ -38,10 +38,10 @@ public class BrecciaCursor implements ReusableCursor {
     public BrecciaCursor() {
         final String[] commandPointKeywords = { // Those specific to Breccia, in lexicographic order.
             "private" };
-        final Runnable[] commandPointCommitters = { // Each at the same index as its keyword above.
-            basicPrivatizer::commit }; // ‘private’
+        final CommandPoint_<?>[] commandPoints = { // Each at the same index as its keyword above.
+            basicPrivatizer }; // ‘private’
         this.commandPointKeywords = commandPointKeywords;
-        this.commandPointCommitters = commandPointCommitters; }
+        this.commandPoints = commandPoints; }
 
 
 
@@ -231,12 +231,12 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** @param aKeywords Additional keywords in lexicographic order
       *   to merge into {@linkplain #commandPointKeywords commandPointKeywords}.
-      * @param aCommitters The corresponding commit methods,
+      * @param aPoints The corresponding command points,
       *   ordered as per {@linkplain #commandPointKeywords commandPointKeywords}.
       */
-    protected final void addCommandPoints( final String[] aKeywords, final Runnable[] aCommitters ) {
+    protected final void addCommandPoints( final String[] aKeywords, final CommandPoint_<?>[] aPoints ) {
         final String[] bKeywords = commandPointKeywords;
-        final Runnable[] bCommitters = commandPointCommitters;
+        final CommandPoint_<?>[] bPoints = commandPoints;
         final int aN = aKeywords.length;
         final int bN = bKeywords.length;
 
@@ -245,8 +245,8 @@ public class BrecciaCursor implements ReusableCursor {
         final int mN = bN + aN;
         final String[] mKeywords = new String[ mN ];
         final String[] rKeywords; // Remainder, one of `a` or `bKeywords`.
-        final Runnable[] mCommitters = new Runnable[ mN ];
-        final Runnable[] rCommitters; // One of `a` or `bCommitters`.
+        final CommandPoint_<?>[] mPoints = new CommandPoint_<?>[ mN ];
+        final CommandPoint_<?>[] rPoints; // One of `a` or `bPoints`.
         int m = 0;
         int r;// Index to remainder, either of `a` or `b`.
         String rKeyword;
@@ -256,29 +256,29 @@ public class BrecciaCursor implements ReusableCursor {
             final int signum = CharSequence.compare( aKeyword, bKeyword );
             if( signum < 0 ) {
                 mKeywords[m] = aKeyword;
-                mCommitters[m] = aCommitters[a];
+                mPoints[m] = aPoints[a];
                 if( ++a == aN ) {
                     r = b;
                     rKeyword = bKeyword;
                     rKeywords = bKeywords;
-                    rCommitters = bCommitters;
+                    rPoints = bPoints;
                     break; }}
             else if( signum > 0 ) {
                 mKeywords[m] = bKeyword;
-                mCommitters[m] = bCommitters[b];
+                mPoints[m] = bPoints[b];
                 if( ++b == bN ) {
                     r = a;
                     rKeyword = aKeyword;
                     rKeywords = aKeywords;
-                    rCommitters = aCommitters;
+                    rPoints = aPoints;
                     break; }}
             else throw new IllegalStateException(); } // Already the keyword was there.
         for( ++m;; rKeyword = rKeywords[++r] ) {
             mKeywords[m] = rKeyword;
-            mCommitters[m] = rCommitters[r];
+            mPoints[m] = rPoints[r];
             if( ++m == mN ) break; }
         commandPointKeywords = mKeywords;
-        commandPointCommitters = mCommitters; }
+        commandPoints = mPoints; }
 
 
 
@@ -365,21 +365,21 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Commit methods for command points, each at the same index
-      * as its corresponding keyword in `commandPointKeywords`.
-      */
-    protected Runnable[] commandPointCommitters;
-
-
-
     /** The keywords of command points in lexicographic order as defined by `CharSequence.compare`.
       * A keyword is any term that may appear first in the command.
       *
       *     @see CharSequence#compare(CharSequence,CharSequence)
-      *     @see #addCommandPoints(String[],Runnable[])
+      *     @see #addCommandPoints(String[],CommandPoint_[])
       */
     protected String[] commandPointKeywords;
 
+
+
+
+    /** Concrete parse states for command points, each at the same index as its corresponding keyword
+      * in `commandPointKeywords`.
+      */
+    protected CommandPoint_<?>[] commandPoints;
 
 
 
@@ -424,7 +424,7 @@ public class BrecciaCursor implements ReusableCursor {
       *       buffer position through the newly determined `segmentEndIndicator`.
       *     @throws MalformedMarkup For any misplaced no-break space that occurs from the initial buffer
       *       position through the newly determined `segmentEndIndicator`, except on the first line of a
-      *       point, where instead `{@linkplain #parsePoint(int) parsePoint}` polices this offence.
+      *       point, where instead `{@linkplain #reifyPoint(int) reifyPoint}` polices this offence.
       */
     private void delimitSegment() throws ParseError {
         assert segmentStart != fractumStart || fractumLineEnds.isEmpty();
@@ -547,7 +547,7 @@ public class BrecciaCursor implements ReusableCursor {
                     assert isFileHead || !fractumLineEnds.isEmpty(); /* The sequence of backslashes
                       lies either in the file head or a line after the first line of the segment.
                       Nowhere else could imperfectly indented backslashes occur.  So either way, this
-                      no-break space lies outside of the first line of a point where `parsePoint`
+                      no-break space lies outside of the first line of a point where `reifyPoint`
                       does the policing.  No need ∴ to guard against trespassing on its jurisdiction. */
                     throw misplacedNoBreakSpace( bufferPointerBack() ); }
                 inIndentedBackslashes = false; }
@@ -555,7 +555,7 @@ public class BrecciaCursor implements ReusableCursor {
                 if( inCommentBlock ) continue;
                 if( !isFileHead && !isDividerDrawing(segmentEndIndicatorChar) // In a point head,
                  && fractumLineEnds.isEmpty() ) {                                // on the first line.
-                    continue; } // Leaving the first line of this point to be policed by `parsePoint`.
+                    continue; } // Leaving the first line of this point to be policed by `reifyPoint`.
                 throw misplacedNoBreakSpace( bufferPointerBack() ); }}}
 
 
@@ -697,7 +697,7 @@ public class BrecciaCursor implements ReusableCursor {
         else { // Next is a point.
             nextSegment(); // Scan through to the end boundary of its head.
             buffer.rewind(); // As per `buffer` contract.
- /**/       parsePoint(); }
+ /**/       reifyPoint().commit(); }
         delimitFractumText();
         final int i = fractumIndentWidth / 4; // Indent in perfect units, that is.
         while( hierarchy.size() < i ) hierarchy.add( null ); // Padding for unoccupied ancestral indents.
@@ -715,15 +715,15 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses enough of a command point to learn its concrete type, then commits
-      * the corresponding parse state.  This method is a subroutine of `parsePoint`.
+    /** Parses enough of a command point to learn its concrete type and return its parse state
+      * ready to commit.  This method is a subroutine of `reifyPoint`.
       *
       *     @param bulletEnd The buffer position just after the bullet, viz. its end boundary.
       *       Already it is known (and asserted) to hold a plain space character. *//*
       *
       *     @uses #xSeq
       */
-    private void parseCommandPoint( final int bulletEnd ) throws MalformedMarkup {
+    private CommandPoint_<?> reifyCommandPoint( final int bulletEnd ) throws MalformedMarkup {
         int c = bulletEnd + 1; // Past the known space character.
         c = throughAnyS( c ); // Past any others.
         xSeq.delimit( c, c = throughTerm(c) );
@@ -734,21 +734,21 @@ public class BrecciaCursor implements ReusableCursor {
             xSeq.delimit( c, c = throughTerm(c) ); }
         else presentsPrivately = false;
 
-      // Commit a command point of the correct type
-      // ──────────────────────
+      // Resolve its concrete parse state
+      // ────────────────────────────────
         c = binarySearch( commandPointKeywords, xSeq, CharSequence::compare );
-        if( c >= 0 ) commandPointCommitters[c].run();
-        else basicPlainCommandPoint.commit();
+        final CommandPoint_<?> p = c >= 0? commandPoints[c] : basicPlainCommandPoint;
 
       // Therein delimit the components already parsed above
       // ──────────────────────────────
-        if( presentsPrivately ) commandPoint.modifierSet.add( CommandPoint.Modifier.privately );
-        else commandPoint.modifierSet.clear();
-        commandPoint.keyword.delimitAs( xSeq ); }
+        if( presentsPrivately ) p.modifierSet.add( CommandPoint.Modifier.privately );
+        else p.modifierSet.clear();
+        p.keyword.delimitAs( xSeq );
+        return p; }
 
 
 
-    /** Parses enough of a point to learn its concrete type, then commits the corresponding parse state.
+    /** Parses enough of a point to learn its concrete type and return its parse state ready to commit.
       * Ensure before calling this method that all other fields are initialized save for `hierarchy`.
       *
       *     @throws MalformedMarkup For any misplaced no-break space occuring on the same line.  Note
@@ -756,7 +756,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @uses #xSeq
       */
-    private void parsePoint() throws MalformedMarkup {
+    private Point_<?> reifyPoint() throws MalformedMarkup {
         final int bullet = fractumStart + fractumIndentWidth;
         assert buffer.position() == 0;
 
@@ -834,9 +834,10 @@ public class BrecciaCursor implements ReusableCursor {
                 if( impliesNewline( ch )) break;
                 if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( c )); }}
 
-      // Commit a point of the correct type
-      // ──────────────
+      // Resolve the concrete parse state
+      // ────────────────────────────────
         xSeq.delimit( bullet, bulletEnd );
+        final Point_<?> p;
         if( equalInContent( ":", xSeq )) {
             if( endSeeker != null ) { // Then the only case is that of the bullet ending (wrongly for
                 assert buffer.get(bulletEnd) == '\u00A0'; // a command point) at a no-break space.
@@ -844,26 +845,27 @@ public class BrecciaCursor implements ReusableCursor {
             if( wasLineEndFound ) { // Then the bullet ends directly at the line end, with no
                 throw termExpected( bufferPointer( c )); } // command between the two.
             assert buffer.get(bulletEnd) == ' '; // The only remaining case.
-            parseCommandPoint( bulletEnd ); }
-        else basicPlainPoint.commit();
+            p = reifyCommandPoint( bulletEnd ); }
+        else p = basicPlainPoint;
 
-      // Therein delimit the components proper to all types of point
+      // Therein delimit the components proper to all types of point, already parsed above
       // ──────────────────────────────
-        final var cc = point.components;
+        final var cc = p.components;
         final int ccMax = Point_.componentsMax;
-        point.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );
-        point.bullet.text.delimit(        /*1*/bullet,       /*2*/bulletEnd );
+        p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );
+        p.bullet.text.delimit(        /*1*/bullet,       /*2*/bulletEnd );
         if( bulletEnd < segmentEnd ) {
-            final var d = point.descriptorWhenPresent;
-            d.text.delimit(               /*2*/bulletEnd,    /*3*/segmentEnd );
+            final var d = p.descriptorWhenPresent;
+            d.text.delimit(           /*2*/bulletEnd,    /*3*/segmentEnd );
             if( cc.size() < ccMax ) cc.add( d ); // Ensuring inclusion.
             assert cc.size() == ccMax;
-            point.descriptor = d; }
+            p.descriptor = d; }
         else { // A descriptorless point at file end.
             assert bulletEnd == segmentEnd;
             if( cc.size() == ccMax ) cc.remove( ccMax - 1 ); // Ensuring exclusion.
             else assert cc.size() == ccMax - 1;
-            point.descriptor = null; }}
+            p.descriptor = null; }
+        return p; }
 
 
 

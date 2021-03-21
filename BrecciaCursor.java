@@ -95,7 +95,11 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     public final @Override @NarrowNot FileFractum asFileFractum() {
-        return state == fileFractum? fileFractum : null; }
+        if( state != fileFractum ) return null;
+        if( !fileFractum.isCompositionParsed ) {
+            parseFileFractum();
+            assert fileFractum.isCompositionParsed; }
+        return fileFractum; }
 
 
 
@@ -713,6 +717,25 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    void parseFileDescriptor() { fileFractum.descriptor.isCompositionParsed = true; } // TEST
+
+
+
+    void parseFileFractum() {
+        final FileFractum_ f = fileFractum;
+        if( fractumStart == segmentEnd ) {
+            f.components = FileFractum_.componentsWhenAbsent;
+            f.descriptor = null; }
+        else {
+            final FileFractum_.FileDescriptor_ d = f.descriptorWhenPresent;
+            d.isCompositionParsed = false; // Pending demand.
+            // No need to delimit `d.text`, which being identical to `f.text` is already delimited.
+            f.components = f.componentsWhenPresent;
+            f.descriptor = d; }
+        f.isCompositionParsed = true; }
+
+
+
     /** Readies `basicDivision` to be committed as the present parse state.
       * Ensure before calling this method that all other cursor fields are initialized save `hierarchy`.
       */
@@ -729,6 +752,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private FileFractum_ readyFileFractum() {
         basicFileFractum.text.delimit( fractumStart, segmentEnd ); // Proper to fracta.
+        basicFileFractum.isCompositionParsed = false; // Pending demand.
         return basicFileFractum; }
 
 
@@ -1059,10 +1083,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    final void fileFractum( FileFractum f ) { fileFractum = f; }
+    final void fileFractum( FileFractum_ f ) { fileFractum = f; }
 
 
-        private FileFractum fileFractum;
+        private FileFractum_ fileFractum;
 
 
         private final FileFractum_ basicFileFractum = new FileFractum_( this ).endSet(); // [CIC]

@@ -19,11 +19,15 @@ import static Java.CharBuffers.newDelimitableCharSequence;
 abstract class Markup_ implements Markup {
 
 
-    Markup_( final CharBuffer buffer ) { text = newDelimitableCharSequence( buffer ); }
+    Markup_( final CharBuffer buffer ) { this( newDelimitableCharSequence( buffer )); }
 
 
 
     Markup_( final Fractum_<?> f ) { this( f.cursor.buffer ); }
+
+
+
+    Markup_( DelimitableCharSequence text ) { this.text = text; }
 
 
 

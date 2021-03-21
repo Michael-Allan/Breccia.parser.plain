@@ -388,10 +388,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private void delimitFractumText() { fractum.text.delimit( fractumStart, segmentEnd ); }
-
-
-
     /** Reads through any fractal segment located at `segmentStart`, beginning at the present buffer
       * position, and sets the remainder of its determining bounds.  Ensure before calling this method
       * that the following are updated.
@@ -642,7 +638,7 @@ public class BrecciaCursor implements ReusableCursor {
             catch( IOException x ) { throw new Unhandled( x ); }}
         if( count < 0 ) {
             buffer.limit( 0 );
-            basicEmpty.commit();
+ /**/       basicEmpty.commit();
             return; }
         if( count == 0 ) throw new IllegalStateException(); // Forbidden by `Reader` for array reads.
         buffer.flip();
@@ -656,13 +652,12 @@ public class BrecciaCursor implements ReusableCursor {
             segmentStart = segmentEnd = segmentEndIndicator = 0;
             delimitSegment(); }
         buffer.rewind(); // As per `buffer` contract.
-        basicFileFractum.commit();
-        delimitFractumText();
+ /**/   readyFileFractum().commit();
         hierarchy.clear(); }
 
 
 
-    private void _next() throws ParseError { /* Below, in the left margin,
+    private void _next() throws ParseError { /* Below and above, in the left margin,
           an empty comment marks each point of commitment to a new parse state. */
         assert !state.isFinal();
         if( segmentEnd == buffer.limit() ) { // Then no fracta remain.
@@ -697,13 +692,11 @@ public class BrecciaCursor implements ReusableCursor {
               starting a division whose head comprises all contiguous divider segments. */
             do nextSegment(); while( isDividerDrawing( segmentEndIndicatorChar )); // Scan through each.
             buffer.rewind(); // As per `buffer` contract.
- /**/       basicDivision.commit();
-            division.perfectIndent.text.delimit( fractumStart, fractumStart + fractumIndentWidth ); }
+ /**/       readyDivision().commit(); }
         else { // Next is a point.
             nextSegment(); // Scan through to the end boundary of its head.
             buffer.rewind(); // As per `buffer` contract.
  /**/       reifyPoint().commit(); }
-        delimitFractumText();
         final int i = fractumIndentWidth / 4; // Indent in perfect units, that is.
         while( hierarchy.size() < i ) hierarchy.add( null ); // Padding for unoccupied ancestral indents.
         assert state == bodyFractum;
@@ -717,6 +710,26 @@ public class BrecciaCursor implements ReusableCursor {
         // Changing what follows?  Sync → `markupSource`.
         segmentStart = segmentEnd;
         delimitSegment(); }
+
+
+
+    /** Readies `basicDivision` to be committed as the present parse state.
+      * Ensure before calling this method that all other cursor fields are initialized save `hierarchy`.
+      */
+    private Division_ readyDivision() {
+        basicDivision.text.delimit( fractumStart, segmentEnd ); // Proper to fracta.
+        basicDivision.perfectIndent.text.delimit( // Proper to body fracta.
+          fractumStart, fractumStart + fractumIndentWidth );
+        return basicDivision; }
+
+
+
+    /** Readies `basicFileFractum` to be committed as the present parse state.
+      * Ensure before calling this method that all other cursor fields are initialized save `hierarchy`.
+      */
+    private FileFractum_ readyFileFractum() {
+        basicFileFractum.text.delimit( fractumStart, segmentEnd ); // Proper to fracta.
+        return basicFileFractum; }
 
 
 
@@ -754,7 +767,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     /** Parses enough of a point to learn its concrete type and return its parse state ready to commit.
-      * Ensure before calling this method that all other fields are initialized save for `hierarchy`.
+      * Ensure before calling this method that all other cursor fields are initialized save `hierarchy`.
       *
       *     @throws MalformedMarkup For any misplaced no-break space occuring on the same line.  Note
       *       that elsewhere `{@linkplain #delimitSegment() delimitSegment}` polices this offence. *//*
@@ -857,7 +870,8 @@ public class BrecciaCursor implements ReusableCursor {
       // ──────────────────────────────
         final var cc = p.components;
         final int ccMax = Point_.componentsMax;
-        p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );
+        p.text.delimit(                    fractumStart,      segmentEnd ); // Proper to fracta.
+        p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );    // Proper to body fracta.
         p.bullet.text.delimit(        /*1*/bullet,       /*2*/bulletEnd );
         if( bulletEnd < segmentEnd ) {
             final var d = p.descriptorWhenPresent;
@@ -870,6 +884,9 @@ public class BrecciaCursor implements ReusableCursor {
             if( cc.size() == ccMax ) cc.remove( ccMax - 1 ); // Ensuring exclusion.
             else assert cc.size() == ccMax - 1;
             p.descriptor = null; }
+
+      // Ready to commit
+      // ───────────────
         return p; }
 
 

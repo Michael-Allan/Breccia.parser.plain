@@ -24,7 +24,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-    final ArrayList<Markup> components = new ArrayList<>( /*initial capacity*/componentsMax );
+    final List<Markup> components = new ArrayList<>( /*initial capacity*/componentsMax );
 
 
 

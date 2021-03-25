@@ -8,6 +8,7 @@ import java.nio.CharBuffer;
 import java.nio.file.Path;
 import Java.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -291,6 +292,11 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    private void append( final int start, final int end, final List<Markup> markup ) {
+        throw new UnsupportedOperationException(); }
+
+
+
     /** The source buffer.  Except where an API requires otherwise (e.g. `delimitSegment`), the buffer
       * is maintained at a default position of zero, whence it may be treated whole as a `CharSequence`.
       */
@@ -389,6 +395,12 @@ public class BrecciaCursor implements ReusableCursor {
       * in `commandPointKeywords`.
       */
     protected CommandPoint_<?>[] commandPoints;
+
+
+
+    private final BlockParser commentBlockParser = new BlockParser() {
+        @Override int parseAfterPossibleLeadDelimiterCharacter( int c, final List<Markup> markup ) {
+            throw new UnsupportedOperationException(); }};
 
 
 
@@ -635,6 +647,12 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    private final BlockParser indentBlindParser = new BlockParser() {
+        @Override int parseAfterPossibleLeadDelimiterCharacter( int c, final List<Markup> markup ) {
+            throw new UnsupportedOperationException(); }};
+
+
+
     private void _markupSource( final Reader r ) throws ParseError {
         sourceReader = r;
         final int count; {
@@ -717,7 +735,79 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    void parseFileDescriptor() { fileFractum.descriptor.isCompositionParsed = true; } // TEST
+    /** Parses any foregap at buffer position `c`,
+      * adding each of its components to the given markup list.
+      *
+      *     @return The end boundary of the gap, or `c` if there is none.
+      */
+    private int parseAnyForegap( int c, final List<Markup> markup ) {
+        if( c >= segmentEnd ) return c;
+        int wRun = c; /* The last potential start position of a run of plain whitespace characters,
+          each either a plain space or newline constituent. */
+
+      // Establish the loop invariant
+      // ────────────────────────────
+        char ch = buffer.get( c );
+        if( ch == ' ' ) {
+            c = throughAnyS( ++c );
+            if( c >= segmentEnd ) {
+                append( wRun, c, markup );
+                return c; }
+            ch = buffer.get( c ); }
+
+      // Loop through the foregap form
+      // ─────────────────────────────
+        for( ;; ) { /* Loop invariant.  Character `ch` at position `c` lies within the fractal segment,
+              and is not a plain space.  Rather it is the first character of either a newline or lead
+              delimiter of a block construct in the foregap, or of a term just after the foregap. */
+            assert c < segmentEnd && ch != ' ';
+            if( impliesNewline( ch )) {
+                ++c; // Past the newline, or at least one character of it.
+                if( c >= segmentEnd ) {
+                    append( wRun, c, markup );
+                    break; }
+                ch = buffer.get( c );
+                if( ch != ' ' ) continue; // Already the invariant is re-established.
+                c = throughAnyS( ++c ); } // Re-establishing the invariant, part 1.
+            else { // Expect a comment block or indent blind, or a term that bounds the foregap.
+                if( wRun < c ) append( wRun, c, markup ); // Plain whitespace that came before.
+                final BlockParser parser;
+                if( ch == '\\' ) parser = commentBlockParser;
+                else if( ch == /*no-break space*/'\u00A0' ) parser = indentBlindParser;
+                else break; // The foregap ends at a non-backslashed term.
+                c = parser.parseAfterPossibleLeadDelimiterCharacter( ++c, markup );
+                if( !parser.didParse ) break; // The foregap ends at a backslashed term.
+                if( c >= segmentEnd ) break; // This block ends both the foregap and fractal segment.
+                wRun = c; // Potentially the next plain whitespace run begins here.
+                c = parser.postSpaceEnd; } // Re-establishing the invariant, part 1.
+
+          // re-establish the invariant, part 2
+          // ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+            if( c >= segmentEnd ) {
+                assert wRun < c;
+                append( wRun, c, markup );
+                break; }
+            ch = buffer.get( c ); }
+        return c; }
+
+
+
+    void parseFileDescriptor() throws MalformedMarkup {
+        final FileFractum_.FileDescriptor_ descriptor = fileFractum.descriptor;
+        final List<Markup> cc = descriptor.components;
+        cc.clear();
+        assert buffer.position() == 0;
+        assert fractumStart == 0;
+        int c = 0;
+        assert segmentEnd > 0;
+        c = parseForegap( c, cc );
+        for( ;; ) {
+            if( c >= segmentEnd ) break;
+            c = parseTerms( c, cc );
+            if( c >= segmentEnd ) break;
+            c = parsePostgap( c, cc ); }
+        assert c == segmentEnd;
+        descriptor.isCompositionParsed = true; }
 
 
 
@@ -733,6 +823,27 @@ public class BrecciaCursor implements ReusableCursor {
             f.components = f.componentsWhenPresent;
             f.descriptor = d; }
         f.isCompositionParsed = true; }
+
+
+
+    /** Parses a foregap at buffer position `c`, adding each of its components to the given markup list.
+      *
+      *     @return The end boundary of the gap.
+      *     @throws MalformedMarkup If no foregap occurs at `c`.
+      */
+    private int parseForegap( int c, final List<Markup> markup ) throws MalformedMarkup {
+        if( c /*moved*/!= (c = parseAnyForegap( c, markup ))) return c;
+        throw new MalformedMarkup( bufferPointer(c), "Foregap expected" ); }
+
+
+
+    private int parsePostgap( int c, final List<Markup> markup ) {
+        throw new UnsupportedOperationException(); }
+
+
+
+    private int parseTerms( int c, final List<Markup> markup ) {
+        throw new UnsupportedOperationException(); }
 
 
 
@@ -982,10 +1093,9 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the sequence.
       *     @throws MalformedMarkup If no such sequence occurs at `c`.
       */
-    private int throughS( final int c ) throws MalformedMarkup {
-        final int d = throughAnyS( c );
-        if( c == d ) throw spaceExpected( bufferPointer( c ));
-        return d; }
+    private int throughS( int c ) throws MalformedMarkup {
+        if( c /*moved*/!= (c = throughAnyS( c ))) return c;
+        throw spaceExpected( bufferPointer( c )); }
 
 
 
@@ -995,10 +1105,9 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the sequence.
       *     @throws MalformedMarkup If no such sequence occurs at `c`.
       */
-    private int throughTerm( final int c ) throws MalformedMarkup {
-        final int d = throughAnyTerm( c );
-        if( c == d ) throw termExpected( bufferPointer( c ));
-        return d; }
+    private int throughTerm( int c ) throws MalformedMarkup {
+        if( c /*moved*/!= (c = throughAnyTerm( c ))) return c;
+        throw termExpected( bufferPointer( c )); }
 
 
 
@@ -1187,6 +1296,24 @@ public class BrecciaCursor implements ReusableCursor {
 
 
         private Privatizer.End privatizerEnd;
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    private static abstract class BlockParser {
+
+
+        boolean didParse;
+
+
+
+        abstract int parseAfterPossibleLeadDelimiterCharacter( int c, List<Markup> markup );
+
+
+
+        int postSpaceEnd; }
 
 
 

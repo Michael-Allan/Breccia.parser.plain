@@ -2,6 +2,7 @@ package Breccia.parser.plain;
 
 import Breccia.parser.FileFractum;
 import Breccia.parser.Markup;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -81,10 +82,26 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
+    final class End_ extends Fractum_<BrecciaCursor>.End_ implements FileFractum.End {
+
+
+        @Override void commit() {
+            super.commit();
+            cursor.fileFractumEnd( this ); }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
     final class FileDescriptor_ extends Markup_ implements FileDescriptor {
 
 
         FileDescriptor_() { super( FileFractum_.this.text ); }
+
+
+
+        final List<Markup> components = new ArrayList<>();
 
 
 
@@ -104,27 +121,15 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-        public final @Override List<Markup> components() {
+        public final @Override List<Markup> components() throws MalformedMarkup {
             if( !isCompositionParsed ) {
                 cursor.parseFileDescriptor();
                 assert isCompositionParsed; }
-            return List.of(); } // TEST
+            return components; }
 
 
 
-        public @Override int lineNumber() { return FileFractum_.this.lineNumber(); }}
-
-
-
-   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-
-
-    final class End_ extends Fractum_<BrecciaCursor>.End_ implements FileFractum.End {
-
-
-        @Override void commit() {
-            super.commit();
-            cursor.fileFractumEnd( this ); }}}
+        public @Override int lineNumber() { return FileFractum_.this.lineNumber(); }}}
 
 
 

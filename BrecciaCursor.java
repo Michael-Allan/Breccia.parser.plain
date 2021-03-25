@@ -26,7 +26,6 @@ import static java.lang.Character.isAlphabetic;
 import static java.lang.Character.isDigit;
 import static java.util.Arrays.binarySearch;
 import static Breccia.parser.plain.Language.*;
-import static Breccia.parser.plain.MalformedLineBreak.truncatedNewline;
 import static Breccia.parser.plain.MalformedMarkup.*;
 import static Breccia.parser.plain.Project.newSourceReader;
 
@@ -435,13 +434,13 @@ public class BrecciaCursor implements ReusableCursor {
       * <p>This method may shift the contents of the buffer, rendering invalid all buffer offsets
       * save those recorded in the fields named above.</p>
       *
-      *     @throws MalformedLineBreak For any malformed line break that occurs from the initial
-      *       buffer position through the newly determined `segmentEndIndicator`.
       *     @throws ForbiddenWhitespace For any forbidden whitespace detected from the initial
       *       buffer position through the newly determined `segmentEndIndicator`.
       *     @throws MalformedMarkup For any misplaced no-break space that occurs from the initial buffer
       *       position through the newly determined `segmentEndIndicator`, except on the first line of a
       *       point, where instead `{@linkplain #reifyPoint(int) reifyPoint}` polices this offence.
+      *     @throws MalformedMarkup For any malformed line break that occurs from the initial
+      *       buffer position through the newly determined `segmentEndIndicator`.
       */
     private void delimitSegment() throws ParseError {
         assert segmentStart != fractumStart || fractumLineEnds.isEmpty();

@@ -25,6 +25,12 @@ public class MalformedMarkup extends ParseError {
 
 
 
+    /** An indicator of where precisely within the markup the ill form was detected.
+      */
+    public final Pointer pointer;
+
+
+
     /** @see #pointer
       */
     static MalformedMarkup spaceExpected( final Pointer pointer ) {
@@ -36,12 +42,6 @@ public class MalformedMarkup extends ParseError {
       */
     static MalformedMarkup termExpected( final Pointer pointer ) {
         return new MalformedMarkup( pointer, "Term expected" ); }
-
-
-
-    /** An indicator of where precisely within the markup the ill form was detected.
-      */
-    public final Pointer pointer;
 
 
 

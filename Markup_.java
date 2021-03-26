@@ -48,7 +48,8 @@ abstract class Markup_ implements Markup {
     public @Override String toString() {
         final var b = new StringBuilder();
         final int column = column();
-        b.append( getClass().getSimpleName() );
+        final String className = getClass().getSimpleName();
+        b.append( className.isEmpty()? tagName() : className );
         b.append( ':' );
         b.append( lineNumber() );
         if( column != 0 ) {

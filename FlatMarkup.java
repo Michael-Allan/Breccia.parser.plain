@@ -1,15 +1,47 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.Markup;
+import java.nio.CharBuffer;
 import java.util.List;
 
 
 /** Non-composite markup; markup that has no parsed components.
+  *
+  *     @see DeepMarkup
   */
 abstract class FlatMarkup extends Markup_ {
 
 
+    private FlatMarkup( CharBuffer b ) { super( b ); }
+
+
+
     FlatMarkup( Fractum_<?> f ) { super( f ); }
+
+
+
+    /** Makes an instance of flat markup with the generic tag name ‘Markup’.
+      *
+      *     @see #tagName()
+      */
+    static FlatMarkup make( BrecciaCursor cursor ) { return make( cursor, "Markup" ); }
+      // Neither `Markup_` nor `FlatMarkup` could implement a default `tagName` (e.g. ‘Markup’) without
+      // inadvertently overriding the default implementations of the `Breccia.parser` interfaces.
+
+
+
+    /** Makes an instance of flat markup.
+      *
+      *     @see #tagName()
+      */
+    static FlatMarkup make( final BrecciaCursor cursor, final String tagName ) {
+        return new FlatMarkup( cursor.buffer ) {
+
+            public @Override int column() { return cursor.bufferColumn( text.start() ); }
+
+            public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+
+            public @Override String tagName() { return tagName; }};}
 
 
 

@@ -291,8 +291,13 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private void append( final int start, final int end, final List<Markup> markup ) {
-        throw new UnsupportedOperationException(); }
+    /** Appends to the given markup list a component of flat markup comprising the buffered text
+      * bounded by the given buffer positions.
+      */
+    private void append( final int start, final int end, final List<Markup> components ) {
+        final FlatMarkup markup = FlatMarkup.make( this ); // TEST
+        markup.text.delimit( start, end );
+        components.add( markup ); }
 
 
 
@@ -301,7 +306,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     final CharBuffer buffer = CharBuffer.allocate( bufferCapacity );
  // final CharBuffer buffer = CharBuffer.allocate( bufferCapacity + 1 ) // TEST with a positive
- //   .slice( 1, bufferCapacity );                                               // `arrayOffset`. [BAO]
+ //   .slice( 1, bufferCapacity );                                     // `arrayOffset`. [BAO]
 
 
 
@@ -314,6 +319,20 @@ public class BrecciaCursor implements ReusableCursor {
         // Let it do so even while the buffer holds the already-read portion of the present segment:
         n += 0x1000; // 4096, more than ample for that segment.
         bufferCapacity = n; }
+
+
+
+    /** Returns the columnar offset at the given buffer position, resolving its line
+      * within the parsed region of the present fractum.  If the position lies outside
+      * of the parsed region, then the fallbacks of `resolveLine` apply.
+      *
+      *     @see Markup#column()
+      *     @param position A buffer position within the parsed region of the present fractum.
+      *     @see LineResolver#resolveLine(int)
+      */
+    final @Subst int bufferColumn( final int position ) {
+        lineResolver.resolveLine( position );
+        return bufferColumnarSpan( lineResolver.start, position ); }
 
 
 
@@ -335,28 +354,35 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Resolves the line number at `position`.  If `position` lies outside of the parsed region
+      * of the present fractum, then the fallbacks of `resolveLine` apply.
+      *
+      *     @param position A buffer position within the parsed region of the present fractum.
+      *     @see LineResolver#resolveLine(int)
+      */
+    final @Subst int bufferLineNumber( final int position ) {
+        lineResolver.resolveLine( position );
+        return lineResolver.number; }
+
+
+
 
     private @Subst MalformedMarkup.Pointer bufferPointer() { return bufferPointer( buffer.position() ); }
 
 
 
-    /** Makes an error pointer to the given buffer position, taking the line number from
-      * the parsed region of the present fractum.  If the position lies before `fractumStart`,
-      * then this method uses `fractumLineNumber`; if the position lies after the region already
-      * parsed by `delimitSegment`, then this method uses the line number of the last parsed position.
+    /** Makes an error pointer to the given buffer position, resolving its line within
+      * the parsed region of the present fractum.  If the position lies outside
+      * of the parsed region, then the fallbacks of `resolveLine` apply.
+      *
+      *     @param position A buffer position within the parsed region of the present fractum.
+      *     @see LineResolver#resolveLine(int)
       */
     private @Subst MalformedMarkup.Pointer bufferPointer( final int position ) {
-        final int lineIndex, lineNumber, lineStart; {
-            final int[] endsArray = fractumLineEnds.array;
-            int e = 0, n = fractumLineNumber(), s = fractumStart;
-            for( int end, eN = fractumLineEnds.length;    // For each line,
-              e < eN && (end = endsArray[e]) < position; // if it ends before the position,
-              ++e, ++n, s = end );                      // then advance to the next.
-            lineIndex = e;
-            lineNumber = n;
-            lineStart = s; } // The end boundary of its predecessor, if any, else `fractumStart`.
+        lineResolver.resolveLine( position );
+        final int lineStart = lineResolver.start;
         final int lineLength; { // Or partial length, if the whole line has yet to enter the buffer.
-            final int lineIndexNext = lineIndex + 1;
+            final int lineIndexNext = lineResolver.index + 1;
             if( lineIndexNext < fractumLineEnds.length ) { // Then measure the easy way:
                 lineLength = fractumLineEnds.array[lineIndexNext] - lineStart; }
             else { // The line has yet to be parsed to its end.  Measure it the hard way:
@@ -366,7 +392,7 @@ public class BrecciaCursor implements ReusableCursor {
                 lineLength = p - lineStart; }}
         final String line = buffer.slice( lineStart, lineLength ).toString();
         final int column = bufferColumnarSpan( lineStart, position );
-        return new MalformedMarkup.Pointer( lineNumber, line, column ); }
+        return new MalformedMarkup.Pointer( lineResolver.number, line, column ); }
 
 
 
@@ -652,6 +678,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    private final LineResolver lineResolver = new LineResolver();
+
+
+
     private void _markupSource( final Reader r ) throws ParseError {
         sourceReader = r;
         final int count; {
@@ -791,7 +821,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    void parseFileDescriptor() throws MalformedMarkup {
+    final void parseFileDescriptor() throws MalformedMarkup {
         final FileFractum_.FileDescriptor_ descriptor = fileFractum.descriptor;
         final List<Markup> cc = descriptor.components;
         cc.clear();
@@ -810,7 +840,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    void parseFileFractum() {
+    final void parseFileFractum() {
         final FileFractum_ f = fileFractum;
         if( fractumStart == segmentEnd ) {
             f.components = FileFractum_.componentsWhenAbsent;
@@ -1428,6 +1458,49 @@ public class BrecciaCursor implements ReusableCursor {
         /** Whether a line end was encountered.  Never true when `wasAppenderFound`.
           */
         boolean wasLineEndFound; }
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    private final class LineResolver {
+
+
+        /** The index of the resolved line in {@linkplain #fractumLineEnds fractumLineEnds}.
+          */
+        int index;
+
+
+
+        /** The resolved line number.  Lines are numbered beginning at one.
+          */
+        int number;
+
+
+
+        /** Resolves the line at `position`, recording the result in the fields of this resolver.
+          * If `position` lies before `fractumStart`, then instead this method uses `fractumStart`;
+          * if `position` lies after the region already parsed by `delimitSegment`,
+          * then instead it uses the last parsed position.
+          *
+          *     @param position A buffer position within the parsed region of the present fractum.
+          */
+        @Subst void resolveLine( final int position ) {
+            final int[] endsArray = fractumLineEnds.array;
+            int e = 0, n = fractumLineNumber(), s = fractumStart;
+            for( int end, eN = fractumLineEnds.length;    // For each line,
+              e < eN && (end = endsArray[e]) < position; // if it ends before the position,
+              ++e, ++n, s = end );                      // then advance to the next.
+            index = e;
+            number = n;
+            start = s; } // The end boundary of its predecessor, if any, else `fractumStart`.
+
+
+
+        /** The start position of the resolved line in the buffer.
+          */
+        int start; }
 
 
 

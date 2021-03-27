@@ -295,7 +295,7 @@ public class BrecciaCursor implements ReusableCursor {
       * bounded by the given buffer positions.
       */
     private void append( final int start, final int end, final List<Markup> components ) {
-        final FlatMarkup markup = FlatMarkup.make( this ); // TEST
+        final FlatMarkup markup = spooler.flatMarkup.unwind();
         markup.text.delimit( start, end );
         components.add( markup ); }
 
@@ -695,6 +695,7 @@ public class BrecciaCursor implements ReusableCursor {
         buffer.flip();
 
         // Changing what follows?  Sync → `_next`.
+        spooler.rewind();
         fractumStart = 0;
         fractumIndentWidth = -4;
         fractumLineCounter = 0;
@@ -734,6 +735,7 @@ public class BrecciaCursor implements ReusableCursor {
                     return; }}}
 
         // Changing what follows?  Sync → `markupSource`.
+        spooler.rewind();
         fractumStart = segmentEnd; // It starts at the end boundary of the present segment.
         fractumIndentWidth = nextIndentWidth;
         fractumLineCounter += fractumLineEnds.length; /* Its line number is the line number
@@ -1085,6 +1087,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private Reader sourceReader;
+
+
+
+    private final ResourceSpooler spooler = new ResourceSpooler( this );
 
 
 

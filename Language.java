@@ -88,6 +88,21 @@ final class Language {
 
 
 
+    /** Whether character `ch` is a plain space (20), no-break space (A0)
+      * or newline constituent (A or D).
+      */
+    static boolean isWhitespace( final char ch ) {
+        return ch == ' ' || impliesNewline(ch) || ch == '\u00A0'; }
+
+
+    /** Whether character `ch` is a plain space (20), no-break space (A0)
+      * or newline constituent (A or D).
+      */
+    static boolean isWhitespace( final  int ch ) {
+        return ch == ' ' || impliesNewline(ch) || ch == '\u00A0'; }
+
+
+
     /** Whether code point `nonSpaceNewline` is a whitespace character other than a no-break space (A0)
       * when already it is known to be neither a plain space nor a newline constituent.
       *

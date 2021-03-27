@@ -1150,15 +1150,26 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Scans through any sequence at buffer position `c` of characters that are neither plain spaces
-      * nor proper to a newline.
+    /** Scans through any term at buffer position `c`.  A term is (as the language defines it) a sequence
+      * of non-whitespace characters that does not comprise a sequence of backslashes ‘\’.
       *
-      *     @return The end boundary of the sequence, or `c` if there is none.
+      *     @return The end boundary of the term, or `c` if there is none.
       */
     private int throughAnyTerm( int c ) {
-        for(; c < segmentEnd; ++c ) {
-            final char ch = buffer.get( c );
-            if( ch == ' ' || impliesNewline(ch) ) break; }
+        final int cOriginal;
+        final char chFirst; {
+            if( c >= segmentEnd ) return c;
+            chFirst = buffer.get( c );
+            if( isWhitespace( chFirst )) return c;
+            cOriginal = c++; }
+        if( chFirst == '\\' ) { // Then scan the remainder by the slow, exhaustive method. (edge case)
+            boolean comprisesBackslashes = true; // Thus far.
+            for(; c < segmentEnd; ++c ) {
+                final char ch = buffer.get( c );
+                if( isWhitespace( ch )) break;
+                if( ch != '\\' ) comprisesBackslashes = false; }
+            if( comprisesBackslashes ) return cOriginal; }
+        else while( c < segmentEnd && !isWhitespace(buffer.get(c)) ) ++c; // The fast way. (typical case)
         return c; }
 
 
@@ -1175,11 +1186,11 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Scans through a sequence at buffer position `c` of characters that are neither plain spaces
-      * nor proper to a newline.
+    /** Scans through a term at buffer position `c`.  A term is (as the language defines it) a sequence
+      * of non-whitespace characters that does not comprise a sequence of backslashes ‘\’.
       *
-      *     @return The end boundary of the sequence.
-      *     @throws MalformedMarkup If no such sequence occurs at `c`.
+      *     @return The end boundary of the term.
+      *     @throws MalformedMarkup If no term occurs at `c`.
       */
     private int throughTerm( int c ) throws MalformedMarkup {
         if( c /*moved*/!= (c = throughAnyTerm( c ))) return c;

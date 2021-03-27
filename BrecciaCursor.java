@@ -547,7 +547,7 @@ public class BrecciaCursor implements ReusableCursor {
 
           // Or forbidden whitespace
           // ───────────────────────
-            if( ch != ' ' && yetIsWhitespace(ch) ) {
+            if( ch != ' ' && yetIsGenerallyWhitespace(ch) ) {
                   // A partial test, limited to Unicode plane zero, pending a cause to suffer
                   // the added complexity and potential speed drag of testing full code points.
                 throw new ForbiddenWhitespace( bufferPointerBack(), ch ); }

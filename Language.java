@@ -61,19 +61,19 @@ final class Language {
     /** Whether character  `ch` is a whitespace character other than those allowed.  This method is
       * equivalent to `!= ' '
       *          &amp; !{@linkplain #impliesNewline(char) impliesNewline}
-      *          &amp;  {@linkplain #yetIsWhitespace(char) yetIsWhitespace}`.
+      *          &amp;  {@linkplain #yetIsGenerallyWhitespace(char) yetIsGenerallyWhitespace}`.
       */
     static boolean isForbiddenWhitespace( final char ch ) {
-        return ch != ' ' && !impliesNewline(ch) && yetIsWhitespace(ch); }
+        return ch != ' ' && !impliesNewline(ch) && yetIsGenerallyWhitespace(ch); }
 
 
     /** Whether code point `ch` is a whitespace character other than those allowed.  This method is
       * equivalent to `!= ' '
       *          &amp; !{@linkplain #impliesNewline(int)  impliesNewline}
-      *          &amp;  {@linkplain #yetIsWhitespace(int)  yetIsWhitespace}`.
+      *          &amp;  {@linkplain #yetIsGenerallyWhitespace(int)  yetIsGenerallyWhitespace}`.
       */
     static boolean isForbiddenWhitespace( final  int ch ) {
-        return ch != ' ' && !impliesNewline(ch) && yetIsWhitespace(ch); }
+        return ch != ' ' && !impliesNewline(ch) && yetIsGenerallyWhitespace(ch); }
 
 
 
@@ -88,29 +88,29 @@ final class Language {
 
 
 
-    /** Whether character  `nonSpaceNewline` is a whitespace character when already it is known
-      * to be neither a plain space nor a newline constituent.
+    /** Whether code point `nonSpaceNewline` is a whitespace character other than a no-break space (A0)
+      * when already it is known to be neither a plain space nor a newline constituent.
       *
       *     @param nonSpaceNewline A character known to be other than a plain space (20)
       *       or {@linkplain #impliesNewline(char) newline constituent}
-      *     @throws AssertionError If assertions are enabled and `nonSpaceNewline` is a space
+      *     @throws AssertionError If assertions are enabled and `nonSpaceNewline` is a plain space
       *       or newline constituent.
       *     @see Java.Characters.isJavaOrUnicodeWhitespace(char)
       */
-    static boolean yetIsWhitespace( final char nonSpaceNewline ) {
-        return yetIsWhitespace( (int)nonSpaceNewline ); }
+    static boolean yetIsGenerallyWhitespace( final char nonSpaceNewline ) {
+        return yetIsGenerallyWhitespace( (int)nonSpaceNewline ); }
 
 
-    /** Whether code point `nonSpaceNewline` is a whitespace character when already it is known
-      * to be neither a plain space nor a newline constituent.
+    /** Whether code point `nonSpaceNewline` is a whitespace character other than a no-break space (A0)
+      * when already it is known to be neither a plain space nor a newline constituent.
       *
       *     @param nonSpaceNewline A code point known to be other than a plain space (20)
       *       or {@linkplain #impliesNewline(int) newline constituent}
-      *     @throws AssertionError If assertions are enabled and `nonSpaceNewline` is a space
+      *     @throws AssertionError If assertions are enabled and `nonSpaceNewline` is a plain space
       *       or newline constituent.
       *     @see Java.Characters.isJavaOrUnicodeWhitespace(int)
       */
-    static boolean yetIsWhitespace( final  int nonSpaceNewline ) {
+    static boolean yetIsGenerallyWhitespace( final  int nonSpaceNewline ) {
         assert !( nonSpaceNewline == ' ' || impliesNewline(nonSpaceNewline) );
         return Character.isWhitespace/*[TL]*/( nonSpaceNewline ) /* Which test excludes the allowed
             no-break space (A0), plus some forbidden no-break spaces.  Wherefore include the latter: */

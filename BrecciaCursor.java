@@ -769,7 +769,7 @@ public class BrecciaCursor implements ReusableCursor {
     /** Parses any foregap at buffer position `c`,
       * adding each of its components to the given markup list.
       *
-      *     @return The end boundary of the gap, or `c` if there is none.
+      *     @return The end boundary of the foregap, or `c` if there is none.
       */
     private int parseAnyForegap( int c, final List<Markup> markup ) {
         if( c >= segmentEnd ) return c;
@@ -823,6 +823,20 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Parses any postgap at buffer position `c`,
+      * adding each of its components to the given markup list.
+      *
+      *     @return The end boundary of the postgap, or `c` if there is none.
+      */
+    private int parseAnyPostgap( int c, final List<Markup> markup ) {
+        if( c /*moved*/!= (c = throughAnyS( c ))) {
+            if( c /*moved*/!= (c = throughAnyCommentAppender( c ))) {
+                return parseAnyForegap( c, markup ); }}
+        if( c /*moved*/!= (c = throughAnyNewlines( c ))) c = parseAnyForegap( c, markup );
+        return c; }
+
+
+
     final void parseFileDescriptor() throws MalformedMarkup {
         final FileFractum_.FileDescriptor_ descriptor = fileFractum.descriptor;
         final List<Markup> cc = descriptor.components;
@@ -859,7 +873,7 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** Parses a foregap at buffer position `c`, adding each of its components to the given markup list.
       *
-      *     @return The end boundary of the gap.
+      *     @return The end boundary of the foregap.
       *     @throws MalformedMarkup If no foregap occurs at `c`.
       */
     private int parseForegap( int c, final List<Markup> markup ) throws MalformedMarkup {
@@ -868,12 +882,18 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private int parsePostgap( int c, final List<Markup> markup ) {
-        throw new UnsupportedOperationException(); }
+    /** Parses a postgap at buffer position `c`, adding each of its components to the given markup list.
+      *
+      *     @return The end boundary of the postgap.
+      *     @throws MalformedMarkup If no postgap occurs at `c`.
+      */
+    private int parsePostgap( int c, final List<Markup> markup ) throws MalformedMarkup {
+        if( c /*moved*/!= (c = parseAnyPostgap( c, markup ))) return c;
+        throw new MalformedMarkup( bufferPointer(c), "Postgap expected" ); }
 
 
 
-    private int parseTerms( int c, final List<Markup> markup ) {
+    private int parseTerms( int c, final List<Markup> markup ) throws MalformedMarkup {
         throw new UnsupportedOperationException(); }
 
 
@@ -1095,6 +1115,27 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private ParseState state;
+
+
+
+    /** Scans through any comment appender, the delimiter of which (a backslash sequence)
+      * would begin (or continue) at buffer position `c`.
+      *
+      *     @return The end boundary of the comment appender, or `c` if there is none.
+      */
+    private int throughAnyCommentAppender( int c ) {
+        throw new UnsupportedOperationException(); };
+
+
+
+    /** Scans through any sequence of newlines at buffer position `c`.
+      *
+      *     @return The end boundary of the sequence, or `c` if there is none.
+      */
+    private int throughAnyNewlines( int c ) {
+        while( c < segmentEnd  &&  impliesNewline(buffer.get(c)) ) ++c; /* This implies a sequence of
+          well-formed newlines only because already `delimitSegment` has tested for malformed ones. */
+        return c; }
 
 
 
@@ -1376,10 +1417,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** Tells whether the slash at `c` delimits a comment appender.
+        /** Tells whether the backslash at `c` delimits a comment appender.
           * Updates `cDelimiterTightEnd` accordingly.
           *
-          *     @param cSlash Buffer position of a (known) slash character ‘\’.
+          *     @param cSlash Buffer position of a (known) backslash character ‘\’.
           *     @param cEnd End boundary of the point head.
           */
         boolean isDelimiterSlashAt( final int cSlash, final int cEnd ) {

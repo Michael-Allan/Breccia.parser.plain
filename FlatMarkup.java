@@ -48,7 +48,8 @@ abstract class FlatMarkup extends Markup_ {
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    /** Returns an empty list: this markup has no parsed components, only {@linkplain #text() flat text}.
+    /** Returns an empty list: this markup has no parsed components,
+      * only unparsed, {@linkplain #text() flat text}.
       */
     public final @Override List<Markup> components() { return List.of(); }}
 

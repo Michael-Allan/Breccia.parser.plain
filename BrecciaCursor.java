@@ -789,8 +789,8 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int parseAnyForegap( int c, final CoalescentMarkupList markup ) {
         if( c >= segmentEnd ) return c;
-        int wRun = c; /* The last potential start position of a run of plain whitespace characters,
-          each either a plain space or newline constituent. */
+        int cFlat = c; /* The last potential start position of flat markup,
+          each character either a plain space or newline constituent. */
 
       // Establish the loop invariant
       // ────────────────────────────
@@ -798,7 +798,7 @@ public class BrecciaCursor implements ReusableCursor {
         if( ch == ' ' ) {
             c = throughAnyS( ++c );
             if( c >= segmentEnd ) {
-                append( wRun, c, markup );
+                append( cFlat, c, markup );
                 return c; }
             ch = buffer.get( c ); }
 
@@ -811,13 +811,13 @@ public class BrecciaCursor implements ReusableCursor {
             if( impliesNewline( ch )) {
                 ++c; // Past the newline, or at least one character of it.
                 if( c >= segmentEnd ) {
-                    append( wRun, c, markup );
+                    append( cFlat, c, markup );
                     break; }
                 ch = buffer.get( c );
                 if( ch != ' ' ) continue; // Already the invariant is re-established.
                 c = throughAnyS( ++c ); } // Re-establishing the invariant, part 1.
             else { // Expect a comment block or indent blind, or a term that bounds the foregap.
-                if( wRun < c ) append( wRun, c, markup ); // Plain whitespace that came before.
+                if( cFlat < c ) append( cFlat, c, markup ); // Flat markup that came before.
                 final BlockParser parser;
                 if( ch == '\\' ) parser = commentBlockParser;
                 else if( ch == /*no-break space*/'\u00A0' ) parser = indentBlindParser;
@@ -825,14 +825,14 @@ public class BrecciaCursor implements ReusableCursor {
                 c = parser.parseAfterPossibleLeadDelimiterCharacter( ++c, markup );
                 if( !parser.didParse ) break; // The foregap ends at a backslashed term.
                 if( c >= segmentEnd ) break; // This block ends both the foregap and fractal segment.
-                wRun = c; // Potentially the next plain whitespace run begins here.
+                cFlat = c; // Potentially the next run of flat markup begins here.
                 c = parser.postSpaceEnd; } // Re-establishing the invariant, part 1.
 
           // re-establish the invariant, part 2
           // ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
             if( c >= segmentEnd ) {
-                assert wRun < c;
-                append( wRun, c, markup );
+                assert cFlat < c;
+                append( cFlat, c, markup );
                 break; }
             ch = buffer.get( c ); }
         return c; }

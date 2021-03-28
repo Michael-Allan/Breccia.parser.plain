@@ -772,6 +772,16 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Parses any comment appender, the delimiter of which (a backslash sequence) would begin
+      * (or continue) at buffer position `c`, adding each of its components to the given markup list.
+      *
+      *     @return The end boundary of the comment appender, or `c` if there is none.
+      */
+    private int parseAnyCommentAppender( int c, final List<Markup> markup ) {
+        throw new UnsupportedOperationException(); };
+
+
+
     /** Parses any foregap at buffer position `c`,
       * adding each of its components to the given markup list.
       *
@@ -829,17 +839,40 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Parses any sequence of newlines at buffer position `c`, adding it to the given markup list.
+      *
+      *     @return The end boundary of the sequence, or `c` if there is none.
+      */
+    private int parseAnyNewlines( final int c, final CoalescentMarkupList markup ) {
+        final int d = throughAnyNewlines( c );
+        if( c != d ) append( c, d, markup );
+        return d; }
+
+
+
     /** Parses any postgap at buffer position `c`,
       * adding each of its components to the given markup list.
       *
       *     @return The end boundary of the postgap, or `c` if there is none.
       */
     private int parseAnyPostgap( int c, final CoalescentMarkupList markup ) {
-        if( c /*moved*/!= (c = throughAnyS( c ))) {
-            if( c /*moved*/!= (c = throughAnyCommentAppender( c ))) {
+        if( c /*moved*/!= (c = parseAnyS( c, markup ))) {
+            if( c /*moved*/!= (c = parseAnyCommentAppender( c, markup ))) {
                 return parseAnyForegap( c, markup ); }}
-        if( c /*moved*/!= (c = throughAnyNewlines( c ))) c = parseAnyForegap( c, markup );
+        if( c /*moved*/!= (c = parseAnyNewlines( c, markup ))) c = parseAnyForegap( c, markup );
         return c; }
+
+
+
+    /** Parses any sequence at buffer position `c` of plain space characters,
+      * namely ‘S’ in the language definition, adding it to the given markup list.
+      *
+      *     @return The end boundary of the sequence, or `c` if there is none.
+      */
+    private int parseAnyS( final int c, final CoalescentMarkupList markup ) {
+        final int d = throughAnyS( c );
+        if( c != d ) append( c, d, markup );
+        return d; }
 
 
 
@@ -847,7 +880,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @return The end boundary of the term, or `c` if there is none.
       */
-    private int parseAnyTerm( final int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
+    private int parseAnyTerm( final int c, final CoalescentMarkupList markup ) {
         final int d = throughAnyTerm( c );
         if( c != d ) append( c, d, markup );
         return d; }
@@ -901,9 +934,21 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the postgap.
       *     @throws MalformedMarkup If no postgap occurs at `c`.
       */
-    private int parsePostgap( int c, CoalescentMarkupList markup ) throws MalformedMarkup {
+    private int parsePostgap( int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
         if( c /*moved*/!= (c = parseAnyPostgap( c, markup ))) return c;
         throw new MalformedMarkup( bufferPointer(c), "Postgap expected" ); }
+
+
+
+    /** Parses a sequence at buffer position `c` of plain space characters,
+      * namely ‘S’ in the language definition, adding it to the given markup list.
+      *
+      *     @return The end boundary of the sequence.
+      *     @throws MalformedMarkup If no such sequence occurs at `c`.
+      */
+    private int parseS( int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
+        append( c, c = throughS(c), markup );
+        return c; }
 
 
 
@@ -1135,16 +1180,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private ParseState state;
-
-
-
-    /** Scans through any comment appender, the delimiter of which (a backslash sequence)
-      * would begin (or continue) at buffer position `c`.
-      *
-      *     @return The end boundary of the comment appender, or `c` if there is none.
-      */
-    private int throughAnyCommentAppender( int c ) {
-        throw new UnsupportedOperationException(); };
 
 
 

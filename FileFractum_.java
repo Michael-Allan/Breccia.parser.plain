@@ -2,7 +2,6 @@ package Breccia.parser.plain;
 
 import Breccia.parser.FileFractum;
 import Breccia.parser.Markup;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -101,7 +100,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-        final List<Markup> components = new ArrayList<>();
+        final CoalescentMarkupList components = new CoalescentArrayList();
 
 
 

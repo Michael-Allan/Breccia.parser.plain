@@ -291,13 +291,19 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Appends to the given markup list a component of flat markup comprising the buffered text
-      * bounded by the given buffer positions.
+    /** Appends to `components` the flat markup bounded by the `start` and `end` buffer positions.
+      * Appends the markup either as a separate component, or coalesced with the final component.
       */
-    private void append( final int start, final int end, final List<Markup> components ) {
-        final FlatMarkup markup = spooler.flatMarkup.unwind();
-        markup.text.delimit( start, end );
-        components.add( markup ); }
+    private void append( final int start, final int end, final CoalescentMarkupList components ) {
+        FlatMarkup f = components.flatFoot();
+        if( f == null ) { // Then append flat markup to the list as a separate component.
+            f = spooler.flatMarkup.unwind();
+            f.text.delimit( start, end );
+            components.flatFoot( f ); }
+        else { // Coalesce with `f`, the pre-existing flat markup at the foot of the list.
+            final DelimitableCharSequence text = f.text;
+            assert text.end() == start; // Contiguity as stipulated by `Markup.components`.
+            text.delimit( text.start(), end ); }}
 
 
 
@@ -771,7 +777,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @return The end boundary of the foregap, or `c` if there is none.
       */
-    private int parseAnyForegap( int c, final List<Markup> markup ) {
+    private int parseAnyForegap( int c, final CoalescentMarkupList markup ) {
         if( c >= segmentEnd ) return c;
         int wRun = c; /* The last potential start position of a run of plain whitespace characters,
           each either a plain space or newline constituent. */
@@ -828,7 +834,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @return The end boundary of the postgap, or `c` if there is none.
       */
-    private int parseAnyPostgap( int c, final List<Markup> markup ) {
+    private int parseAnyPostgap( int c, final CoalescentMarkupList markup ) {
         if( c /*moved*/!= (c = throughAnyS( c ))) {
             if( c /*moved*/!= (c = throughAnyCommentAppender( c ))) {
                 return parseAnyForegap( c, markup ); }}
@@ -839,7 +845,7 @@ public class BrecciaCursor implements ReusableCursor {
 
     final void parseFileDescriptor() throws MalformedMarkup {
         final FileFractum_.FileDescriptor_ descriptor = fileFractum.descriptor;
-        final List<Markup> cc = descriptor.components;
+        final CoalescentMarkupList cc = descriptor.components;
         cc.clear();
         assert buffer.position() == 0;
         assert fractumStart == 0;
@@ -876,7 +882,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the foregap.
       *     @throws MalformedMarkup If no foregap occurs at `c`.
       */
-    private int parseForegap( int c, final List<Markup> markup ) throws MalformedMarkup {
+    private int parseForegap( int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
         if( c /*moved*/!= (c = parseAnyForegap( c, markup ))) return c;
         throw new MalformedMarkup( bufferPointer(c), "Foregap expected" ); }
 
@@ -887,7 +893,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the postgap.
       *     @throws MalformedMarkup If no postgap occurs at `c`.
       */
-    private int parsePostgap( int c, final List<Markup> markup ) throws MalformedMarkup {
+    private int parsePostgap( int c, CoalescentMarkupList markup ) throws MalformedMarkup {
         if( c /*moved*/!= (c = parseAnyPostgap( c, markup ))) return c;
         throw new MalformedMarkup( bufferPointer(c), "Postgap expected" ); }
 

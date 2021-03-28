@@ -843,6 +843,17 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Parses any term at buffer position `c`, adding it to the given markup list.
+      *
+      *     @return The end boundary of the term, or `c` if there is none.
+      */
+    private int parseAnyTerm( final int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
+        final int d = throughAnyTerm( c );
+        if( c != d ) append( c, d, markup );
+        return d; }
+
+
+
     final void parseFileDescriptor() throws MalformedMarkup {
         final FileFractum_.FileDescriptor_ descriptor = fileFractum.descriptor;
         final CoalescentMarkupList cc = descriptor.components;
@@ -852,12 +863,9 @@ public class BrecciaCursor implements ReusableCursor {
         int c = 0;
         assert segmentEnd > 0;
         c = parseForegap( c, cc );
-        for( ;; ) {
-            if( c >= segmentEnd ) break;
-            c = parseTerms( c, cc );
-            if( c >= segmentEnd ) break;
-            c = parsePostgap( c, cc ); }
-        assert c == segmentEnd;
+        while( c /*moved*/!= (c = parseAnyTerm( c, cc ))
+            && c /*moved*/!= (c = parseAnyPostgap( c, cc )));
+        assert c == segmentEnd: "Parse ends with the segment\n" + bufferPointer(c).markedLine();
         descriptor.isCompositionParsed = true; }
 
 
@@ -899,8 +907,14 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private int parseTerms( int c, final List<Markup> markup ) throws MalformedMarkup {
-        throw new UnsupportedOperationException(); }
+    /** Parses a term at buffer position `c`, adding it to the given markup list.
+      *
+      *     @return The end boundary of the term.
+      *     @throws MalformedMarkup If no term occurs at `c`.
+      */
+    private int parseTerm( int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
+        append( c, c = throughTerm(c), markup );
+        return c; }
 
 
 

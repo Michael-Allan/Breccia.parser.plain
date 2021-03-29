@@ -40,14 +40,14 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-    /** Cleared before committing by `readyFileFractum`,
+    /** Late composition control flag.  Cleared before committing by `readyFileFractum`,
       * set on user demand of `asFileFractum` or `components`.
       *
       *     @see BrecciaCursor#readyFileFractum()
       *     @see BrecciaCursor#asFileFractum()
       *     @see #components()
       */
-    boolean isCompositionParsed;
+    boolean isComposed;
 
 
 
@@ -71,9 +71,9 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
     public final @Override List<Markup> components() {
-        if( !isCompositionParsed ) {
-            cursor.parseFileFractum();
-            assert isCompositionParsed; }
+        if( !isComposed ) {
+            cursor.composeFileFractum();
+            assert isComposed; }
         return components; }
 
 
@@ -104,12 +104,13 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-        /** Cleared by `parseFileFractum`, set on user demand of `components`.
+        /** Late composition control flag.  Cleared by `composeFileFractum`,
+          * set on user demand of `components`.
           *
-          *     @see BrecciaCursor#parseFileFractum()
+          *     @see BrecciaCursor#composeFileFractum()
           *     @see #components()
           */
-        boolean isCompositionParsed;
+        boolean isComposed;
 
 
 
@@ -121,9 +122,9 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
         public final @Override List<Markup> components() throws MalformedMarkup {
-            if( !isCompositionParsed ) {
-                cursor.parseFileDescriptor();
-                assert isCompositionParsed; }
+            if( !isComposed ) {
+                cursor.composeFileDescriptor();
+                assert isComposed; }
             return components; }
 
 

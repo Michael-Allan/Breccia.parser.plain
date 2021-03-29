@@ -96,9 +96,9 @@ public class BrecciaCursor implements ReusableCursor {
 
     public final @Override @NarrowNot FileFractum asFileFractum() {
         if( state != fileFractum ) return null;
-        if( !fileFractum.isCompositionParsed ) {
-            parseFileFractum();
-            assert fileFractum.isCompositionParsed; }
+        if( !fileFractum.isComposed ) {
+            composeFileFractum();
+            assert fileFractum.isComposed; }
         return fileFractum; }
 
 
@@ -432,6 +432,41 @@ public class BrecciaCursor implements ReusableCursor {
     private final BlockParser commentBlockParser = new BlockParser() {
         @Override int parseAfterPossibleLeadDelimiterCharacter( int c, final List<Markup> markup ) {
             throw new UnsupportedOperationException(); }};
+
+
+
+    /** @see FileFractum_.FileDescriptor#isComposed
+      */
+    final void composeFileDescriptor() throws MalformedMarkup {
+        final FileFractum_.FileDescriptor_ descriptor = fileFractum.descriptor;
+        final CoalescentMarkupList cc = descriptor.components;
+        cc.clear();
+        assert buffer.position() == 0;
+        assert fractumStart == 0;
+        int c = 0;
+        assert segmentEnd > 0;
+        c = parseForegap( c, cc );
+        while( c /*moved*/!= (c = parseAnyTerm( c, cc ))
+            && c /*moved*/!= (c = parseAnyPostgap( c, cc )));
+        assert c == segmentEnd: "Parse ends with the segment\n" + bufferPointer(c).markedLine();
+        descriptor.isComposed = true; }
+
+
+
+    /** @see FileFractum_#isComposed
+      */
+    final void composeFileFractum() {
+        final FileFractum_ f = fileFractum;
+        if( fractumStart == segmentEnd ) {
+            f.components = FileFractum_.componentsWhenAbsent;
+            f.descriptor = null; }
+        else {
+            final FileFractum_.FileDescriptor_ d = f.descriptorWhenPresent;
+            d.isComposed = false; // Pending demand.
+            // No need to delimit `d.text`, which being identical to `f.text` is already delimited.
+            f.components = f.componentsWhenPresent;
+            f.descriptor = d; }
+        f.isComposed = true; }
 
 
 
@@ -887,37 +922,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    final void parseFileDescriptor() throws MalformedMarkup {
-        final FileFractum_.FileDescriptor_ descriptor = fileFractum.descriptor;
-        final CoalescentMarkupList cc = descriptor.components;
-        cc.clear();
-        assert buffer.position() == 0;
-        assert fractumStart == 0;
-        int c = 0;
-        assert segmentEnd > 0;
-        c = parseForegap( c, cc );
-        while( c /*moved*/!= (c = parseAnyTerm( c, cc ))
-            && c /*moved*/!= (c = parseAnyPostgap( c, cc )));
-        assert c == segmentEnd: "Parse ends with the segment\n" + bufferPointer(c).markedLine();
-        descriptor.isCompositionParsed = true; }
-
-
-
-    final void parseFileFractum() {
-        final FileFractum_ f = fileFractum;
-        if( fractumStart == segmentEnd ) {
-            f.components = FileFractum_.componentsWhenAbsent;
-            f.descriptor = null; }
-        else {
-            final FileFractum_.FileDescriptor_ d = f.descriptorWhenPresent;
-            d.isCompositionParsed = false; // Pending demand.
-            // No need to delimit `d.text`, which being identical to `f.text` is already delimited.
-            f.components = f.componentsWhenPresent;
-            f.descriptor = d; }
-        f.isCompositionParsed = true; }
-
-
-
     /** Parses a foregap at buffer position `c`, adding each of its components to the given markup list.
       *
       *     @return The end boundary of the foregap.
@@ -979,7 +983,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private FileFractum_ readyFileFractum() {
         basicFileFractum.text.delimit( fractumStart, segmentEnd ); // Proper to fracta.
-        basicFileFractum.isCompositionParsed = false; // Pending demand.
+        basicFileFractum.isComposed = false; // Pending demand.
         return basicFileFractum; }
 
 

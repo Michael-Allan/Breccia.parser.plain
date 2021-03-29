@@ -98,7 +98,7 @@ public class BrecciaCursor implements ReusableCursor {
         if( state != fileFractum ) return null;
         if( !fileFractum.isComposed ) {
             composeFileFractum();
-            assert fileFractum.isComposed; }
+            fileFractum.isComposed = true; }
         return fileFractum; }
 
 
@@ -423,6 +423,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     final void composeFileDescriptor() throws MalformedMarkup {
         final FileFractum_.FileDescriptor_ descriptor = fileFractum.descriptor;
+        assert !descriptor.isComposed;
         final CoalescentMarkupList cc = descriptor.components;
         cc.clear();
         assert buffer.position() == 0;
@@ -433,8 +434,7 @@ public class BrecciaCursor implements ReusableCursor {
         while( c /*moved*/!= (c = parseAnyTerm( c, cc ))
             && c /*moved*/!= (c = parseAnyPostgap( c, cc )));
         assert c == segmentEnd: "Parse ends with the segment\n" + bufferPointer(c).markedLine();
-        cc.flush();
-        descriptor.isComposed = true; }
+        cc.flush(); }
 
 
 
@@ -442,6 +442,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     final void composeFileFractum() {
         final FileFractum_ f = fileFractum;
+        assert !f.isComposed;
         if( fractumStart == segmentEnd ) {
             f.components = FileFractum_.componentsWhenAbsent;
             f.descriptor = null; }
@@ -450,8 +451,7 @@ public class BrecciaCursor implements ReusableCursor {
             d.isComposed = false; // Pending demand.
             // No need to delimit `d.text`, which being identical to `f.text` is already delimited.
             f.components = f.componentsWhenPresent;
-            f.descriptor = d; }
-        f.isComposed = true; }
+            f.descriptor = d; }}
 
 
 

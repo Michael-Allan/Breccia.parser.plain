@@ -73,7 +73,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
     public final @Override List<Markup> components() {
         if( !isComposed ) {
             cursor.composeFileFractum();
-            assert isComposed; }
+            isComposed = true; }
         return components; }
 
 
@@ -124,7 +124,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
         public final @Override List<Markup> components() throws MalformedMarkup {
             if( !isComposed ) {
                 cursor.composeFileDescriptor();
-                assert isComposed; }
+                isComposed = true; }
             assert components.isFlush();
             return components; }
 

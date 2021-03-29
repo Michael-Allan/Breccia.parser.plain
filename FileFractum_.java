@@ -100,7 +100,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-        final CoalescentMarkupList components = new CoalescentArrayList();
+        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
 
 
 
@@ -125,6 +125,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
             if( !isComposed ) {
                 cursor.composeFileDescriptor();
                 assert isComposed; }
+            assert components.isFlush();
             return components; }
 
 

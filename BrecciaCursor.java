@@ -291,22 +291,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Appends to `components` the flat markup bounded by the `start` and `end` buffer positions.
-      * Appends the markup either as a separate component, or coalesced with the final component.
-      */
-    private void append( final int start, final int end, final CoalescentMarkupList components ) {
-        FlatMarkup f = components.flatFoot();
-        if( f == null ) { // Then append flat markup to the list as a separate component.
-            f = spooler.flatMarkup.unwind();
-            f.text.delimit( start, end );
-            components.flatFoot( f ); }
-        else { // Coalesce with `f`, the pre-existing flat markup at the foot of the list.
-            final DelimitableCharSequence text = f.text;
-            assert text.end() == start; // Contiguity as stipulated by `Markup.components`.
-            text.delimit( text.start(), end ); }}
-
-
-
     /** The source buffer.  Except where an API requires otherwise (e.g. `delimitSegment`), the buffer
       * is maintained at a default position of zero, whence it may be treated whole as a `CharSequence`.
       */
@@ -449,6 +433,7 @@ public class BrecciaCursor implements ReusableCursor {
         while( c /*moved*/!= (c = parseAnyTerm( c, cc ))
             && c /*moved*/!= (c = parseAnyPostgap( c, cc )));
         assert c == segmentEnd: "Parse ends with the segment\n" + bufferPointer(c).markedLine();
+        cc.flush();
         descriptor.isComposed = true; }
 
 
@@ -833,7 +818,7 @@ public class BrecciaCursor implements ReusableCursor {
         if( ch == ' ' ) {
             c = throughAnyS( ++c );
             if( c >= segmentEnd ) {
-                append( cFlat, c, markup );
+                markup.appendFlat( cFlat, c );
                 return c; }
             ch = buffer.get( c ); }
 
@@ -846,13 +831,13 @@ public class BrecciaCursor implements ReusableCursor {
             if( impliesNewline( ch )) {
                 ++c; // Past the newline, or at least one character of it.
                 if( c >= segmentEnd ) {
-                    append( cFlat, c, markup );
+                    markup.appendFlat( cFlat, c );
                     break; }
                 ch = buffer.get( c );
                 if( ch != ' ' ) continue; // Already the invariant is re-established.
                 c = throughAnyS( ++c ); } // Re-establishing the invariant, part 1.
             else { // Expect a comment block or indent blind, or a term that bounds the foregap.
-                if( cFlat < c ) append( cFlat, c, markup ); // Flat markup that came before.
+                if( cFlat < c ) markup.appendFlat( cFlat, c ); // Flat markup that came before.
                 final BlockParser parser;
                 if( ch == '\\' ) parser = commentBlockParser;
                 else if( ch == /*no-break space*/'\u00A0' ) parser = indentBlindParser;
@@ -867,7 +852,7 @@ public class BrecciaCursor implements ReusableCursor {
           // ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
             if( c >= segmentEnd ) {
                 assert cFlat < c;
-                append( cFlat, c, markup );
+                markup.appendFlat( cFlat, c );
                 break; }
             ch = buffer.get( c ); }
         return c; }
@@ -880,7 +865,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int parseAnyNewlines( final int c, final CoalescentMarkupList markup ) {
         final int d = throughAnyNewlines( c );
-        if( c != d ) append( c, d, markup );
+        if( c != d ) markup.appendFlat( c, d );
         return d; }
 
 
@@ -906,7 +891,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int parseAnyS( final int c, final CoalescentMarkupList markup ) {
         final int d = throughAnyS( c );
-        if( c != d ) append( c, d, markup );
+        if( c != d ) markup.appendFlat( c, d );
         return d; }
 
 
@@ -917,7 +902,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int parseAnyTerm( final int c, final CoalescentMarkupList markup ) {
         final int d = throughAnyTerm( c );
-        if( c != d ) append( c, d, markup );
+        if( c != d ) markup.appendFlat( c, d );
         return d; }
 
 
@@ -951,7 +936,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @throws MalformedMarkup If no such sequence occurs at `c`.
       */
     private int parseS( int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
-        append( c, c = throughS(c), markup );
+        markup.appendFlat( c, c = throughS(c) );
         return c; }
 
 
@@ -962,7 +947,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @throws MalformedMarkup If no term occurs at `c`.
       */
     private int parseTerm( int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
-        append( c, c = throughTerm(c), markup );
+        markup.appendFlat( c, c = throughTerm(c) );
         return c; }
 
 
@@ -1179,7 +1164,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private final ResourceSpooler spooler = new ResourceSpooler( this );
+    final ResourceSpooler spooler = new ResourceSpooler( this );
 
 
 

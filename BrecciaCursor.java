@@ -413,9 +413,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private final BlockParser commentBlockParser = new BlockParser() {
-        @Override int parseAfterPossibleLeadDelimiterCharacter( int c, final List<Markup> markup ) {
-            throw new UnsupportedOperationException(); }};
+    private final BlockParser commentBlockParser = new CommentBlockParser();
 
 
 
@@ -698,9 +696,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private final BlockParser indentBlindParser = new BlockParser() {
-        @Override int parseAfterPossibleLeadDelimiterCharacter( int c, final List<Markup> markup ) {
-            throw new UnsupportedOperationException(); }};
+    private final BlockParser indentBlindParser = new IndentBlindParser();
 
 
 
@@ -842,9 +838,8 @@ public class BrecciaCursor implements ReusableCursor {
                 if( ch == '\\' ) parser = commentBlockParser;
                 else if( ch == /*no-break space*/'\u00A0' ) parser = indentBlindParser;
                 else break; // The foregap ends at a non-backslashed term.
-                final int d = parser.parseAfterPossibleLeadDelimiterCharacter( c + 1, markup );
-                if( !parser.didParse ) break; // The foregap ends at a backslashed term.
-                c = d;
+                if( c /*unmoved*/== (c = parser.parseIfDelimiter( c, markup ))) {
+                    break; } // The foregap ends at a backslashed term.
                 if( c >= segmentEnd ) break; // This block ends both the foregap and fractal segment.
                 cFlat = c; // Potentially the next run of flat markup begins here.
                 c = parser.postSpaceEnd; } // Re-establishing the invariant, part 1.
@@ -1437,14 +1432,20 @@ public class BrecciaCursor implements ReusableCursor {
     private static abstract class BlockParser {
 
 
-        boolean didParse;
+        /** Parses any block, the lead delimiter of which would begin with the known character
+          * of buffer position `c`, adding it to the given markup list.  Already the markup
+          * through `c` is known to be well formed for the purpose.
+          *
+          *     @return The end boundary of the block, or `c` if there is none.
+          */
+        abstract int parseIfDelimiter( int c, List<Markup> markup );
 
 
 
-        abstract int parseAfterPossibleLeadDelimiterCharacter( int c, List<Markup> markup );
-
-
-
+        /** Set if the parse succeeds to the space-extended end boundary of the parsed block.
+          * If a sequence of plain space characters (20) succeeds the block, then this records
+          * the end boundary of that sequence; otherwise it records the end boundary of the block.
+          */
         int postSpaceEnd; }
 
 
@@ -1561,6 +1562,34 @@ public class BrecciaCursor implements ReusableCursor {
         /** Whether a line end was encountered.  Never true when `wasAppenderFound`.
           */
         boolean wasLineEndFound; }
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    private static final class CommentBlockParser extends BlockParser {
+
+
+        /** {@inheritDoc}  <p>Here ‘lead delimiter’ means a backslash sequence
+          * in the first line of the comment block.</p>
+          */
+        @Override int parseIfDelimiter( int c, final List<Markup> markup ) {
+            throw new UnsupportedOperationException(); }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    private static final class IndentBlindParser extends BlockParser {
+
+
+        /** {@inheritDoc}  <p>Here ‘lead delimiter’ means a no-break space
+          * in the first line of the indent blind.</p>
+          */
+        @Override int parseIfDelimiter( int c, final List<Markup> markup ) {
+            throw new UnsupportedOperationException(); }}
 
 
 

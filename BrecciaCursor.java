@@ -842,8 +842,9 @@ public class BrecciaCursor implements ReusableCursor {
                 if( ch == '\\' ) parser = commentBlockParser;
                 else if( ch == /*no-break space*/'\u00A0' ) parser = indentBlindParser;
                 else break; // The foregap ends at a non-backslashed term.
-                c = parser.parseAfterPossibleLeadDelimiterCharacter( ++c, markup );
+                final int d = parser.parseAfterPossibleLeadDelimiterCharacter( c + 1, markup );
                 if( !parser.didParse ) break; // The foregap ends at a backslashed term.
+                c = d;
                 if( c >= segmentEnd ) break; // This block ends both the foregap and fractal segment.
                 cFlat = c; // Potentially the next run of flat markup begins here.
                 c = parser.postSpaceEnd; } // Re-establishing the invariant, part 1.

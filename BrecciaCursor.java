@@ -419,7 +419,7 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** @see FileFractum_.FileDescriptor#isComposed
       */
-    final void composeFileDescriptor() throws MalformedMarkup {
+    final void composeFileDescriptor() {
         final FileFractum_.FileDescriptor_ descriptor = fileFractum.descriptor;
         assert !descriptor.isComposed;
         final CoalescentMarkupList cc = descriptor.components;
@@ -428,7 +428,8 @@ public class BrecciaCursor implements ReusableCursor {
         assert fractumStart == 0;
         int c = 0;
         assert segmentEnd > 0;
-        c = parseForegap( c, cc );
+        if( c /*unmoved*/== (c = parseAnyForegap( c, cc ))) {
+            throw new IllegalStateException( "Foregap expected\n" + bufferPointer(c).markedLine() ); }
         while( c /*moved*/!= (c = parseAnyTerm( c, cc ))
             && c /*moved*/!= (c = parseAnyPostgap( c, cc )));
         assert c == segmentEnd: "Parse ends with the segment\n" + bufferPointer(c).markedLine();
@@ -901,17 +902,6 @@ public class BrecciaCursor implements ReusableCursor {
         final int d = throughAnyTerm( c );
         if( c != d ) markup.appendFlat( c, d );
         return d; }
-
-
-
-    /** Parses a foregap at buffer position `c`, adding each of its components to the given markup list.
-      *
-      *     @return The end boundary of the foregap.
-      *     @throws MalformedMarkup If no foregap occurs at `c`.
-      */
-    private int parseForegap( int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
-        if( c /*moved*/!= (c = parseAnyForegap( c, markup ))) return c;
-        throw new MalformedMarkup( bufferPointer(c), "Foregap expected" ); }
 
 
 

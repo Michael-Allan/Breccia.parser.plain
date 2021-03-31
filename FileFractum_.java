@@ -121,7 +121,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-        public final @Override List<Markup> components() throws MalformedMarkup {
+        public final @Override List<Markup> components() {
             if( !isComposed ) {
                 cursor.composeFileDescriptor();
                 isComposed = true; }

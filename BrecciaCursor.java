@@ -426,13 +426,13 @@ public class BrecciaCursor implements ReusableCursor {
         cc.clear();
         assert buffer.position() == 0;
         assert fractumStart == 0;
-        int c = 0;
+        int b = 0;
         assert segmentEnd > 0;
-        if( c /*unmoved*/== (c = parseAnyForegap( c, cc ))) {
-            throw new IllegalStateException( "Foregap expected\n" + bufferPointer(c).markedLine() ); }
-        while( c /*moved*/!= (c = parseAnyTerm( c, cc ))
-            && c /*moved*/!= (c = parseAnyPostgap( c, cc )));
-        assert c == segmentEnd: "Parse ends with the segment\n" + bufferPointer(c).markedLine();
+        if( b /*unmoved*/== (b = parseAnyForegap( b, cc ))) {
+            throw new IllegalStateException( "Foregap expected\n" + bufferPointer(b).markedLine() ); }
+        while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
+            && b /*moved*/!= (b = parseAnyPostgap( b, cc )));
+        assert b == segmentEnd: "Parse ends with the segment\n" + bufferPointer(b).markedLine();
         cc.flush(); }
 
 
@@ -790,152 +790,152 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     /** Parses any comment appender, the delimiter of which (a backslash sequence)
-      * would begin at buffer position `c`, adding it to the given markup list.
-      * Already the markup before `c` is known to be well formed for the purpose.
+      * would begin at buffer position `b`, adding it to the given markup list.
+      * Already the markup before `b` is known to be well formed for the purpose.
       *
-      *     @return The end boundary of the comment appender, or `c` if there is none.
+      *     @return The end boundary of the comment appender, or `b` if there is none.
       */
-    private int parseAnyCommentAppender( int c, final List<Markup> markup ) {
+    private int parseAnyCommentAppender( int b, final List<Markup> markup ) {
         throw new UnsupportedOperationException(); };
 
 
 
-    /** Parses any foregap at buffer position `c`,
+    /** Parses any foregap at buffer position `b`,
       * adding each of its components to the given markup list.
       *
-      *     @return The end boundary of the foregap, or `c` if there is none.
+      *     @return The end boundary of the foregap, or `b` if there is none.
       */
-    private int parseAnyForegap( int c, final CoalescentMarkupList markup ) {
-        if( c >= segmentEnd ) return c;
-        int cFlat = c; /* The last potential start position of flat markup,
+    private int parseAnyForegap( int b, final CoalescentMarkupList markup ) {
+        if( b >= segmentEnd ) return b;
+        int bFlat = b; /* The last potential start position of flat markup,
           each character either a plain space or newline constituent. */
 
       // Establish the loop invariant
       // ────────────────────────────
-        char ch = buffer.get( c );
+        char ch = buffer.get( b );
         if( ch == ' ' ) {
-            c = throughAnyS( ++c );
-            if( c >= segmentEnd ) {
-                markup.appendFlat( cFlat, c );
-                return c; }
-            ch = buffer.get( c ); }
+            b = throughAnyS( ++b );
+            if( b >= segmentEnd ) {
+                markup.appendFlat( bFlat, b );
+                return b; }
+            ch = buffer.get( b ); }
 
       // Loop through the foregap form
       // ─────────────────────────────
-        for( ;; ) { /* Loop invariant.  Character `ch` at position `c` lies within the fractal segment,
+        for( ;; ) { /* Loop invariant.  Character `ch` at position `b` lies within the fractal segment,
               and is not a plain space.  Rather it is the first character of either a newline or lead
               delimiter of a block construct in the foregap, or of a term just after the foregap. */
-            assert c < segmentEnd && ch != ' ';
+            assert b < segmentEnd && ch != ' ';
             if( impliesNewline( ch )) {
-                ++c; // Past the newline, or at least one character of it.
-                if( c >= segmentEnd ) {
-                    markup.appendFlat( cFlat, c );
+                ++b; // Past the newline, or at least one character of it.
+                if( b >= segmentEnd ) {
+                    markup.appendFlat( bFlat, b );
                     break; }
-                ch = buffer.get( c );
+                ch = buffer.get( b );
                 if( ch != ' ' ) continue; // Already the invariant is re-established.
-                c = throughAnyS( ++c ); } // Re-establishing the invariant, part 1.
+                b = throughAnyS( ++b ); } // Re-establishing the invariant, part 1.
             else { // Expect a comment block or indent blind, or a term that bounds the foregap.
-                if( cFlat < c ) markup.appendFlat( cFlat, c ); // Flat markup that came before.
+                if( bFlat < b ) markup.appendFlat( bFlat, b ); // Flat markup that came before.
                 final BlockParser parser;
                 if( ch == '\\' ) parser = commentBlockParser;
                 else if( ch == /*no-break space*/'\u00A0' ) parser = indentBlindParser;
                 else break; // The foregap ends at a non-backslashed term.
-                if( c /*unmoved*/== (c = parser.parseIfDelimiter( c, markup ))) {
+                if( b /*unmoved*/== (b = parser.parseIfDelimiter( b, markup ))) {
                     break; } // The foregap ends at a backslashed term.
-                if( c >= segmentEnd ) break; // This block ends both the foregap and fractal segment.
-                cFlat = c; // Potentially the next run of flat markup begins here.
-                c = parser.postSpaceEnd; } // Re-establishing the invariant, part 1.
+                if( b >= segmentEnd ) break; // This block ends both the foregap and fractal segment.
+                bFlat = b; // Potentially the next run of flat markup begins here.
+                b = parser.postSpaceEnd; } // Re-establishing the invariant, part 1.
 
           // re-establish the invariant, part 2
           // ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
-            if( c >= segmentEnd ) {
-                assert cFlat < c;
-                markup.appendFlat( cFlat, c );
+            if( b >= segmentEnd ) {
+                assert bFlat < b;
+                markup.appendFlat( bFlat, b );
                 break; }
-            ch = buffer.get( c ); }
+            ch = buffer.get( b ); }
+        return b; }
+
+
+
+    /** Parses any sequence of newlines at buffer position `b`, adding it to the given markup list.
+      *
+      *     @return The end boundary of the sequence, or `b` if there is none.
+      */
+    private int parseAnyNewlines( final int b, final CoalescentMarkupList markup ) {
+        final int c = throughAnyNewlines( b );
+        if( b != c ) markup.appendFlat( b, c );
         return c; }
 
 
 
-    /** Parses any sequence of newlines at buffer position `c`, adding it to the given markup list.
-      *
-      *     @return The end boundary of the sequence, or `c` if there is none.
-      */
-    private int parseAnyNewlines( final int c, final CoalescentMarkupList markup ) {
-        final int d = throughAnyNewlines( c );
-        if( c != d ) markup.appendFlat( c, d );
-        return d; }
-
-
-
-    /** Parses any postgap at buffer position `c`,
+    /** Parses any postgap at buffer position `b`,
       * adding each of its components to the given markup list.
       *
-      *     @return The end boundary of the postgap, or `c` if there is none.
+      *     @return The end boundary of the postgap, or `b` if there is none.
       */
-    private int parseAnyPostgap( int c, final CoalescentMarkupList markup ) {
-        if( c /*moved*/!= (c = parseAnyS( c, markup ))) {
-            if( c /*moved*/!= (c = parseAnyCommentAppender( c, markup ))) {
-                return parseAnyForegap( c, markup ); }}
-        if( c /*moved*/!= (c = parseAnyNewlines( c, markup ))) c = parseAnyForegap( c, markup );
+    private int parseAnyPostgap( int b, final CoalescentMarkupList markup ) {
+        if( b /*moved*/!= (b = parseAnyS( b, markup ))) {
+            if( b /*moved*/!= (b = parseAnyCommentAppender( b, markup ))) {
+                return parseAnyForegap( b, markup ); }}
+        if( b /*moved*/!= (b = parseAnyNewlines( b, markup ))) b = parseAnyForegap( b, markup );
+        return b; }
+
+
+
+    /** Parses any sequence at buffer position `b` of plain space characters,
+      * namely ‘S’ in the language definition, adding it to the given markup list.
+      *
+      *     @return The end boundary of the sequence, or `b` if there is none.
+      */
+    private int parseAnyS( final int b, final CoalescentMarkupList markup ) {
+        final int c = throughAnyS( b );
+        if( b != c ) markup.appendFlat( b, c );
         return c; }
 
 
 
-    /** Parses any sequence at buffer position `c` of plain space characters,
-      * namely ‘S’ in the language definition, adding it to the given markup list.
+    /** Parses any term at buffer position `b`, adding it to the given markup list.
       *
-      *     @return The end boundary of the sequence, or `c` if there is none.
+      *     @return The end boundary of the term, or `b` if there is none.
       */
-    private int parseAnyS( final int c, final CoalescentMarkupList markup ) {
-        final int d = throughAnyS( c );
-        if( c != d ) markup.appendFlat( c, d );
-        return d; }
+    private int parseAnyTerm( final int b, final CoalescentMarkupList markup ) {
+        final int c = throughAnyTerm( b );
+        if( b != c ) markup.appendFlat( b, c );
+        return c; }
 
 
 
-    /** Parses any term at buffer position `c`, adding it to the given markup list.
-      *
-      *     @return The end boundary of the term, or `c` if there is none.
-      */
-    private int parseAnyTerm( final int c, final CoalescentMarkupList markup ) {
-        final int d = throughAnyTerm( c );
-        if( c != d ) markup.appendFlat( c, d );
-        return d; }
-
-
-
-    /** Parses a postgap at buffer position `c`, adding each of its components to the given markup list.
+    /** Parses a postgap at buffer position `b`, adding each of its components to the given markup list.
       *
       *     @return The end boundary of the postgap.
-      *     @throws MalformedMarkup If no postgap occurs at `c`.
+      *     @throws MalformedMarkup If no postgap occurs at `b`.
       */
-    private int parsePostgap( int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
-        if( c /*moved*/!= (c = parseAnyPostgap( c, markup ))) return c;
-        throw new MalformedMarkup( bufferPointer(c), "Postgap expected" ); }
+    private int parsePostgap( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
+        if( b /*moved*/!= (b = parseAnyPostgap( b, markup ))) return b;
+        throw new MalformedMarkup( bufferPointer(b), "Postgap expected" ); }
 
 
 
-    /** Parses a sequence at buffer position `c` of plain space characters,
+    /** Parses a sequence at buffer position `b` of plain space characters,
       * namely ‘S’ in the language definition, adding it to the given markup list.
       *
       *     @return The end boundary of the sequence.
-      *     @throws MalformedMarkup If no such sequence occurs at `c`.
+      *     @throws MalformedMarkup If no such sequence occurs at `b`.
       */
-    private int parseS( int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
-        markup.appendFlat( c, c = throughS(c) );
-        return c; }
+    private int parseS( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
+        markup.appendFlat( b, b = throughS(b) );
+        return b; }
 
 
 
-    /** Parses a term at buffer position `c`, adding it to the given markup list.
+    /** Parses a term at buffer position `b`, adding it to the given markup list.
       *
       *     @return The end boundary of the term.
-      *     @throws MalformedMarkup If no term occurs at `c`.
+      *     @throws MalformedMarkup If no term occurs at `b`.
       */
-    private int parseTerm( int c, final CoalescentMarkupList markup ) throws MalformedMarkup {
-        markup.appendFlat( c, c = throughTerm(c) );
-        return c; }
+    private int parseTerm( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
+        markup.appendFlat( b, b = throughTerm(b) );
+        return b; }
 
 
 
@@ -969,20 +969,20 @@ public class BrecciaCursor implements ReusableCursor {
       *     @uses #xSeq
       */
     private CommandPoint_<?> reifyCommandPoint( final int bulletEnd ) throws MalformedMarkup {
-        int c = bulletEnd + 1; // Past the known space character.
-        c = throughAnyS( c ); // Past any others.
-        xSeq.delimit( c, c = throughTerm(c) );
+        int b = bulletEnd + 1; // Past the known space character.
+        b = throughAnyS( b ); // Past any others.
+        xSeq.delimit( b, b = throughTerm(b) );
         final boolean presentsPrivately;
         if( equalInContent( "privately", xSeq )) {
             presentsPrivately = true;
-            c = throughS( c );
-            xSeq.delimit( c, c = throughTerm(c) ); }
+            b = throughS( b );
+            xSeq.delimit( b, b = throughTerm(b) ); }
         else presentsPrivately = false;
 
       // Resolve its concrete parse state
       // ────────────────────────────────
-        c = binarySearch( commandPointKeywords, xSeq, CharSequence::compare );
-        final CommandPoint_<?> p = c >= 0? commandPoints[c] : basicPlainCommandPoint;
+        b = binarySearch( commandPointKeywords, xSeq, CharSequence::compare );
+        final CommandPoint_<?> p = b >= 0? commandPoints[b] : basicPlainCommandPoint;
 
       // Therein delimit the components already parsed above
       // ──────────────────────────────
@@ -1007,31 +1007,31 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Find the end boundary of the bullet
       // ─────────────────────
-        int c = bullet; // The last parsed position.
+        int b = bullet; // The last parsed position.
         BulletEndSeeker endSeeker = null; // Any that finds the end by a comment appender or line end.
         final int bulletEnd;
         final boolean wasLineEndFound; {
-            int chLast = codePointAt( buffer, c );
+            int chLast = codePointAt( buffer, b );
               // Invariant: always `chLast` holds a non-whitespace character internal to the bullet.
               // Reading by full code point in order accurately to test for alphanumeric characters.
               // Advancing by full cluster in order to apply that test to base characters alone.
             final Matcher mCluster = graphemeClusterMatcher.reset( /*input sequence*/buffer )
-              .region( c, buffer.limit() );
-            for( final int cEnd = segmentEnd;; ) {
+              .region( b, buffer.limit() );
+            for( ;; ) {
                 mCluster.find(); // Succeeds, else the following throws `IllegalStateException`.
-                c = mCluster.end(); // The cluster-aware equivalent of `c += charCount(chLast)`.
-                if( c >= cEnd ) {
-                    assert c == cEnd: "No character can straddle the boundary of a fractal segment";
+                b = mCluster.end(); // The cluster-aware equivalent of `b += charCount(chLast)`.
+                if( b >= segmentEnd ) {
+                    assert b == segmentEnd: "No character straddles the boundary of a fractal segment";
                     wasLineEndFound = true; // Ends at head end.
                     break; }
-                int ch = codePointAt( buffer, c );
+                int ch = codePointAt( buffer, b );
                 if( impliesNewline( ch )) {
                     wasLineEndFound = true; // Ends at line break.
                     break; }
                 if( isAlphabetic(chLast) || isDigit(chLast) ) { // Then `chLast` is alphanumeric.
                     if( ch == ' ' ) {
                         final var s = bulletEndSeeker;
-                        s.seekFromSpace( c, cEnd );
+                        s.seekFromSpace( b, segmentEnd );
                         if( s.wasAppenderFound ) {
                             wasLineEndFound = false; // Ends at comment appender.
                             endSeeker = s;
@@ -1040,17 +1040,17 @@ public class BrecciaCursor implements ReusableCursor {
                             wasLineEndFound = true; // Ends at line break or head end.
                             endSeeker = s;
                             break; }
-                        c = s.cNextNonSpace;
-                        chLast = codePointAt( buffer, c );
+                        b = s.bNextNonSpace;
+                        chLast = codePointAt( buffer, b );
                         continue; }
-                    if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( c )); }
+                    if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( b )); }
                 else { // `chLast` is non-alphanumeric and (by contract) non-whitespace.
                     if( ch == ' ' ) {
                         wasLineEndFound = false; // Ends at space.
                         break; }
                     if( ch == '\u00A0'/*no-break space*/ ) {
                         final var s = bulletEndSeeker;
-                        s.seekFromNoBreakSpace( c, cEnd );
+                        s.seekFromNoBreakSpace( b, segmentEnd );
                         if( s.wasAppenderFound ) {
                             wasLineEndFound = false; // Ends at comment appender.
                             endSeeker = s;
@@ -1059,25 +1059,25 @@ public class BrecciaCursor implements ReusableCursor {
                             wasLineEndFound = true; // Ends at line break or head end.
                             endSeeker = s;
                             break; }
-                        c = s.cNextNonSpace;
-                        chLast = codePointAt( buffer, c );
+                        b = s.bNextNonSpace;
+                        chLast = codePointAt( buffer, b );
                         continue; }}
                 chLast = ch; }
-            bulletEnd = c; }
+            bulletEnd = b; }
 
       // Police any remainder of the bullet line for misplaced no-break spaces
       // ────────────────────
         if( !wasLineEndFound ) {
             if( endSeeker == null ) {
-                assert !impliesNewline( buffer.get( c )); // Not to fall outside the line.
-                ++c; } // To the next unparsed position.
+                assert !impliesNewline( buffer.get( b )); // Not to fall outside the line.
+                ++b; } // To the next unparsed position.
             else {
                 assert endSeeker.wasAppenderFound;
-                c = endSeeker.cDelimiterTightEnd; }
-            for(; c < segmentEnd; ++c ) {
-                final char ch = buffer.get( c );
+                b = endSeeker.bDelimiterTightEnd; }
+            for(; b < segmentEnd; ++b ) {
+                final char ch = buffer.get( b );
                 if( impliesNewline( ch )) break;
-                if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( c )); }}
+                if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( b )); }}
 
       // Resolve the concrete parse state
       // ────────────────────────────────
@@ -1088,7 +1088,7 @@ public class BrecciaCursor implements ReusableCursor {
                 assert buffer.get(bulletEnd) == '\u00A0'; // a command point) at a no-break space.
                 throw spaceExpected( bufferPointer( bulletEnd )); }
             if( wasLineEndFound ) { // Then the bullet ends directly at the line end, with no
-                throw termExpected( bufferPointer( c )); } // command between the two.
+                throw termExpected( bufferPointer( b )); } // command between the two.
             assert buffer.get(bulletEnd) == ' '; // The only remaining case.
             p = reifyCommandPoint( bulletEnd ); }
         else p = basicPlainPoint;
@@ -1159,73 +1159,73 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Scans through any sequence of newlines at buffer position `c`.
+    /** Scans through any sequence of newlines at buffer position `b`.
       *
-      *     @return The end boundary of the sequence, or `c` if there is none.
+      *     @return The end boundary of the sequence, or `b` if there is none.
       */
-    private int throughAnyNewlines( int c ) {
-        while( c < segmentEnd  &&  impliesNewline(buffer.get(c)) ) ++c; /* This implies a sequence of
+    private int throughAnyNewlines( int b ) {
+        while( b < segmentEnd  &&  impliesNewline(buffer.get(b)) ) ++b; /* This implies a sequence of
           well-formed newlines only because already `delimitSegment` has tested for malformed ones. */
-        return c; }
+        return b; }
 
 
 
-    /** Scans through any sequence at buffer position `c` of plain space characters,
+    /** Scans through any sequence at buffer position `b` of plain space characters,
       * namely ‘S’ in the language definition.
       *
-      *     @return The end boundary of the sequence, or `c` if there is none.
+      *     @return The end boundary of the sequence, or `b` if there is none.
       */
-    private int throughAnyS( int c ) {
-        while( c < segmentEnd  &&  buffer.get(c) == ' ' ) ++c;
-        return c; }
+    private int throughAnyS( int b ) {
+        while( b < segmentEnd  &&  buffer.get(b) == ' ' ) ++b;
+        return b; }
 
 
 
-    /** Scans through any term at buffer position `c`.  A term is (as the language defines it) a sequence
+    /** Scans through any term at buffer position `b`.  A term is (as the language defines it) a sequence
       * of non-whitespace characters that does not comprise a sequence of backslashes ‘\’.
       *
-      *     @return The end boundary of the term, or `c` if there is none.
+      *     @return The end boundary of the term, or `b` if there is none.
       */
-    private int throughAnyTerm( int c ) {
-        final int cOriginal;
+    private int throughAnyTerm( int b ) {
+        final int bOriginal;
         final char chFirst; {
-            if( c >= segmentEnd ) return c;
-            chFirst = buffer.get( c );
-            if( isWhitespace( chFirst )) return c;
-            cOriginal = c++; }
+            if( b >= segmentEnd ) return b;
+            chFirst = buffer.get( b );
+            if( isWhitespace( chFirst )) return b;
+            bOriginal = b++; }
         if( chFirst == '\\' ) { // Then scan the remainder by the slow, exhaustive method. (edge case)
             boolean comprisesBackslashes = true; // Thus far.
-            for(; c < segmentEnd; ++c ) {
-                final char ch = buffer.get( c );
+            for(; b < segmentEnd; ++b ) {
+                final char ch = buffer.get( b );
                 if( isWhitespace( ch )) break;
                 if( ch != '\\' ) comprisesBackslashes = false; }
-            if( comprisesBackslashes ) return cOriginal; }
-        else while( c < segmentEnd && !isWhitespace(buffer.get(c)) ) ++c; // The fast way. (typical case)
-        return c; }
+            if( comprisesBackslashes ) return bOriginal; }
+        else while( b < segmentEnd && !isWhitespace(buffer.get(b)) ) ++b; // The fast way. (typical case)
+        return b; }
 
 
 
-    /** Scans through a sequence at buffer position `c` of plain space characters,
+    /** Scans through a sequence at buffer position `b` of plain space characters,
       * namely ‘S’ in the language definition.
       *
       *     @return The end boundary of the sequence.
-      *     @throws MalformedMarkup If no such sequence occurs at `c`.
+      *     @throws MalformedMarkup If no such sequence occurs at `b`.
       */
-    private int throughS( int c ) throws MalformedMarkup {
-        if( c /*moved*/!= (c = throughAnyS( c ))) return c;
-        throw spaceExpected( bufferPointer( c )); }
+    private int throughS( int b ) throws MalformedMarkup {
+        if( b /*moved*/!= (b = throughAnyS( b ))) return b;
+        throw spaceExpected( bufferPointer( b )); }
 
 
 
-    /** Scans through a term at buffer position `c`.  A term is (as the language defines it) a sequence
+    /** Scans through a term at buffer position `b`.  A term is (as the language defines it) a sequence
       * of non-whitespace characters that does not comprise a sequence of backslashes ‘\’.
       *
       *     @return The end boundary of the term.
-      *     @throws MalformedMarkup If no term occurs at `c`.
+      *     @throws MalformedMarkup If no term occurs at `b`.
       */
-    private int throughTerm( int c ) throws MalformedMarkup {
-        if( c /*moved*/!= (c = throughAnyTerm( c ))) return c;
-        throw termExpected( bufferPointer( c )); }
+    private int throughTerm( int b ) throws MalformedMarkup {
+        if( b /*moved*/!= (b = throughAnyTerm( b ))) return b;
+        throw termExpected( bufferPointer( b )); }
 
 
 
@@ -1424,12 +1424,12 @@ public class BrecciaCursor implements ReusableCursor {
 
 
         /** Parses any block, the lead delimiter of which would begin with the known character
-          * of buffer position `c`, adding it to the given markup list.  Already the markup
-          * through `c` is known to be well formed for the purpose.
+          * of buffer position `b`, adding it to the given markup list.  Already the markup
+          * through `b` is known to be well formed for the purpose.
           *
-          *     @return The end boundary of the block, or `c` if there is none.
+          *     @return The end boundary of the block, or `b` if there is none.
           */
-        abstract int parseIfDelimiter( int c, List<Markup> markup );
+        abstract int parseIfDelimiter( int b, List<Markup> markup );
 
 
 
@@ -1454,95 +1454,95 @@ public class BrecciaCursor implements ReusableCursor {
           * then the tight end boundary is the position subsequent to that space character,
           * otherwise the position subsequent to the backslash sequence.
           */
-        int cDelimiterTightEnd;
+        int bDelimiterTightEnd;
 
 
 
         /** Either the buffer position of the next non-space character (neither 20 nor A0),
           * or `buffer.limit`.
           */
-        int cNextNonSpace;
+        int bNextNonSpace;
 
 
 
-        /** Tells whether the known backslash at `cSlash` delimits a comment appender.
-          * Updates `cDelimiterTightEnd` accordingly.  Already the markup through `cSlash`
+        /** Tells whether the known backslash at `bSlash` delimits a comment appender.
+          * Updates `bDelimiterTightEnd` accordingly.  Already the markup through `bSlash`
           * is known to be well formed for the purpose.
           *
-          *     @param cSlash Buffer position of a (known) backslash character ‘\’.
-          *     @param cEnd End boundary of the point head.
+          *     @param bSlash Buffer position of a (known) backslash character ‘\’.
+          *     @param bEnd End boundary of the point head.
           */
-        boolean isDelimiterSlashAt( final int cSlash, final int cEnd ) {
-            for( cDelimiterTightEnd = cSlash + 1;; ) {
-                if( cDelimiterTightEnd == cEnd ) {
+        boolean isDelimiterSlashAt( final int bSlash, final int bEnd ) {
+            for( bDelimiterTightEnd = bSlash + 1;; ) {
+                if( bDelimiterTightEnd == bEnd ) {
                     return true; }
-                final char ch = buffer.charAt( cDelimiterTightEnd );
+                final char ch = buffer.charAt( bDelimiterTightEnd );
                 if( ch != '\\' ) {
                     if( ch == ' ' ) {
-                        ++cDelimiterTightEnd; // Past the space character, as per the contract.
+                        ++bDelimiterTightEnd; // Past the space character, as per the contract.
                         return true; }
                     return impliesNewline( ch ); }}}
 
 
 
-        /** Detects whether the known no-break space at `c` is followed by a plain space
+        /** Detects whether the known no-break space at `b` is followed by a plain space
           * and backslash sequence that delimits a comment appender, recording the result
           * in one or more fields of this seeker.
           *
-          *     @param c Buffer position of a (known) no-break space character.
-          *     @param cEnd End boundary of the point head.
+          *     @param b Buffer position of a (known) no-break space character.
+          *     @param bEnd End boundary of the point head.
           *     @throws MalformedMarkup On detection of a misplaced no-break space.
           */
-        void seekFromNoBreakSpace( int c, final int cEnd ) throws MalformedMarkup {
-            assert c < cEnd;
-            if( ++c == cEnd ) {
+        void seekFromNoBreakSpace( int b, final int bEnd ) throws MalformedMarkup {
+            assert b < bEnd;
+            if( ++b == bEnd ) {
                 wasAppenderFound = false;
                 wasLineEndFound = true; }
             else {
-                final char ch = buffer.charAt( c );
+                final char ch = buffer.charAt( b );
                 if( ch == ' ' ) {
-                    seekFromSpace( c, cEnd );
+                    seekFromSpace( b, bEnd );
                     if( wasLineEndFound || wasAppenderFound ) return;
-                    throw misplacedNoBreakSpace( bufferPointer( c - 1 )); }
+                    throw misplacedNoBreakSpace( bufferPointer( b - 1 )); }
                 else if( impliesNewline( ch )) {
                     wasAppenderFound = false;
                     wasLineEndFound = true; }
                 else {
-                    if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( c ));
+                    if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( b ));
                     wasAppenderFound = false;
                     wasLineEndFound = false; }}
-            cNextNonSpace = c; }
+            bNextNonSpace = b; }
 
 
 
-        /** Detects whether the known, plain space beginning at `c` is followed by a backslash sequence
+        /** Detects whether the known, plain space beginning at `b` is followed by a backslash sequence
           * that delimits a comment appender, recording the result in one or more fields of this seeker.
           *
-          *     @param c Buffer position of a (known) plain space character.
-          *     @param cEnd End boundary of the point head.
+          *     @param b Buffer position of a (known) plain space character.
+          *     @param bEnd End boundary of the point head.
           *     @throws MalformedMarkup On detection of a misplaced no-break space.
           */
-        void seekFromSpace( int c, final int cEnd ) throws MalformedMarkup {
-            assert c < cEnd;
+        void seekFromSpace( int b, final int bEnd ) throws MalformedMarkup {
+            assert b < bEnd;
             for( ;; ) {
-                if( ++c == cEnd ) {
+                if( ++b == bEnd ) {
                     wasAppenderFound = false;
                     wasLineEndFound = true;
                     break; }
-                final char ch = buffer.charAt( c );
+                final char ch = buffer.charAt( b );
                 if( ch != ' ' ) {
                     if( ch == '\\' ) {
-                        wasAppenderFound = isDelimiterSlashAt( c, cEnd );
+                        wasAppenderFound = isDelimiterSlashAt( b, bEnd );
                         wasLineEndFound = false; }
                     else if( impliesNewline( ch )) {
                         wasAppenderFound = false;
                         wasLineEndFound = true; }
                     else {
-                        if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( c ));
+                        if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( b ));
                         wasAppenderFound = false;
                         wasLineEndFound = false; }
                     break; }}
-            cNextNonSpace = c; }
+            bNextNonSpace = b; }
 
 
 
@@ -1567,7 +1567,7 @@ public class BrecciaCursor implements ReusableCursor {
         /** {@inheritDoc}  <p>Here ‘lead delimiter’ means a backslash sequence
           * in the first line of the comment block.</p>
           */
-        @Override int parseIfDelimiter( int c, final List<Markup> markup ) {
+        @Override int parseIfDelimiter( int b, final List<Markup> markup ) {
             throw new UnsupportedOperationException(); }}
 
 
@@ -1581,7 +1581,7 @@ public class BrecciaCursor implements ReusableCursor {
         /** {@inheritDoc}  <p>Here ‘lead delimiter’ means a no-break space
           * in the first line of the indent blind.</p>
           */
-        @Override int parseIfDelimiter( int c, final List<Markup> markup ) {
+        @Override int parseIfDelimiter( int b, final List<Markup> markup ) {
             throw new UnsupportedOperationException(); }}
 
 

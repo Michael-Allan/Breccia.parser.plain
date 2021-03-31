@@ -788,8 +788,9 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses any comment appender, the delimiter of which (a backslash sequence) would begin
-      * (or continue) at buffer position `c`, adding each of its components to the given markup list.
+    /** Parses any comment appender, the delimiter of which (a backslash sequence)
+      * would begin at buffer position `c`, adding it to the given markup list.
+      * Already the markup before `c` is known to be well formed for the purpose.
       *
       *     @return The end boundary of the comment appender, or `c` if there is none.
       */
@@ -1474,8 +1475,9 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** Tells whether the backslash at `c` delimits a comment appender.
-          * Updates `cDelimiterTightEnd` accordingly.
+        /** Tells whether the known backslash at `cSlash` delimits a comment appender.
+          * Updates `cDelimiterTightEnd` accordingly.  Already the markup through `cSlash`
+          * is known to be well formed for the purpose.
           *
           *     @param cSlash Buffer position of a (known) backslash character ‘\’.
           *     @param cEnd End boundary of the point head.
@@ -1493,8 +1495,9 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** Detects whether `c` is followed by plain space that delimits a comment appender,
-          * recording the result in one or more fields of this seeker.
+        /** Detects whether the known no-break space at `c` is followed by a plain space
+          * and backslash sequence that delimits a comment appender, recording the result
+          * in one or more fields of this seeker.
           *
           *     @param c Buffer position of a (known) no-break space character.
           *     @param cEnd End boundary of the point head.
@@ -1522,8 +1525,8 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** Detects whether the plain space beginning at `c` delimits a comment appender,
-          * recording the result in one or more fields of this seeker.
+        /** Detects whether the known, plain space beginning at `c` is followed by a backslash sequence
+          * that delimits a comment appender, recording the result in one or more fields of this seeker.
           *
           *     @param c Buffer position of a (known) plain space character.
           *     @param cEnd End boundary of the point head.

@@ -413,7 +413,71 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    private final CommentaryHoldDetector commentaryHoldDetector = new CommentaryHoldDetector();
+
+
+
     private final BlockParser commentBlockParser = new CommentBlockParser();
+
+
+
+    /** @return The end boundary of the holder, viz. past any terminal newline. *//*
+      *
+      * @paramImplied #commentaryHoldDetector What detected the hold in the markup.
+      */
+    private int compose( final CommentaryHolder_ holder ) {
+        final CommentaryHoldDetector detector = commentaryHoldDetector;
+        final DelimitableMarkupList cc = holder.components;
+        assert cc.sizeLimit() == 5; // Literals 2 through 5 are written herein.
+
+      // `c1_delimiter`
+      // ──────────────
+        final int delimiterEnd = detector.delimit( holder ); // Its `c1_delimiter.text`, that is.
+        final int whiteEnd = detector.whiteEnd;
+        if( whiteEnd == delimiterEnd ) {
+            cc.end( 2 ); // The holder ends without `c2_white`.
+            return delimiterEnd; }
+
+      // `c2_white`
+      // ──────────
+        holder.c2_white.text.delimit( delimiterEnd, whiteEnd );
+        if( !detector.hasDetectedCommentary ) {
+            cc.end( 3 ); // The holder ends without `c3_commentary`.
+            return whiteEnd; }
+
+      // `c3_commentary` and `c4_white` if any
+      // ──────────────────────────────
+        int b = whiteEnd; /* The scan begins at the end boundary of `c2_white`,
+          which is the start of the leading term of `c3_commentary`. */
+        assert !( buffer.get(b) == ' ' || impliesNewline(buffer.get(b)) ); // Not in plain whitespace.
+        ++b; // Past the first character of the leading term.
+        final int commentaryEnd;
+        cc: for( ;; ) {
+            term: for(;; ++b ) {
+                if( b >= segmentEnd ) {
+                    commentaryEnd = b;
+                    cc.end( 4 ); // The holder ends without `c4_white`.
+                    break cc; }
+                final char ch = buffer.get( b );
+                if( ch == ' ' || impliesWithoutCompletingNewline(ch) ) break term;
+                if( completesNewline( ch )) {
+                    cc.end( 5 ); // The holder ends with a newline.
+                    holder.c4_white.text.delimit( commentaryEnd = b, ++/*past the newline*/b );
+                    break cc; }}
+            final int bWhite = b++; // Where the latest plain whitespace starts.
+            white: for(;; ++b ) {
+                if( b >= segmentEnd ) {
+                    cc.end( 5 ); // The holder ends with a plain space.
+                    holder.c4_white.text.delimit( commentaryEnd = bWhite, segmentEnd );
+                    break cc; }
+                final char ch = buffer.get( b );
+                if( completesNewline( ch )) {
+                    cc.end( 5 ); // The holder ends with a newline.
+                    holder.c4_white.text.delimit( commentaryEnd = bWhite, ++/*past the newline*/b );
+                    break cc; }
+                if( !( ch == ' ' || impliesWithoutCompletingNewline(ch) )) break white; }}
+        holder.c3_commentary.text.delimit( whiteEnd, commentaryEnd );
+        return b; }
 
 
 
@@ -796,7 +860,12 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the comment appender, or `b` if there is none.
       */
     private int parseAnyCommentAppender( int b, final List<Markup> markup ) {
-        throw new UnsupportedOperationException(); };
+        if( b < segmentEnd && buffer.get(b) == '\\'
+              && commentaryHoldDetector.slashStartsDelimiter(b) ) {
+            final CommentAppender_ appender = spooler.commentAppender.unwind();
+            appender.text.delimit( b, b = compose( appender ));
+            markup.add( appender ); }
+        return b; }
 
 
 
@@ -1031,7 +1100,7 @@ public class BrecciaCursor implements ReusableCursor {
                 if( isAlphabetic(chLast) || isDigit(chLast) ) { // Then `chLast` is alphanumeric.
                     if( ch == ' ' ) {
                         final var s = bulletEndSeeker;
-                        s.seekFromSpace( b, segmentEnd );
+                        s.seekFromSpace( b );
                         if( s.wasAppenderFound ) {
                             wasLineEndFound = false; // Ends at comment appender.
                             endSeeker = s;
@@ -1050,7 +1119,7 @@ public class BrecciaCursor implements ReusableCursor {
                         break; }
                     if( ch == '\u00A0'/*no-break space*/ ) {
                         final var s = bulletEndSeeker;
-                        s.seekFromNoBreakSpace( b, segmentEnd );
+                        s.seekFromNoBreakSpace( b );
                         if( s.wasAppenderFound ) {
                             wasLineEndFound = false; // Ends at comment appender.
                             endSeeker = s;
@@ -1073,7 +1142,7 @@ public class BrecciaCursor implements ReusableCursor {
                 ++b; } // To the next unparsed position.
             else {
                 assert endSeeker.wasAppenderFound;
-                b = endSeeker.bDelimiterTightEnd; }
+                b = endSeeker.bDelimiterFullEnd; }
             for(; b < segmentEnd; ++b ) {
                 final char ch = buffer.get( b );
                 if( impliesNewline( ch )) break;
@@ -1159,6 +1228,21 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Scans through any newline at buffer position `b`.
+      *
+      *     @return The end boundary of the newline, or `b` if there is none.
+      */
+    private int throughAnyNewline( int b ) {
+        for(; b < segmentEnd; ++b ) {
+            final char ch = buffer.get( b );
+            if( completesNewline( ch )) {
+                ++b; // Past the newline.
+                break; }
+            if( !impliesWithoutCompletingNewline( ch )) break; }
+        return b; }
+
+
+
     /** Scans through any sequence of newlines at buffer position `b`.
       *
       *     @return The end boundary of the sequence, or `b` if there is none.
@@ -1230,7 +1314,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private final DelimitableCharSequence xSeq = newDelimitableCharSequence( buffer );
-      // For use only where declared.
+      // Shared reusable instance
 
 
 
@@ -1449,12 +1533,12 @@ public class BrecciaCursor implements ReusableCursor {
     private final class BulletEndSeeker {
 
 
-        /** Set when `wasAppenderFound` to the tight end boundary in the buffer of its delimiter.
+        /** Set when `wasAppenderFound` to the full end boundary in the buffer of its delimiter.
           * If a plain space character (20) succeeds the delimiting backslash sequence,
-          * then the tight end boundary is the position subsequent to that space character,
+          * then the full end boundary is the position subsequent to that space character,
           * otherwise the position subsequent to the backslash sequence.
           */
-        int bDelimiterTightEnd;
+        int bDelimiterFullEnd;
 
 
 
@@ -1465,43 +1549,22 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** Tells whether the known backslash at `bSlash` delimits a comment appender.
-          * Updates `bDelimiterTightEnd` accordingly.  Already the markup through `bSlash`
-          * is known to be well formed for the purpose.
-          *
-          *     @param bSlash Buffer position of a (known) backslash character ‘\’.
-          *     @param bEnd End boundary of the point head.
-          */
-        boolean isDelimiterSlashAt( final int bSlash, final int bEnd ) {
-            for( bDelimiterTightEnd = bSlash + 1;; ) {
-                if( bDelimiterTightEnd == bEnd ) {
-                    return true; }
-                final char ch = buffer.charAt( bDelimiterTightEnd );
-                if( ch != '\\' ) {
-                    if( ch == ' ' ) {
-                        ++bDelimiterTightEnd; // Past the space character, as per the contract.
-                        return true; }
-                    return impliesNewline( ch ); }}}
-
-
-
         /** Detects whether the known no-break space at `b` is followed by a plain space
           * and backslash sequence that delimits a comment appender, recording the result
           * in one or more fields of this seeker.
           *
           *     @param b Buffer position of a (known) no-break space character.
-          *     @param bEnd End boundary of the point head.
           *     @throws MalformedMarkup On detection of a misplaced no-break space.
           */
-        void seekFromNoBreakSpace( int b, final int bEnd ) throws MalformedMarkup {
-            assert b < bEnd;
-            if( ++b == bEnd ) {
+        void seekFromNoBreakSpace( int b ) throws MalformedMarkup {
+            assert b < segmentEnd;
+            if( ++b == segmentEnd ) {
                 wasAppenderFound = false;
                 wasLineEndFound = true; }
             else {
                 final char ch = buffer.charAt( b );
                 if( ch == ' ' ) {
-                    seekFromSpace( b, bEnd );
+                    seekFromSpace( b );
                     if( wasLineEndFound || wasAppenderFound ) return;
                     throw misplacedNoBreakSpace( bufferPointer( b - 1 )); }
                 else if( impliesNewline( ch )) {
@@ -1519,20 +1582,19 @@ public class BrecciaCursor implements ReusableCursor {
           * that delimits a comment appender, recording the result in one or more fields of this seeker.
           *
           *     @param b Buffer position of a (known) plain space character.
-          *     @param bEnd End boundary of the point head.
           *     @throws MalformedMarkup On detection of a misplaced no-break space.
           */
-        void seekFromSpace( int b, final int bEnd ) throws MalformedMarkup {
-            assert b < bEnd;
+        void seekFromSpace( int b ) throws MalformedMarkup {
+            assert b < segmentEnd;
             for( ;; ) {
-                if( ++b == bEnd ) {
+                if( ++b == segmentEnd ) {
                     wasAppenderFound = false;
                     wasLineEndFound = true;
                     break; }
                 final char ch = buffer.charAt( b );
                 if( ch != ' ' ) {
                     if( ch == '\\' ) {
-                        wasAppenderFound = isDelimiterSlashAt( b, bEnd );
+                        wasAppenderFound = slashStartsDelimiter( b );
                         wasLineEndFound = false; }
                     else if( impliesNewline( ch )) {
                         wasAppenderFound = false;
@@ -1546,6 +1608,25 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+        /** Tells whether the known backslash at `b` starts the delimiter of a comment appender,
+          * and updates `bDelimiterFullEnd` accordingly.  Already the markup through `b`
+          * is known to be well formed for the purpose.
+          *
+          *     @param b Buffer position of a (known) backslash character ‘\’.
+          */
+        private boolean slashStartsDelimiter( final int b ) {
+            for( bDelimiterFullEnd = b + 1;; ) {
+                if( bDelimiterFullEnd >= segmentEnd ) {
+                    return true; }
+                final char ch = buffer.charAt( bDelimiterFullEnd );
+                if( ch != '\\' ) {
+                    if( ch == ' ' ) {
+                        ++bDelimiterFullEnd; // Past the space character, as per the contract.
+                        return true; }
+                    return impliesNewline( ch ); }}}
+
+
+
         /** Whether a comment appender was found.  Never true when `wasLineEndFound`.
           */
         boolean wasAppenderFound;
@@ -1555,6 +1636,78 @@ public class BrecciaCursor implements ReusableCursor {
         /** Whether a line end was encountered.  Never true when `wasAppenderFound`.
           */
         boolean wasLineEndFound; }
+
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    private final class CommentaryHoldDetector {
+
+
+        /** Delimits the text of `holder.c1_delimiter` and returns `delimiterEnd`.
+          */
+        int delimit( final CommentaryHolder_ holder ) {
+            holder.c1_delimiter.text.delimit( delimiterStart, delimiterEnd );
+            return delimiterEnd; }
+
+
+
+        /** Set when `slashStartsDelimiter` to the end boundary in the buffer
+          * of the backslash sequence that forms the delimiter.
+          */
+        private int delimiterEnd;
+
+
+
+        /** Set when `slashStartsDelimiter` to the start boundary in the buffer
+          * of the backslash sequence that forms the delimiter.
+          */
+        private int delimiterStart;
+
+
+
+        /** Set when `slashStartsDelimiter` to tell whether the appender holds commentary.
+          */
+        boolean hasDetectedCommentary;
+
+
+
+        /** Tells whether the known backslash at `b` starts the delimiter of a comment appender,
+          * and updates the fields of this detector accordingly.  Already the markup through `b`
+          * is known to be well formed for the purpose.
+          *
+          *     @param b Buffer position of a (known) backslash character ‘\’.
+          */
+        boolean slashStartsDelimiter( int b ) {
+            final int bOriginal = b;
+            for( ;; ) {
+                if( ++b >= segmentEnd ) {
+                    delimiterStart = bOriginal;
+                    whiteEnd = delimiterEnd = b;
+                    return true; }
+                char ch = buffer.charAt( b );
+                if( ch != '\\' ) {
+                    final int a = b;
+                    if( ch == ' ' ) {
+                        b = throughAnyS( ++b );
+                        if( b /*moved*/!= (b = throughAnyNewline( b ))) hasDetectedCommentary = false;
+                        else hasDetectedCommentary = b < segmentEnd; }
+                    else if(( b = throughAnyNewline( b )) /*unmoved*/== a ) return false;
+                    else hasDetectedCommentary = false;
+                    delimiterStart = bOriginal;
+                    delimiterEnd = a;
+                    whiteEnd = b;
+                    return true; }}}
+
+
+
+        /** Set when `slashStartsDelimiter` to the end boundary in the buffer of colinear plain whitespace
+          * subsequent to `delimiterEnd`, or to `delimiterEnd` if no such whitespace occurs.
+          * Here ‘colinear’ implies at most a single terminal newline.
+          */
+        int whiteEnd; }
 
 
 

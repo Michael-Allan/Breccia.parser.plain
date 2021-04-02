@@ -26,11 +26,11 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-    FileDescriptor_ descriptor;
+    FileDescriptor descriptor;
 
 
 
-    final FileDescriptor_ descriptorWhenPresent = new FileDescriptor_();
+    final FileDescriptor descriptorWhenPresent = new FileDescriptor();
 
 
 
@@ -54,7 +54,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
    // ━━━  F i l e   F r a c t u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override FileDescriptor descriptor() { return descriptor; }
+    public final @Override Markup descriptor() { return descriptor; }
 
 
 
@@ -93,10 +93,10 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class FileDescriptor_ extends Markup_ implements FileDescriptor {
+    final class FileDescriptor extends Markup_ {
 
 
-        FileDescriptor_() { super( FileFractum_.this.text ); }
+        FileDescriptor() { super( FileFractum_.this.text ); }
 
 
 
@@ -130,7 +130,11 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-        public @Override int lineNumber() { return FileFractum_.this.lineNumber(); }}}
+        public @Override int lineNumber() { return FileFractum_.this.lineNumber(); }
+
+
+
+        public @Override String tagName() { return "FileDescriptor"; }}}
 
 
 

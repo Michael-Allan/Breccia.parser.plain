@@ -1,6 +1,7 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.BodyFractum;
+import Breccia.parser.Markup;
 
 
 /** @param <C> The type of cursor.
@@ -12,14 +13,14 @@ abstract class BodyFractum_<C extends BrecciaCursor> extends Fractum_<C> impleme
 
 
 
-    final PerfectIndent_ perfectIndent = new PerfectIndent_();
+    final PerfectIndent perfectIndent = new PerfectIndent();
 
 
 
    // ━━━  B o d y   F r a c t u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override PerfectIndent perfectIndent() { return perfectIndent; }
+    public @Override Markup perfectIndent() { return perfectIndent; }
 
 
 
@@ -47,17 +48,25 @@ abstract class BodyFractum_<C extends BrecciaCursor> extends Fractum_<C> impleme
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class PerfectIndent_ extends FlatMarkup implements PerfectIndent {
+    final class PerfectIndent extends FlatMarkup {
 
 
-        PerfectIndent_() { super( BodyFractum_.this ); }
+        PerfectIndent() { super( BodyFractum_.this ); }
 
 
 
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override int lineNumber() { return BodyFractum_.this.lineNumber(); }}}
+        public @Override int column() { return 0; }
+
+
+
+        public @Override int lineNumber() { return BodyFractum_.this.lineNumber(); }
+
+
+
+        public @Override String tagName() { return "Markup"; }}}
 
 
 

@@ -484,7 +484,7 @@ public class BrecciaCursor implements ReusableCursor {
     /** @see FileFractum_.FileDescriptor#isComposed
       */
     final void composeFileDescriptor() {
-        final FileFractum_.FileDescriptor_ descriptor = fileFractum.descriptor;
+        final FileFractum_.FileDescriptor descriptor = fileFractum.descriptor;
         assert !descriptor.isComposed;
         final CoalescentMarkupList cc = descriptor.components;
         cc.clear();
@@ -511,7 +511,7 @@ public class BrecciaCursor implements ReusableCursor {
             f.components = FileFractum_.componentsWhenAbsent;
             f.descriptor = null; }
         else {
-            final FileFractum_.FileDescriptor_ d = f.descriptorWhenPresent;
+            final FileFractum_.FileDescriptor d = f.descriptorWhenPresent;
             d.isComposed = false; // Pending demand.
             // No need to delimit `d.text`, which being identical to `f.text` is already delimited.
             f.components = f.componentsWhenPresent;

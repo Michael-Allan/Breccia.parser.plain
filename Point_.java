@@ -20,7 +20,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-    final Bullet_ bullet = new Bullet_();
+    final Bullet bullet = new Bullet();
 
 
 
@@ -32,11 +32,11 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-    Descriptor descriptor;
+    Markup descriptor;
 
 
 
-    final Descriptor_ descriptorWhenPresent = new Descriptor_();
+    final Descriptor descriptorWhenPresent = new Descriptor();
 
 
 
@@ -59,21 +59,21 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
    // ━━━  P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override Bullet bullet() { return bullet; }
+    public final @Override Markup bullet() { return bullet; }
 
 
 
-    public final @Override Descriptor descriptor() { return descriptor; }
+    public final @Override Markup descriptor() { return descriptor; }
 
 
 
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class Bullet_ extends FlatMarkup implements Bullet {
+    final class Bullet extends FlatMarkup {
 
 
-        Bullet_() { super( Point_.this ); }
+        Bullet() { super( Point_.this ); }
 
 
 
@@ -84,17 +84,21 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-        public @Override int lineNumber() { return Point_.this.lineNumber(); }}
+        public @Override int lineNumber() { return Point_.this.lineNumber(); }
+
+
+
+        public @Override String tagName() { return "Bullet"; }}
 
 
 
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class Descriptor_ extends FlatMarkup/*TEST*/ implements Descriptor {
+    final class Descriptor extends FlatMarkup/*TEST*/ {
 
 
-        Descriptor_() { super( Point_.this ); }
+        Descriptor() { super( Point_.this ); }
 
 
 
@@ -106,8 +110,12 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-        public @Override int lineNumber() { return Point_.this.lineNumber(); }} /* Always the descriptor
+        public @Override int lineNumber() { return Point_.this.lineNumber(); } /* Always the descriptor
           begins on the first line of the point, if only because it includes that line’s terminator. */
+
+
+
+        public @Override String tagName() { return "PointDescriptor"; }}
 
 
 

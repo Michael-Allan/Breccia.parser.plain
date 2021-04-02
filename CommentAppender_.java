@@ -8,14 +8,7 @@ final class CommentAppender_ extends CommentaryHolder_ implements CommentAppende
 
     CommentAppender_( final BrecciaCursor cursor ) {
         super( /*c0_white*/null, cursor );
-        components.start( 1 ); } // An appender starts without `c0_white`.
-
-
-
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-    public @Override String tagName() { return "CommentAppender"; }}
+        components.start( 1 ); }} // An appender starts without `c0_white`.
 
 
 

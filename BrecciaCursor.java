@@ -494,6 +494,7 @@ public class BrecciaCursor implements ReusableCursor {
         assert segmentEnd > 0;
         if( b /*unmoved*/== (b = parseAnyForegap( b, cc ))) {
             throw new IllegalStateException( "Foregap expected\n" + bufferPointer(b).markedLine() ); }
+            // Because no alternative is possible if `delimitSegment` has done its job.
         while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
             && b /*moved*/!= (b = parseAnyPostgap( b, cc )));
         assert b == segmentEnd: "Parse ends with the segment\n" + bufferPointer(b).markedLine();

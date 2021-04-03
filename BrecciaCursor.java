@@ -870,15 +870,18 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses any foregap at buffer position `b`,
-      * adding each of its components to the given markup list.
+    /** Parses any foregap at buffer position `b`, adding each of its components
+      * to the given markup list.  Already `b` is known to bound either the end
+      * of the fractal segment (edge case) or the start of a line within it.
       *
       *     @return The end boundary of the foregap, or `b` if there is none.
       */
     private int parseAnyForegap( int b, final CoalescentMarkupList markup ) {
-        if( b >= segmentEnd ) return b;
+        if( b >= segmentEnd ) return b; /* As required, either `b` bounds the segment end (left),
+          or a line start (right). */ assert b == segmentStart || completesNewline(buffer.get(b-1));
+        int bLine = b; // The last position at which a line starts.
         int bFlat = b; /* The last potential start position of flat markup,
-          each character either a plain space or newline constituent. */
+          each character being either a plain space or newline constituent. */
 
       // Establish the loop invariant
       // ────────────────────────────
@@ -896,21 +899,26 @@ public class BrecciaCursor implements ReusableCursor {
               and is not a plain space.  Rather it is the first character of either a newline or lead
               delimiter of a block construct in the foregap, or of a term just after the foregap. */
             assert b < segmentEnd && ch != ' ';
-            if( impliesNewline( ch )) {
-                ++b; // Past the newline, or at least one character of it.
+            if( completesNewline( ch )) {
+                ++b; // Past the newline.
                 if( b >= segmentEnd ) {
                     markup.appendFlat( bFlat, b );
                     break; }
+                bLine = b;
                 ch = buffer.get( b );
                 if( ch != ' ' ) continue; // Already the invariant is re-established.
                 b = throughAnyS( ++b ); } // Re-establishing the invariant, part 1.
+            else if( impliesWithoutCompletingNewline( ch )) {
+                ch = buffer.get( ++b ); // Toward its completion.
+                assert impliesNewline( ch ); // Already `delimitSegment` has tested for this.
+                continue; } // Already the invariant is re-established.
             else { // Expect a comment block or indent blind, or a term that bounds the foregap.
                 if( bFlat < b ) markup.appendFlat( bFlat, b ); // Flat markup that came before.
                 final BlockParser parser;
                 if( ch == '\\' ) parser = commentBlockParser;
                 else if( ch == /*no-break space*/'\u00A0' ) parser = indentBlindParser;
                 else break; // The foregap ends at a non-backslashed term.
-                if( b /*unmoved*/== (b = parser.parseIfDelimiter( b, markup ))) {
+                if( b /*unmoved*/== (b = parser.parseIfDelimiter( b, bLine, markup ))) {
                     break; } // The foregap ends at a backslashed term.
                 if( b >= segmentEnd ) break; // This block ends both the foregap and fractal segment.
                 bFlat = b; // Potentially the next run of flat markup begins here.
@@ -1512,9 +1520,10 @@ public class BrecciaCursor implements ReusableCursor {
           * of buffer position `b`, adding it to the given markup list.  Already the markup
           * through `b` is known to be well formed for the purpose.
           *
+          *     @param bLine Buffer position of the start of the line wherein `b` lies.
           *     @return The end boundary of the block, or `b` if there is none.
           */
-        abstract int parseIfDelimiter( int b, List<Markup> markup );
+        abstract int parseIfDelimiter( int b, int bLine, List<Markup> markup );
 
 
 
@@ -1715,14 +1724,36 @@ public class BrecciaCursor implements ReusableCursor {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    private static final class CommentBlockParser extends BlockParser {
+    private final class CommentBlockParser extends BlockParser {
 
 
         /** {@inheritDoc}  <p>Here ‘lead delimiter’ means a backslash sequence
           * in the first line of the comment block.</p>
           */
-        @Override int parseIfDelimiter( int b, final List<Markup> markup ) {
-            throw new UnsupportedOperationException(); }}
+        @Override int parseIfDelimiter( int b, int bLine, final List<Markup> blockMarkup ) {
+            if( commentaryHoldDetector.slashStartsDelimiter( b )) {
+                final int bBlock = bLine;
+                final CommentBlock_ block = spooler.commentBlock.unwind();
+                for( final var lines = block.components;; ) {
+                    final var line = spooler.commentBlockLine.unwind();
+                    final DelimitableMarkupList lineMarkup = line.components;
+                    if( bLine < b/*delimiter*/ ) {
+                        lineMarkup.start( 0 ); // The line starts with `c0_white`.
+                        line.c0_white.text.delimit( bLine, b ); }
+                    else lineMarkup.start( 1 ); // It starts with `c1_delimiter`.
+                    line.text.delimit( bLine, b = compose( line ));
+                    lines.add( line );
+                    final int d = throughAnyS( b ); // To the delimiter of any succeeding block line.
+                    if( d < segmentEnd && buffer.get(d) == '\\'
+                          && commentaryHoldDetector.slashStartsDelimiter(d) ) {
+                        bLine = b;
+                        b = d; }
+                    else { // The block has its end boundary at `b`.
+                        postSpaceEnd = d;
+                        break; }}
+                block.text.delimit( bBlock, b );
+                blockMarkup.add( block ); }
+            return b; }}
 
 
 
@@ -1735,7 +1766,7 @@ public class BrecciaCursor implements ReusableCursor {
         /** {@inheritDoc}  <p>Here ‘lead delimiter’ means a no-break space
           * in the first line of the indent blind.</p>
           */
-        @Override int parseIfDelimiter( int b, final List<Markup> markup ) {
+        @Override int parseIfDelimiter( int b, int bLine, final List<Markup> markup ) {
             throw new UnsupportedOperationException(); }}
 
 
@@ -1768,9 +1799,9 @@ public class BrecciaCursor implements ReusableCursor {
         @Subst void resolveLine( final int position ) {
             final int[] endsArray = fractumLineEnds.array;
             int e = 0, n = fractumLineNumber(), s = fractumStart;
-            for( int end, eN = fractumLineEnds.length;    // For each line,
-              e < eN && (end = endsArray[e]) < position; // if it ends before the position,
-              ++e, ++n, s = end );                      // then advance to the next.
+            for( int end, eN = fractumLineEnds.length;     // For each line, if its end boundary
+              e < eN && (end = endsArray[e]) <= position; // sits at or before the position,
+              ++e, ++n, s = end );                       // then advance to the next line.
             index = e;
             number = n;
             start = s; } // The end boundary of its predecessor, if any, else `fractumStart`.

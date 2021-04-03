@@ -11,8 +11,10 @@ final class ResourceSpooler {
 
     ResourceSpooler( final BrecciaCursor cursor ) {
         final ArrayList<Spool<?>> spools = new ArrayList<>();
-        spools.add( commentAppender = new Spool<>( () -> new CommentAppender_( cursor )));
-        spools.add( flatMarkup = new Spool<>( () -> FlatMarkup.make( cursor )));
+        spools.add( commentAppender  = new Spool<>( () -> new CommentAppender_(    cursor )));
+        spools.add( commentBlock     = new Spool<>( () -> new CommentBlock_(       cursor )));
+        spools.add( commentBlockLine = new Spool<>( () -> new CommentBlock_.Line_( cursor )));
+        spools.add( flatMarkup       = new Spool<>( () -> FlatMarkup.make(         cursor )));
         this.spools = spools.toArray( spoolTypeArray ); } /* Bypassing the list interface
           in favour of a bare array, because speed of iteration matters here. */
 
@@ -21,6 +23,18 @@ final class ResourceSpooler {
     /** Spool of comment appenders.
       */
     final Spool<CommentAppender_> commentAppender;
+
+
+
+    /** Spool of comment blocks.
+      */
+    final Spool<CommentBlock_> commentBlock;
+
+
+
+    /** Spool of comment-block lines.
+      */
+    final Spool<CommentBlock_.Line_> commentBlockLine;
 
 
 

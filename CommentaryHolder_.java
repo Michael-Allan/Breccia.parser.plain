@@ -53,6 +53,10 @@ abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
 
 
 
+    final BrecciaCursor cursor;
+
+
+
    // ━━━  C o m m e n t a r y   H o l d e r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
@@ -67,22 +71,11 @@ abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override int column() { return cursor.bufferColumn( text.start() ); }
-
-
-
     public final @Override List<Markup> components() { return components; }
 
 
 
-    public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
-
-
-
-////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
-
-
-    private final BrecciaCursor cursor; }
+    public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
 
 
 

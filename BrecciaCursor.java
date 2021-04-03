@@ -1615,16 +1615,15 @@ public class BrecciaCursor implements ReusableCursor {
           *
           *     @param b Buffer position of a (known) backslash character ‘\’.
           */
-        private boolean slashStartsDelimiter( final int b ) {
-            for( bDelimiterFullEnd = b + 1;; ) {
-                if( bDelimiterFullEnd >= segmentEnd ) {
-                    return true; }
-                final char ch = buffer.charAt( bDelimiterFullEnd );
+        private boolean slashStartsDelimiter( int b ) {
+            while( ++b < segmentEnd ) {
+                final char ch = buffer.charAt( b );
                 if( ch != '\\' ) {
-                    if( ch == ' ' ) {
-                        ++bDelimiterFullEnd; // Past the space character, as per the contract.
-                        return true; }
-                    return impliesNewline( ch ); }}}
+                    if( ch == ' ' ) ++b; // Past the space character, as per the contract.
+                    else if( !impliesNewline( ch )) return false;
+                    break; }}
+            bDelimiterFullEnd = b;
+            return true; }
 
 
 

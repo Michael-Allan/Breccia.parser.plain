@@ -1615,7 +1615,7 @@ public class BrecciaCursor implements ReusableCursor {
           *
           *     @param b Buffer position of a (known) backslash character ‘\’.
           */
-        private boolean slashStartsDelimiter( int b ) {
+        private boolean slashStartsDelimiter( int b ) { // Cf. the namesake of `CommentaryHoldDetector`.
             while( ++b < segmentEnd ) {
                 final char ch = buffer.charAt( b );
                 if( ch != '\\' ) {
@@ -1680,13 +1680,13 @@ public class BrecciaCursor implements ReusableCursor {
           *
           *     @param b Buffer position of a (known) backslash character ‘\’.
           */
-        boolean slashStartsDelimiter( int b ) {
+        boolean slashStartsDelimiter( int b ) { // Cf. the namesake of `BulletEndSeeker`.
             final int bOriginal = b;
             for( ;; ) {
                 if( ++b >= segmentEnd ) {
-                    delimiterStart = bOriginal;
-                    whiteEnd = delimiterEnd = b;
-                    return true; }
+                    hasDetectedCommentary = false;
+                    delimiterEnd = b;
+                    break; }
                 char ch = buffer.charAt( b );
                 if( ch != '\\' ) {
                     final int a = b;
@@ -1696,10 +1696,11 @@ public class BrecciaCursor implements ReusableCursor {
                         else hasDetectedCommentary = b < segmentEnd; }
                     else if(( b = throughAnyNewline( b )) /*unmoved*/== a ) return false;
                     else hasDetectedCommentary = false;
-                    delimiterStart = bOriginal;
                     delimiterEnd = a;
-                    whiteEnd = b;
-                    return true; }}}
+                    break; }}
+            delimiterStart = bOriginal;
+            whiteEnd = b;
+            return true; }
 
 
 

@@ -11,10 +11,12 @@ final class ResourceSpooler {
 
     ResourceSpooler( final BrecciaCursor cursor ) {
         final ArrayList<Spool<?>> spools = new ArrayList<>();
-        spools.add( commentAppender  = new Spool<>( () -> new CommentAppender_(    cursor )));
-        spools.add( commentBlock     = new Spool<>( () -> new CommentBlock_(       cursor )));
+        spools.add( commentAppender  = new Spool<>( () -> new CommentAppender_   ( cursor )));
+        spools.add( commentBlock     = new Spool<>( () -> new CommentBlock_      ( cursor )));
         spools.add( commentBlockLine = new Spool<>( () -> new CommentBlock_.Line_( cursor )));
-        spools.add( flatMarkup       = new Spool<>( () -> FlatMarkup.make(         cursor )));
+        spools.add( flatMarkup       = new Spool<>( () -> FlatMarkup.make        ( cursor )));
+        spools.add( indentBlind      = new Spool<>( () -> new IndentBlind_       ( cursor )));
+        spools.add( indentBlindLine  = new Spool<>( () -> new IndentBlind_.Line_ ( cursor )));
         this.spools = spools.toArray( spoolTypeArray ); } /* Bypassing the list interface
           in favour of a bare array, because speed of iteration matters here. */
 
@@ -46,6 +48,18 @@ final class ResourceSpooler {
 
 
 
+    /** Spool of indent blinds.
+      */
+    final Spool<IndentBlind_> indentBlind;
+
+
+
+    /** Spool of indent-blind lines.
+      */
+    final Spool<IndentBlind_.Line_> indentBlindLine;
+
+
+
     /** Rewinds all spools, making all resources ready for reuse.
       * Do not call this method if a previously dispensed resource remains in use.
       *
@@ -60,7 +74,7 @@ final class ResourceSpooler {
 
     /** A dispenser of reusable resources of type `R`.
       */
-    final class Spool<R> {
+    static final class Spool<R> {
 
 
         /** @see #source

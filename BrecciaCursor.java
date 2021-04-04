@@ -896,9 +896,9 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Loop through the foregap form
       // ─────────────────────────────
-        for( ;; ) { /* Loop invariant.  Character `ch` at position `b` lies within the fractal segment,
-              and is not a plain space.  Rather it is the first character of either a newline or lead
-              delimiter of a block construct in the foregap, or of a term just after the foregap. */
+        for( ;; ) { /* Loop invariant.  Character `ch` at `b` lies within the fractal segment and is not
+              a plain space.  Rather it is a newline constituent or the first character either of the
+              lead delimiter of a block construct in the foregap, or of a term just after the foregap. */
             assert b < segmentEnd && ch != ' ';
             if( completesNewline( ch )) {
                 ++b; // Past the newline.
@@ -922,6 +922,7 @@ public class BrecciaCursor implements ReusableCursor {
                 if( b /*unmoved*/== (b = parser.parseIfDelimiter( b, bLine, markup ))) {
                     break; } // The foregap ends at a backslashed term.
                 if( b >= segmentEnd ) break; // This block ends both the foregap and fractal segment.
+                bLine = b; // This block has ended with a line break.
                 bFlat = b; // Potentially the next run of flat markup begins here.
                 b = parser.postSpaceEnd; } // Re-establishing the invariant, part 1.
 
@@ -1578,7 +1579,7 @@ public class BrecciaCursor implements ReusableCursor {
                     seekFromSpace( b );
                     if( wasLineEndFound || wasAppenderFound ) return;
                     throw misplacedNoBreakSpace( bufferPointer( b - 1 )); }
-                else if( impliesNewline( ch )) {
+                if( impliesNewline( ch )) {
                     wasAppenderFound = false;
                     wasLineEndFound = true; }
                 else {
@@ -1731,19 +1732,31 @@ public class BrecciaCursor implements ReusableCursor {
         /** {@inheritDoc}  <p>Here ‘lead delimiter’ means a backslash sequence
           * in the first line of the comment block.</p>
           */
-        @Override int parseIfDelimiter( int b, int bLine, final List<Markup> blockMarkup ) {
+        @Override int parseIfDelimiter( int b, int bLine, final List<Markup> parentMarkup ) {
             if( commentaryHoldDetector.slashStartsDelimiter( b )) {
+                // Changing what follows?  Sync → namesake method of `IndentBlindParser`.
                 final int bBlock = bLine;
                 final CommentBlock_ block = spooler.commentBlock.unwind();
-                for( final var lines = block.components;; ) {
+                final var blockMarkup = block.components;
+                blockMarkup.clear();
+                for( ;; ) {
                     final var line = spooler.commentBlockLine.unwind();
                     final DelimitableMarkupList lineMarkup = line.components;
+
+                  // `c0_white`
+                  // ──────────
                     if( bLine < b/*delimiter*/ ) {
                         lineMarkup.start( 0 ); // The line starts with `c0_white`.
                         line.c0_white.text.delimit( bLine, b ); }
                     else lineMarkup.start( 1 ); // It starts with `c1_delimiter`.
+
+                  // `c1_delimiter` through `c4_white`
+                  // ─────────────────────────────────
                     line.text.delimit( bLine, b = compose( line ));
-                    lines.add( line );
+                    blockMarkup.add( line );
+
+                  // Toward the next line, if any
+                  // ────────────────────
                     final int d = throughAnyS( b ); // To the delimiter of any succeeding block line.
                     if( d < segmentEnd && buffer.get(d) == '\\'
                           && commentaryHoldDetector.slashStartsDelimiter(d) ) {
@@ -1753,7 +1766,7 @@ public class BrecciaCursor implements ReusableCursor {
                         postSpaceEnd = d;
                         break; }}
                 block.text.delimit( bBlock, b );
-                blockMarkup.add( block ); }
+                parentMarkup.add( block ); }
             return b; }}
 
 
@@ -1761,14 +1774,84 @@ public class BrecciaCursor implements ReusableCursor {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    private static final class IndentBlindParser extends BlockParser {
+    private final class IndentBlindParser extends BlockParser {
 
 
-        /** {@inheritDoc}  <p>Here ‘lead delimiter’ means a no-break space
-          * in the first line of the indent blind.</p>
+        /** {@inheritDoc} <p>Here ‘lead delimiter’ means a no-break space in the first line
+          * of the indent blind.  Since this much is already given to be well formed,
+          * and nothing more is wanted, always a parse will occur.</p>
+          *
+          *     @return The end boundary of the block subsequent to `b`.
           */
-        @Override int parseIfDelimiter( int b, int bLine, final List<Markup> markup ) {
-            throw new UnsupportedOperationException(); }}
+        @Override int parseIfDelimiter( int b, int bLine, final List<Markup> parentMarkup ) {
+            // Changing what follows?  Sync → namesake method of `CommentBlockParser`.
+            final int bBlind = bLine;
+            final IndentBlind_ blind = spooler.indentBlind.unwind();
+            final var blindMarkup = blind.components;
+            blindMarkup.clear();
+            for( ;; ) {
+                final var line = spooler.indentBlindLine.unwind();
+                final List<Markup> lineMarkup = line.components;
+                lineMarkup.clear();
+                Markup_ m;
+
+              // 0. Indent, if any
+              // ─────────
+                if( bLine < b/*delimiter*/ ) {
+                    m = line.indentWhenPresent;
+                    m.text.delimit( bLine, b );
+                    lineMarkup.add( m ); }
+
+              // 1. Delimiter
+              // ────────────
+                m = line.delimiter;
+                m.text.delimit( b, ++b );
+                lineMarkup.add( m ); // Now what follows, if anything?
+
+              // 2. Substance, if any
+              // ────────────
+                final int bSubstance = b;
+                boolean endsWithAppender = false;
+                for( char ch, chLast = /*delimiter*/'\u00A0'; b < segmentEnd; ++b, chLast = ch ) {
+                    ch = buffer.get( b );
+                    if( completesNewline( ch )) {
+                        ++b; // Past the newline.
+                        break; }
+                    if( ch == '\\' && chLast == ' ' && commentaryHoldDetector.slashStartsDelimiter(b) ) {
+                        endsWithAppender = true;
+                        break; }}
+                if( bSubstance < b ) {
+                    m = line.substance = line.substanceWhenPresent;
+                    m.text.delimit( bSubstance, b );
+                    lineMarkup.add( m );
+
+                  // 3. Comment appender, if any
+                  // ───────────────────
+                    if( endsWithAppender ) {
+                        final CommentAppender_ appender = spooler.commentAppender.unwind();
+                        appender.text.delimit( b, b = compose( appender ));
+                        lineMarkup.add( appender ); }}
+                else {
+                    line.substance = null;
+                    assert !endsWithAppender; } // Impossible without substance at least of plain space.
+
+              // This line as a whole
+              // ─────────
+                line.text.delimit( bLine, b );
+                blindMarkup.add( line );
+
+              // Toward the next line, if any
+              // ────────────────────
+                final int d = throughAnyS( b ); // To the delimiter of any subsequent line of the blind.
+                if( d < segmentEnd && buffer.get(d) == /*no-break space*/'\u00A0' ) {
+                    bLine = b;
+                    b = d; }
+                else { // The blind has its end boundary at `b`.
+                    postSpaceEnd = d;
+                    break; }}
+            blind.text.delimit( bBlind, b );
+            parentMarkup.add( blind );
+            return b; }}
 
 
 

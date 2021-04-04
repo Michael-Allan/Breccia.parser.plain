@@ -511,6 +511,7 @@ public class BrecciaCursor implements ReusableCursor {
             f.components = FileFractum_.componentsWhenAbsent;
             f.descriptor = null; }
         else {
+            assert fractumLineNumber() == 1; // Concordant with `FileFractum.lineNumber`.
             final FileFractum_.FileDescriptor d = f.descriptorWhenPresent;
             d.isComposed = false; // Pending demand.
             // No need to delimit `d.text`, which being identical to `f.text` is already delimited.

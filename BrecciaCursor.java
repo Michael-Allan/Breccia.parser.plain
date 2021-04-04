@@ -241,7 +241,7 @@ public class BrecciaCursor implements ReusableCursor {
     /** @param aKeywords Additional keywords in lexicographic order
       *   to merge into {@linkplain #commandPointKeywords commandPointKeywords}.
       * @param aPoints The corresponding command points,
-      *   ordered as per {@linkplain #commandPointKeywords commandPointKeywords}.
+      *   each at the same index as its keyword in `aKeywords`.
       */
     protected final void addCommandPoints( final String[] aKeywords, final CommandPoint_<?>[] aPoints ) {
         final String[] bKeywords = commandPointKeywords;
@@ -792,7 +792,7 @@ public class BrecciaCursor implements ReusableCursor {
             // Changing this part of it?  Sync → `nextSegment`.
             segmentStart = segmentEnd = segmentEndIndicator = 0;
             delimitSegment(); }
-        buffer.rewind(); // As per `buffer` contract.
+        buffer.rewind(); // Concordant with `buffer` contract.
  /**/   readyFileFractum().commit();
         hierarchy.clear(); }
 
@@ -833,11 +833,11 @@ public class BrecciaCursor implements ReusableCursor {
         if( isDividerDrawing( segmentEndIndicatorChar )) { /* Then next is a divider segment,
               starting a division whose head comprises all contiguous divider segments. */
             do nextSegment(); while( isDividerDrawing( segmentEndIndicatorChar )); // Scan through each.
-            buffer.rewind(); // As per `buffer` contract.
+            buffer.rewind(); // Concordant with `buffer` contract.
  /**/       readyDivision().commit(); }
         else { // Next is a point.
             nextSegment(); // Scan through to the end boundary of its head.
-            buffer.rewind(); // As per `buffer` contract.
+            buffer.rewind(); // Concordant with `buffer` contract.
  /**/       reifyPoint().commit(); }
         final int i = fractumIndentWidth / 4; // Indent in perfect units, that is.
         while( hierarchy.size() < i ) hierarchy.add( null ); // Padding for unoccupied ancestral indents.
@@ -1629,7 +1629,7 @@ public class BrecciaCursor implements ReusableCursor {
             while( ++b < segmentEnd ) {
                 final char ch = buffer.charAt( b );
                 if( ch != '\\' ) {
-                    if( ch == ' ' ) ++b; // Past the space character, as per the contract.
+                    if( ch == ' ' ) ++b; // Past the space character, concordant with the contract.
                     else if( !impliesNewline( ch )) return false;
                     break; }}
             bDelimiterFullEnd = b;

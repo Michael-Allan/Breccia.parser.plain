@@ -8,7 +8,7 @@ import static Breccia.parser.plain.Language.impliesNewline;
 import static Java.CharBuffers.newDelimitableCharSequence;
 
 
-/** {@inheritDoc}  <p>Warning: while the `{@linkplain Breccia.parser.DataReflector DataReflector}`
+/** {@inheritDoc} <p>Warning: while the `{@linkplain Breccia.parser.DataReflector DataReflector}`
   * annotations of the `{@linkplain Breccia.parser Breccia.parser}` parent types are not repeated here,
   * nevertheless they apply in depth.  Instances of this class are, or may be, mere data reflectors.
   * The same applies to each component that is not of a primitive or otherwise naturally immutable type;

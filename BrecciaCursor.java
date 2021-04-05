@@ -536,15 +536,15 @@ public class BrecciaCursor implements ReusableCursor {
       *
       * <ul><li>`{@linkplain #fractumLineEnds fractumLineEnds}` is empty in the case of a segment
       *         that begins a new fractum, and</li>
-      *     <li>the buffer is positioned at the `{@linkplain #segmentEndIndicator segmentEndIndicator}`
+      *     <li>the buffer is positioned at the `{@linkplain #segmentEndIndicant segmentEndIndicant}`
       *         of the preceding segment, or at zero in case of a new markup source.</li></ul>
       *
       * <p>This method updates the following.</p>
       *
-      * <ul><li>`{@linkplain #fractumLineEnds         fractumLineEnds}`</li>
-      *     <li>`{@linkplain #segmentEnd              segmentEnd}`</li>
-      *     <li>`{@linkplain #segmentEndIndicator     segmentEndIndicator}`</li>
-      *     <li>`{@linkplain #segmentEndIndicatorChar segmentEndIndicatorChar}`</li></ul>
+      * <ul><li>`{@linkplain #fractumLineEnds        fractumLineEnds}`</li>
+      *     <li>`{@linkplain #segmentEnd             segmentEnd}`</li>
+      *     <li>`{@linkplain #segmentEndIndicant     segmentEndIndicant}`</li>
+      *     <li>`{@linkplain #segmentEndIndicantChar segmentEndIndicantChar}`</li></ul>
       *
       * <p>Always the first call to this method for a new source of markup will determine the bounds
       * of the file head.  For a headless file, the first call returns with `segmentEnd` equal
@@ -555,17 +555,17 @@ public class BrecciaCursor implements ReusableCursor {
       * save those recorded in the fields named above.</p>
       *
       *     @throws ForbiddenWhitespace For any forbidden whitespace detected from the initial
-      *       buffer position through the newly determined `segmentEndIndicator`.
+      *       buffer position through the newly determined `segmentEndIndicant`.
       *     @throws MalformedMarkup For any misplaced no-break space that occurs from the initial buffer
-      *       position through the newly determined `segmentEndIndicator`, except on the first line of a
-      *       point, where instead `{@linkplain #reifyPoint(int) reifyPoint}` polices this offence.
+      *       position through the newly determined `segmentEndIndicant`, except on the first line of
+      *       a point, where instead `{@linkplain #reifyPoint(int) reifyPoint}` polices this offence.
       *     @throws MalformedMarkup For any malformed line break that occurs from the initial
-      *       buffer position through the newly determined `segmentEndIndicator`.
+      *       buffer position through the newly determined `segmentEndIndicant`.
       */
     private void delimitSegment() throws ParseError {
         assert segmentStart != fractumStart || fractumLineEnds.isEmpty();
         final boolean isFileHead = fractumIndentWidth < 0;
-        assert buffer.position() == (isFileHead? 0 : segmentEndIndicator);
+        assert buffer.position() == (isFileHead? 0 : segmentEndIndicant);
         int lineStart = segmentStart; // [ABP]
         assert lineStart == 0 || completesNewline(buffer.get(lineStart-1)); /* Either the preceding text
           is unreachable (does not exist, or lies outside the buffer) or it comprises a newline. */
@@ -610,8 +610,8 @@ public class BrecciaCursor implements ReusableCursor {
                 if( count < 0 ) { // Then the markup source is exhausted.
                     if( impliesWithoutCompletingNewline( ch )) { // So ends with e.g. a carriage return.
                         throw truncatedNewline( bufferPointer(), ch ); }
-                    segmentEnd = segmentEndIndicator = p;
-                    segmentEndIndicatorChar = '\u0000';
+                    segmentEnd = segmentEndIndicant = p;
+                    segmentEndIndicantChar = '\u0000';
                     fractumLineEnds.add( segmentEnd ); /* The end of the final line.  All lines end with
                       a newline (and so were counted already) except the final line, which never does. */
                     break; } // Segment end boundary = end of markup source.
@@ -656,10 +656,10 @@ public class BrecciaCursor implements ReusableCursor {
                     if( indentAccumulator % 4 == /*perfect*/0 ) {
                         if( ch != '\\' ) {
                             segmentEnd = lineStart;
-                            segmentEndIndicator = lineStart + indentAccumulator;
-                            assert segmentEndIndicator == buffer.position() - 1; // Where `ch` is.
-                            segmentEndIndicatorChar = ch; // Segment end boundary = either a divider,
-                            break; }                     // or a point with a non-backslashed bullet.
+                            segmentEndIndicant = lineStart + indentAccumulator;
+                            assert segmentEndIndicant == buffer.position() - 1; // Where `ch` is.
+                            segmentEndIndicantChar = ch; // Segment end boundary = either a divider,
+                            break; }                    // or a point with a non-backslashed bullet.
                         inPerfectlyIndentedBackslashes = inIndentedBackslashes = true; } /* Indicating
                           either a comment-block delimiter, or the beginning of a backslashed bullet. */
                     else if( ch == '\\' ) inIndentedBackslashes = true; } // Indicating the beginning of
@@ -668,8 +668,8 @@ public class BrecciaCursor implements ReusableCursor {
                 if( ch == '\\' ) continue; // To the end of the backslash sequence.
                 if( ch != ' ' ) {
                     segmentEnd = lineStart;
-                    segmentEndIndicator = lineStart + indentAccumulator;
-                    segmentEndIndicatorChar = buffer.get( segmentEndIndicator );
+                    segmentEndIndicant = lineStart + indentAccumulator;
+                    segmentEndIndicantChar = buffer.get( segmentEndIndicant );
                     break; } // Segment end boundary = point with a backslashed bullet.
                 inPerfectlyIndentedBackslashes = inIndentedBackslashes = false;
                 inCommentBlock = true; }
@@ -689,8 +689,8 @@ public class BrecciaCursor implements ReusableCursor {
                 inIndentedBackslashes = false; }
             else if( ch == '\u00A0' ) { // A no-break space not `inMargin` ∴ delimiting no indent blind.
                 if( inCommentBlock ) continue;
-                if( !isFileHead && !isDividerDrawing(segmentEndIndicatorChar) // In a point head,
-                 && fractumLineEnds.isEmpty() ) {                                // on the first line.
+                if( !isFileHead && !isDividerDrawing(segmentEndIndicantChar) // In a point head,
+                 && fractumLineEnds.isEmpty() ) {                           // on the first line.
                     continue; } // Leaving the first line of this point to be policed by `reifyPoint`.
                 throw misplacedNoBreakSpace( bufferPointerBack() ); }}}
 
@@ -793,7 +793,7 @@ public class BrecciaCursor implements ReusableCursor {
         fractumLineCounter = 0;
         fractumLineEnds.clear(); {
             // Changing this part of it?  Sync → `nextSegment`.
-            segmentStart = segmentEnd = segmentEndIndicator = 0;
+            segmentStart = segmentEnd = segmentEndIndicant = 0;
             delimitSegment(); }
         buffer.rewind(); // Concordant with `buffer` contract.
  /**/   readyFileFractum().commit();
@@ -813,8 +813,8 @@ public class BrecciaCursor implements ReusableCursor {
                     return; }}
  /**/       basicFileFractum.end.commit();
             return; }
-        final int nextIndentWidth = segmentEndIndicator - segmentEnd; /* The offset from the start of
-          the next fractum (`segmentEnd`) to its first non-space character (`segmentEndIndicator`). */
+        final int nextIndentWidth = segmentEndIndicant - segmentEnd; /* The offset from the start of
+          the next fractum (`segmentEnd`) to its first non-space character (`segmentEndIndicant`). */
         assert nextIndentWidth >= 0 && nextIndentWidth % 4 == 0; // A body fractum, perfectly indented.
         if( !state.isInitial() ) { // Then unwind any past siblings from `hierarchy`, ending each.
             while( fractumIndentWidth >= nextIndentWidth ) { /* For its own purposes, this loop maintains
@@ -833,9 +833,9 @@ public class BrecciaCursor implements ReusableCursor {
         fractumLineCounter += fractumLineEnds.length; /* Its line number is the line number
           of the present fractum plus the *line count* of the present fractum. */
         fractumLineEnds.clear();
-        if( isDividerDrawing( segmentEndIndicatorChar )) { /* Then next is a divider segment,
+        if( isDividerDrawing( segmentEndIndicantChar )) { /* Then next is a divider segment,
               starting a division whose head comprises all contiguous divider segments. */
-            do nextSegment(); while( isDividerDrawing( segmentEndIndicatorChar )); // Scan through each.
+            do nextSegment(); while( isDividerDrawing( segmentEndIndicantChar )); // Scan through each.
             buffer.rewind(); // Concordant with `buffer` contract.
  /**/       readyDivision().commit(); }
         else { // Next is a point.
@@ -850,7 +850,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private void nextSegment() throws ParseError {
-        buffer.position( segmentEndIndicator );
+        buffer.position( segmentEndIndicant );
 
         // Changing what follows?  Sync → `markupSource`.
         segmentStart = segmentEnd;
@@ -1213,13 +1213,13 @@ public class BrecciaCursor implements ReusableCursor {
     /** The buffer position of the first non-space character of the present fractal segment’s
       * linear-order successor, or the buffer limit if there is none.
       */
-    private @Subst int segmentEndIndicator;
+    private @Subst int segmentEndIndicant;
 
 
 
-    /** The character at `segmentEndIndicator`, or the null character (00) if there is none.
+    /** The character at `segmentEndIndicant`, or the null character (00) if there is none.
       */
-    private char segmentEndIndicatorChar;
+    private char segmentEndIndicantChar;
 
 
 

@@ -439,13 +439,15 @@ public class BrecciaCursor implements ReusableCursor {
         final int whiteEnd = detector.whiteEnd;
         if( whiteEnd == delimiterEnd ) {
             cc.end( 2 ); // The holder ends without `c2_white`.
+            holder.c3_commentary = null; // Wherefore it also ends without `c3_commentary`.
             return delimiterEnd; }
         holder.c2_white.text.delimit( delimiterEnd, whiteEnd );
 
-      // `c3_commentary` and `c4_white`, if any
+      // `c3_commentary` and `c4_white`, if the former or both
       // ──────────────────────────────
         if( !detector.hasDetectedCommentary ) {
             cc.end( 3 ); // The holder ends without `c3_commentary`.
+            holder.c3_commentary = null;
             return whiteEnd; }
         int b = whiteEnd; /* The scan begins at the end boundary of `c2_white`,
           which is the start of the leading term of `c3_commentary`. */
@@ -476,7 +478,8 @@ public class BrecciaCursor implements ReusableCursor {
                     holder.c4_white.text.delimit( commentaryEnd = bWhite, ++/*past the newline*/b );
                     break cc; }
                 if( !( ch == ' ' || impliesWithoutCompletingNewline(ch) )) break white; }}
-        holder.c3_commentary.text.delimit( whiteEnd, commentaryEnd );
+        holder.c3_commentaryWhenPresent.text.delimit( whiteEnd, commentaryEnd );
+        holder.c3_commentary = holder.c3_commentaryWhenPresent;
         return b; }
 
 

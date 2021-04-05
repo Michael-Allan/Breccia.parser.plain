@@ -14,11 +14,11 @@ abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
         super( cursor.buffer );
         this.cursor = cursor;
         components = new DelimitableMarkupList(
-          this.c0_white = c0_white,
-          c1_delimiter  = FlatMarkup.make( cursor, "Delimiter" ),
-          c2_white      = FlatMarkup.make( cursor ),
-          c3_commentary = FlatMarkup.make( cursor, "Commentary" ),
-          c4_white      = FlatMarkup.make( cursor ));}
+          this.c0_white            = c0_white,
+          c1_delimiter             = FlatMarkup.make( cursor, "Delimiter" ),
+          c2_white                 = FlatMarkup.make( cursor ),
+          c3_commentaryWhenPresent = FlatMarkup.make( cursor, "Commentary" ),
+          c4_white                 = FlatMarkup.make( cursor ));}
 
 
 
@@ -37,7 +37,11 @@ abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
 
 
 
-    final FlatMarkup c3_commentary;
+    FlatMarkup c3_commentary;
+
+
+
+    final FlatMarkup c3_commentaryWhenPresent;
 
 
 

@@ -433,20 +433,20 @@ public class BrecciaCursor implements ReusableCursor {
       // `c1_delimiter`
       // ──────────────
         final int delimiterEnd = detector.delimit( holder ); // Its `c1_delimiter.text`, that is.
+
+      // `c2_white`, if any
+      // ──────────
         final int whiteEnd = detector.whiteEnd;
         if( whiteEnd == delimiterEnd ) {
             cc.end( 2 ); // The holder ends without `c2_white`.
             return delimiterEnd; }
-
-      // `c2_white`
-      // ──────────
         holder.c2_white.text.delimit( delimiterEnd, whiteEnd );
+
+      // `c3_commentary` and `c4_white`, if any
+      // ──────────────────────────────
         if( !detector.hasDetectedCommentary ) {
             cc.end( 3 ); // The holder ends without `c3_commentary`.
             return whiteEnd; }
-
-      // `c3_commentary` and `c4_white` if any
-      // ──────────────────────────────
         int b = whiteEnd; /* The scan begins at the end boundary of `c2_white`,
           which is the start of the leading term of `c3_commentary`. */
         assert !( buffer.get(b) == ' ' || impliesNewline(buffer.get(b)) ); // Not in plain whitespace.

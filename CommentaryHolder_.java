@@ -8,44 +8,55 @@ import java.util.List;
 abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
 
 
-    /** @see #c0_white
+    /** Partly makes an instance for `initialize` to finish.
+      *
+      *     @see #c0_white
       */
-    protected CommentaryHolder_( final FlatMarkup c0_white, final BrecciaCursor cursor ) {
+    protected CommentaryHolder_( final Markup_ c0_white, final BrecciaCursor cursor ) {
         super( cursor.buffer );
         this.cursor = cursor;
-        components = new DelimitableMarkupList(
-          this.c0_white            = c0_white,
-          c1_delimiter             = FlatMarkup.make( cursor, "Delimiter" ),
-          c2_white                 = FlatMarkup.make( cursor ),
-          c3_commentaryWhenPresent = FlatMarkup.make( cursor, "Commentary" ),
-          c4_white                 = FlatMarkup.make( cursor ));}
+        final Markup[] cc = new Markup_[5];
+        cc[0] = this.c0_white = c0_white;
+        cc[1] = c1_delimiter = FlatMarkup.make( cursor, "Delimiter" );
+        cc[2] = c2_white     = FlatMarkup.make( cursor );
+        cc[4] = c4_white     = FlatMarkup.make( cursor );
+        components = new DelimitableMarkupList( componentsArray = cc ); }
+
+
+
+    /** @see #c3_commentaryWhenPresent
+      */
+    protected final void initialize( Markup_ c3_commentaryWhenPresent ) {
+        componentsArray[3] = this.c3_commentaryWhenPresent = c3_commentaryWhenPresent; }
 
 
 
     /** Any whitespace that leads this holder (line of a comment block),
       * or null if none can occur for this type of holder (comment appender).
       */
-    final FlatMarkup c0_white;
+    final Markup_ c0_white;
 
 
 
-    final FlatMarkup c1_delimiter;
+    final Markup_ c1_delimiter;
 
 
 
-    final FlatMarkup c2_white;
+    final Markup_ c2_white;
 
 
 
-    FlatMarkup c3_commentary;
+    Markup c3_commentary;
 
 
 
-    final FlatMarkup c3_commentaryWhenPresent;
+    /** Do not modify after `initialize`.
+      */
+    Markup_ c3_commentaryWhenPresent;
 
 
 
-    final FlatMarkup c4_white;
+    final Markup_ c4_white;
 
 
 
@@ -54,6 +65,10 @@ abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
       * the order of components is fixed according to the ordinal numbers of the namesake fields.
       */
     final DelimitableMarkupList components;
+
+
+
+    private final Markup[] componentsArray;
 
 
 

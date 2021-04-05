@@ -12,7 +12,7 @@ import java.util.List;
 abstract class FlatMarkup extends Markup_ {
 
 
-    private FlatMarkup( CharBuffer b ) { super( b ); }
+    FlatMarkup( CharBuffer b ) { super( b ); }
 
 
 

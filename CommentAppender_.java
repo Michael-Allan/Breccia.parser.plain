@@ -8,6 +8,7 @@ final class CommentAppender_ extends CommentaryHolder_ implements CommentAppende
 
     CommentAppender_( final BrecciaCursor cursor ) {
         super( /*c0_white*/null, cursor );
+        initialize( /*c3_commentaryWhenPresent*/FlatMarkup.make( cursor, "Commentary" ));
         components.start( 1 ); } // An appender starts without `c0_white`.
 
 

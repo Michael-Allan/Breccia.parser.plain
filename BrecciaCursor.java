@@ -1675,9 +1675,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** Set when `slashStartsDelimiter` to the start boundary in the buffer
-          * of the backslash sequence that forms the delimiter.
-          */
+        int delimiterLength() { return delimiterEnd - delimiterStart; }
+
+
+
         private int delimiterStart;
 
 
@@ -1732,11 +1733,12 @@ public class BrecciaCursor implements ReusableCursor {
     private final class CommentBlockParser extends BlockParser {
 
 
-        /** {@inheritDoc}  <p>Here ‘lead delimiter’ means a backslash sequence
+        /** {@inheritDoc} <p>Here ‘lead delimiter’ means a backslash sequence
           * in the first line of the comment block.</p>
           */
         @Override int parseIfDelimiter( int b, int bLine, final List<Markup> parentMarkup ) {
-            if( commentaryHoldDetector.slashStartsDelimiter( b )) {
+            final CommentaryHoldDetector detector = commentaryHoldDetector;
+            if( detector.slashStartsDelimiter( b )) {
                 // Changing what follows?  Sync → namesake method of `IndentBlindParser`.
                 final int bBlock = bLine;
                 final CommentBlock_ block = spooler.commentBlock.unwind();
@@ -1756,13 +1758,15 @@ public class BrecciaCursor implements ReusableCursor {
                   // `c1_delimiter` through `c4_white`
                   // ─────────────────────────────────
                     line.text.delimit( bLine, b = compose( line ));
+                    if( detector.hasDetectedCommentary ) {
+                        line.c3_commentaryTagName(
+                          detector.delimiterLength() == 1? "Commentary" : "Label" ); }
                     blockMarkup.add( line );
 
                   // Toward the next line, if any
                   // ────────────────────
                     final int d = throughAnyS( b ); // To the delimiter of any succeeding block line.
-                    if( d < segmentEnd && buffer.get(d) == '\\'
-                          && commentaryHoldDetector.slashStartsDelimiter(d) ) {
+                    if( d < segmentEnd && buffer.get(d) == '\\' && detector.slashStartsDelimiter(d) ) {
                         bLine = b;
                         b = d; }
                     else { // The block has its end boundary at `b`.

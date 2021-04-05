@@ -25,7 +25,7 @@ public class MalformedMarkup extends ParseError {
 
 
 
-    /** An indicator of where precisely within the markup the ill form was detected.
+    /** Indicant of where precisely the ill form was detected.
       */
     public final Pointer pointer;
 
@@ -58,7 +58,7 @@ public class MalformedMarkup extends ParseError {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    /** An indicator of where precisely within the markup an ill form was detected.
+    /** Indicant of where precisely within markup an ill form was detected.
       */
     public static final class Pointer {
 

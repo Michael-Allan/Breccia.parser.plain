@@ -20,14 +20,14 @@ abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
         cc[1] = c1_delimiter = FlatMarkup.make( cursor, "Delimiter" );
         cc[2] = c2_white     = FlatMarkup.make( cursor );
         cc[4] = c4_white     = FlatMarkup.make( cursor );
-        components = new DelimitableMarkupList( componentsArray = cc ); }
+        components = new DelimitableMarkupList( cc ); }
 
 
 
     /** @see #c3_commentaryWhenPresent
       */
     protected final void initialize( Markup_ c3_commentaryWhenPresent ) {
-        componentsArray[3] = this.c3_commentaryWhenPresent = c3_commentaryWhenPresent; }
+        components.set( 3, this.c3_commentaryWhenPresent = c3_commentaryWhenPresent ); }
 
 
 
@@ -65,10 +65,6 @@ abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
       * the order of components is fixed according to the ordinal numbers of the namesake fields.
       */
     final DelimitableMarkupList components;
-
-
-
-    private final Markup[] componentsArray;
 
 
 

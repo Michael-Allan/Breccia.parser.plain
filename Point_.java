@@ -2,8 +2,6 @@ package Breccia.parser.plain;
 
 import Breccia.parser.Markup;
 import Breccia.parser.Point;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /** @param <C> The type of cursor.
@@ -11,32 +9,11 @@ import java.util.List;
 abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implements Point {
 
 
-    Point_( C cursor ) {
-        super( cursor );
-        components.add( perfectIndent );
-        components.add( bullet );
-        components.add( descriptorWhenPresent ); // Absent at most once per file.
-        assert components.size() == componentsMax; }
+    Point_( C cursor ) { super( cursor ); }
 
 
 
     final Bullet bullet = new Bullet();
-
-
-
-    final List<Markup> components = new ArrayList<>( /*initial capacity*/componentsMax );
-
-
-
-    static final int componentsMax = 3;
-
-
-
-    Markup descriptor;
-
-
-
-    final Descriptor descriptorWhenPresent = new Descriptor();
 
 
 
@@ -49,21 +26,10 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-    public final @Override List<Markup> components() { return components; }
-
-
-
    // ━━━  P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     public final @Override Markup bullet() { return bullet; }
-
-
-
-    public final @Override Markup descriptor() { return descriptor; }
 
 
 
@@ -115,7 +81,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-        public @Override String tagName() { return "PointDescriptor"; }}
+        public @Override String tagName() { return "Descriptor"; }}
 
 
 

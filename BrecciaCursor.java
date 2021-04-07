@@ -1046,12 +1046,14 @@ public class BrecciaCursor implements ReusableCursor {
     /** Parses enough of a command point to learn its concrete type and return its parse state
       * ready to commit.  This method is a subroutine of `reifyPoint`.
       *
+      *     @param bullet The buffer position of the bullet.
       *     @param bulletEnd The buffer position just after the bullet, viz. its end boundary.
       *       Already it is known (and asserted) to hold a plain space character. *//*
       *
       *     @uses #xSeq
       */
-    private CommandPoint_<?> reifyCommandPoint( final int bulletEnd ) throws MalformedMarkup {
+    private CommandPoint_<?> reifyCommandPoint( final int bullet, final int bulletEnd )
+          throws MalformedMarkup {
         int b = bulletEnd + 1; // Past the known space character.
         b = throughAnyS( b ); // Past any others.
         xSeq.delimit( b, b = throughTerm(b) );
@@ -1062,16 +1064,60 @@ public class BrecciaCursor implements ReusableCursor {
             xSeq.delimit( b, b = throughTerm(b) ); }
         else presentsPrivately = false;
 
-      // Resolve its concrete parse state
+      // Resolve the concrete parse state
       // ────────────────────────────────
         b = binarySearch( commandPointKeywords, xSeq, CharSequence::compare );
         final CommandPoint_<?> p = b >= 0? commandPoints[b] : basicPlainCommandPoint;
 
-      // Therein delimit the components already parsed above
+      // Therein delimit the components proper to all types of command point, and already parsed
       // ──────────────────────────────
+        p.text.delimit(                    fractumStart,      segmentEnd ); // Proper to fracta.
+        p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );    // Proper to body fracta.
+        p.bullet       .text.delimit( /*1*/bullet,       /*2*/bulletEnd );
+        p.descriptor   .text.delimit( /*2*/bulletEnd,    /*3*/segmentEnd );
         if( presentsPrivately ) p.modifierSet.add( CommandPoint.Modifier.privately );
         else p.modifierSet.clear();
         p.keyword.delimitAs( xSeq );
+
+      // Ready to commit
+      // ───────────────
+        return p; }
+
+
+
+    /** Parses enough of a point other than a command point to learn its concrete type and return
+      * its parse state ready to commit.  This method is a subroutine of `reifyPoint`.
+      *
+      *     @param bullet The buffer position of the bullet.
+      *     @param bulletEnd The buffer position just after the bullet, viz. its end boundary.
+      */
+    private NonCommandPoint reifyNonCommandPoint( final int bullet, final int bulletEnd ) {
+
+      // Resolve the concrete parse state
+      // ────────────────────────────────
+        final NonCommandPoint p = basicPlainPoint; // TEST, the only supported case at present.
+
+      // Therein delimit the components proper to all types of non-command point, and already parsed
+      // ──────────────────────────────
+        final var cc = p.components;
+        final int ccMax = NonCommandPoint.componentsMax;
+        p              .text.delimit(      fractumStart,      segmentEnd ); // Proper to fracta.
+        p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );    // Proper to body fracta.
+        p.bullet       .text.delimit( /*1*/bullet,       /*2*/bulletEnd );
+        if( bulletEnd < segmentEnd ) {
+            final var d = p.descriptorWhenPresent;
+            d          .text.delimit( /*2*/bulletEnd,    /*3*/segmentEnd );
+            if( cc.size() < ccMax ) cc.add( d ); // Ensuring inclusion.
+            assert cc.size() == ccMax;
+            p.descriptor = d; }
+        else { // A descriptorless point at file end.
+            assert bulletEnd == segmentEnd;
+            if( cc.size() == ccMax ) cc.remove( ccMax - 1 ); // Ensuring exclusion.
+            else assert cc.size() == ccMax - 1;
+            p.descriptor = null; }
+
+      // Ready to commit
+      // ───────────────
         return p; }
 
 
@@ -1173,27 +1219,8 @@ public class BrecciaCursor implements ReusableCursor {
             if( wasLineEndFound ) { // Then the bullet ends directly at the line end, with no
                 throw termExpected( bufferPointer( b )); } // command between the two.
             assert buffer.get(bulletEnd) == ' '; // The only remaining case.
-            p = reifyCommandPoint( bulletEnd ); }
-        else p = basicPlainPoint;
-
-      // Therein delimit the components proper to all types of point, already parsed above
-      // ──────────────────────────────
-        final var cc = p.components;
-        final int ccMax = Point_.componentsMax;
-        p.text.delimit(                    fractumStart,      segmentEnd ); // Proper to fracta.
-        p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );    // Proper to body fracta.
-        p.bullet.text.delimit(        /*1*/bullet,       /*2*/bulletEnd );
-        if( bulletEnd < segmentEnd ) {
-            final var d = p.descriptorWhenPresent;
-            d.text.delimit(           /*2*/bulletEnd,    /*3*/segmentEnd );
-            if( cc.size() < ccMax ) cc.add( d ); // Ensuring inclusion.
-            assert cc.size() == ccMax;
-            p.descriptor = d; }
-        else { // A descriptorless point at file end.
-            assert bulletEnd == segmentEnd;
-            if( cc.size() == ccMax ) cc.remove( ccMax - 1 ); // Ensuring exclusion.
-            else assert cc.size() == ccMax - 1;
-            p.descriptor = null; }
+            p = reifyCommandPoint( bullet, bulletEnd ); }
+        else p = reifyNonCommandPoint( bullet, bulletEnd );
 
       // Ready to commit
       // ───────────────

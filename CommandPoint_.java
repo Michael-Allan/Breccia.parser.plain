@@ -1,9 +1,9 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.CommandPoint;
+import Breccia.parser.Markup;
 import Java.DelimitableCharSequence;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 
 import static Java.CharBuffers.newDelimitableCharSequence;
 
@@ -13,7 +13,9 @@ import static Java.CharBuffers.newDelimitableCharSequence;
 public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> implements CommandPoint {
 
 
-    protected CommandPoint_( C cursor ) { super( cursor ); }
+    protected CommandPoint_( C cursor ) {
+        super( cursor );
+        components = List.of( perfectIndent, bullet, descriptor ); }
 
 
 
@@ -24,7 +26,29 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
+   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public final @Override List<Markup> components() { return components; }
+
+
+
+   // ━━━  P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public final @Override Markup descriptor() { return descriptor; }
+
+
+
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
+
+
+    private final List<Markup> components;
+
+
+
+    final Descriptor descriptor = new Descriptor();
+
 
 
     /** @see BrecciaCursor#commandPointKeywords

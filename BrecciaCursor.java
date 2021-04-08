@@ -1100,20 +1100,17 @@ public class BrecciaCursor implements ReusableCursor {
       // Therein delimit the components proper to all types of non-command point, and already parsed
       // ──────────────────────────────
         final var cc = p.components;
-        final int ccMax = NonCommandPoint.componentsMax;
         p              .text.delimit(      fractumStart,      segmentEnd ); // Proper to fracta.
         p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );    // Proper to body fracta.
         p.bullet       .text.delimit( /*1*/bullet,       /*2*/bulletEnd );
         if( bulletEnd < segmentEnd ) {
             final var d = p.descriptorWhenPresent;
             d          .text.delimit( /*2*/bulletEnd,    /*3*/segmentEnd );
-            if( cc.size() < ccMax ) cc.add( d ); // Ensuring inclusion.
-            assert cc.size() == ccMax;
+            cc.end( 3 ); // Extended to include the descriptor.
             p.descriptor = d; }
         else { // A descriptorless point at file end.
             assert bulletEnd == segmentEnd;
-            if( cc.size() == ccMax ) cc.remove( ccMax - 1 ); // Ensuring exclusion.
-            else assert cc.size() == ccMax - 1;
+            cc.end( 2 ); // Retracted to exclude the descriptor.
             p.descriptor = null; }
 
       // Ready to commit

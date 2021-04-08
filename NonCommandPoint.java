@@ -1,7 +1,6 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.Markup;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -10,18 +9,13 @@ abstract class NonCommandPoint extends Point_<BrecciaCursor> {
 
     protected NonCommandPoint( BrecciaCursor cursor ) {
         super( cursor );
-        components.add( perfectIndent );
-        components.add( bullet );
-        components.add( descriptorWhenPresent ); // Absent at most once per file.
-        assert components.size() == componentsMax; }
+        components = new DelimitableMarkupList( perfectIndent, bullet, descriptorWhenPresent ); }
 
 
 
-    final List<Markup> components = new ArrayList<>( /*initial capacity*/componentsMax );
-
-
-
-    static final int componentsMax = 3;
+    /** A component list of 2 to 3 elements, depending on whether a descriptor is present.
+      */
+    final DelimitableMarkupList components;
 
 
 

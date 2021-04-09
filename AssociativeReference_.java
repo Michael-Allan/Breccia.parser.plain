@@ -3,7 +3,7 @@ package Breccia.parser.plain;
 import Breccia.parser.AssociativeReference;
 
 
-final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implements AssociativeReference {
+final class AssociativeReference_ extends CompoundCommandPoint implements AssociativeReference {
 
 
     AssociativeReference_( BrecciaCursor cursor ) { super( cursor ); }

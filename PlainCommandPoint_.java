@@ -3,7 +3,7 @@ package Breccia.parser.plain;
 import Breccia.parser.PlainCommandPoint;
 
 
-final class PlainCommandPoint_ extends CommandPoint_<BrecciaCursor> implements PlainCommandPoint {
+final class PlainCommandPoint_ extends CompoundCommandPoint implements PlainCommandPoint {
 
 
     PlainCommandPoint_( BrecciaCursor cursor ) { super( cursor ); }

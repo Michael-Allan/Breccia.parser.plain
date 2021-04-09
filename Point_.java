@@ -13,7 +13,13 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-    final Bullet bullet = new Bullet();
+    final FlatMarkup bullet = new FlatMarkup( this ) {
+
+        public @Override int column() { return cursor.fractumIndentWidth; }
+
+        public @Override int lineNumber() { return Point_.this.lineNumber(); }
+
+        public @Override String tagName() { return "Bullet"; }};
 
 
 
@@ -33,38 +39,21 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-
-
-    final class Bullet extends FlatMarkup {
-
-
-        Bullet() { super( Point_.this ); }
-
-
-
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        public @Override int column() { return cursor.fractumIndentWidth; }
-
-
-
-        public @Override int lineNumber() { return Point_.this.lineNumber(); }
-
-
-
-        public @Override String tagName() { return "Bullet"; }}
+    public abstract @Override Descriptor descriptor();
 
 
 
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class Descriptor extends FlatMarkup/*TEST*/ {
+    abstract class Descriptor extends Markup_ {
 
 
-        Descriptor() { super( Point_.this ); }
+        protected Descriptor() { super( Point_.this ); }
+
+
+
+        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
 
 
 

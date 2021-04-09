@@ -19,11 +19,13 @@ abstract class NonCommandPoint extends Point_<BrecciaCursor> {
 
 
 
-    Markup descriptor;
+    Descriptor descriptor;
 
 
 
-    final Descriptor descriptorWhenPresent = new Descriptor();
+    final Descriptor descriptorWhenPresent = new Descriptor() {
+
+        public @Override List<Markup> components() { return components; }};
 
 
 
@@ -34,10 +36,10 @@ abstract class NonCommandPoint extends Point_<BrecciaCursor> {
 
 
 
-   // ━━━  P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  P o i n t  ━━━  C o m m a n d   P o i n t _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override Markup descriptor() { return descriptor; }}
+    public final @Override Descriptor descriptor() { return descriptor; }}
 
 
 

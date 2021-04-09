@@ -13,9 +13,23 @@ import static Java.CharBuffers.newDelimitableCharSequence;
 public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> implements CommandPoint {
 
 
-    protected CommandPoint_( C cursor ) {
-        super( cursor );
-        components = List.of( perfectIndent, bullet, descriptor ); }
+    /** Partly makes an instance for `initialize` to finish.
+      */
+    CommandPoint_( final C cursor ) { super( cursor ); }
+
+
+
+    /** Initializes with a newly made keyword.
+      */
+    final void initialize() { initialize( newDelimitableCharSequence( cursor.buffer )); }
+
+
+
+    /** @see #keyword
+      */
+    final void initialize( final DelimitableCharSequence keyword ) {
+        this.keyword = keyword;
+        components = List.of( perfectIndent, bullet, descriptor() ); }
 
 
 
@@ -33,31 +47,32 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-   // ━━━  P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-    public final @Override Markup descriptor() { return descriptor; }
-
-
-
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
 
 
-    private final List<Markup> components;
-
-
-
-    final Descriptor descriptor = new Descriptor();
-
-
-
-    /** @see BrecciaCursor#commandPointKeywords
+    /** Do not modify after `initialize`.
+      *
+      *     @see BrecciaCursor#commandPointKeywords
       */
-    final DelimitableCharSequence keyword = newDelimitableCharSequence( cursor.buffer );
+    private List<Markup> components;
+
+
+
+    /** Do not modify after `initialize`.
+      *
+      *     @see BrecciaCursor#commandPointKeywords
+      */
+    DelimitableCharSequence keyword;
 
 
 
     final Set<Modifier> modifierSet = EnumSet.noneOf( Modifier.class );
+
+
+
+    /** The `privately` modifier, if any.
+      */
+    final DelimitableCharSequence privatelyWhenPresent = newDelimitableCharSequence( cursor.buffer );
 
 
 

@@ -40,12 +40,13 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-    /** Late composition control flag.  Cleared before committing by `readyFileFractum`,
-      * set on user demand of `asFileFractum` or `components`.
+    /** Late composition control flag.  Cleared on committing this fractum as the present parse state,
+      * which is done through the `readyFileFractum` method of the cursor.  Set on late composition,
+      * which is triggered either by a call to `components` or the reifying `asFileFractum` getter.
       *
       *     @see BrecciaCursor#readyFileFractum()
-      *     @see BrecciaCursor#asFileFractum()
       *     @see #components()
+      *     @see BrecciaCursor#asFileFractum()
       */
     boolean isComposed;
 
@@ -104,13 +105,14 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-        /** Late composition control flag.  Cleared by `composeFileFractum`,
-          * set on user demand of `components`.
+        /** Late composition control flag.  Cleared on composition of the WHAT?, which is done through
+          * the `composeFileFractum` method of the cursor.  Set on late composition of this descriptor,
+          * which is triggered by a call for its `components`.
           *
           *     @see BrecciaCursor#composeFileFractum()
           *     @see #components()
           */
-        boolean isComposed;
+        boolean isComposed; /* Justification of late composition: justified only by... WHAT? */
 
 
 

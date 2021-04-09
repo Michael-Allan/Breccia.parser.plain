@@ -484,6 +484,21 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** @see SimpleCommandPoint.Descriptor#isComposed
+      */
+    final void composeDescriptor( final SimpleCommandPoint<?> p ) throws MalformedMarkup {
+        assert !p.descriptor.isComposed;
+        final CoalescentMarkupList cc = p.descriptor.components;
+        cc.clear();
+        final FlatMarkup command = p.descriptor.command;
+        cc.appendFlat( p.bullet.text.end(), command.text.start() );
+        cc.add( command );
+        final int b = parseAnyPostgap( command.text.end(), cc );
+        if( b != segmentEnd ) throw unexpectedTerm( bufferPointer( b ));
+        cc.flush(); }
+
+
+
     /** @see FileFractum_.FileDescriptor#isComposed
       */
     final void composeFileDescriptor() {
@@ -1049,24 +1064,26 @@ public class BrecciaCursor implements ReusableCursor {
       *     @param bullet The buffer position of the bullet.
       *     @param bulletEnd The buffer position just after the bullet, viz. its end boundary.
       *       Already it is known (and asserted) to hold a plain space character. *//*
-      *
-      *     @uses #xSeq
       */
     private CommandPoint_<?> reifyCommandPoint( final int bullet, final int bulletEnd )
           throws MalformedMarkup {
         int b = bulletEnd + 1; // Past the known space character.
         b = throughAnyS( b ); // Past any others.
         xSeq.delimit( b, b = throughTerm(b) );
-        final boolean presentsPrivately;
+        final DelimitableCharSequence privately;
+        final DelimitableCharSequence keyword;
         if( equalInContent( "privately", xSeq )) {
-            presentsPrivately = true;
+            privately = xSeq;
             b = throughS( b );
-            xSeq.delimit( b, b = throughTerm(b) ); }
-        else presentsPrivately = false;
+            ySeq.delimit( b, b = throughTerm(b) );
+            keyword = ySeq; }
+        else {
+            privately = null;
+            keyword = xSeq; }
 
       // Resolve the concrete parse state
       // ────────────────────────────────
-        b = binarySearch( commandPointKeywords, xSeq, CharSequence::compare );
+        b = binarySearch( commandPointKeywords, keyword, CharSequence::compare );
         final CommandPoint_<?> p = b >= 0? commandPoints[b] : basicPlainCommandPoint;
 
       // Therein delimit the components proper to all types of command point, and already parsed
@@ -1074,10 +1091,12 @@ public class BrecciaCursor implements ReusableCursor {
         p.text.delimit(                    fractumStart,      segmentEnd ); // Proper to fracta.
         p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );    // Proper to body fracta.
         p.bullet       .text.delimit( /*1*/bullet,       /*2*/bulletEnd );
-        p.descriptor   .text.delimit( /*2*/bulletEnd,    /*3*/segmentEnd );
-        if( presentsPrivately ) p.modifierSet.add( CommandPoint.Modifier.privately );
+        p.descriptor() .text.delimit( /*2*/bulletEnd,    /*3*/segmentEnd );
+        if( privately != null ) {
+            p.privatelyWhenPresent.delimitAs( privately );
+            p.modifierSet.add( CommandPoint.Modifier.privately ); }
         else p.modifierSet.clear();
-        p.keyword.delimitAs( xSeq );
+        p.keyword.delimitAs( keyword );
 
       // Ready to commit
       // ───────────────
@@ -1124,8 +1143,6 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @throws MalformedMarkup For any misplaced no-break space occuring on the same line.  Note
       *       that elsewhere `{@linkplain #delimitSegment() delimitSegment}` polices this offence. *//*
-      *
-      *     @uses #xSeq
       */
     private Point_<?> reifyPoint() throws MalformedMarkup {
         final int bullet = fractumStart + fractumIndentWidth;
@@ -1352,6 +1369,11 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private final DelimitableCharSequence xSeq = newDelimitableCharSequence( buffer );
+      // Shared reusable instance
+
+
+
+    private final DelimitableCharSequence ySeq = newDelimitableCharSequence( buffer );
       // Shared reusable instance
 
 

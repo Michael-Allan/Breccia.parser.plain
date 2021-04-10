@@ -49,7 +49,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
     abstract class Descriptor extends Markup_ {
 
 
-        protected Descriptor() { super( Point_.this ); }
+        Descriptor() { super( Point_.this ); }
 
 
 
@@ -60,17 +60,17 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override int column() {
+        public @Override final int column() {
           return bullet.column() + cursor.bufferColumnarSpan(bullet.text.start(),text.start()); }
 
 
 
-        public @Override int lineNumber() { return Point_.this.lineNumber(); } /* Always the descriptor
+        public @Override final int lineNumber() { return Point_.this.lineNumber(); } /* The descriptor
           begins on the first line of the point, if only because it includes that line’s terminator. */
 
 
 
-        public @Override String tagName() { return "Descriptor"; }}
+        public @Override final String tagName() { return "Descriptor"; }}
 
 
 

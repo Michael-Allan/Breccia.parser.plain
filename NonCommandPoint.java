@@ -7,7 +7,7 @@ import java.util.List;
 abstract class NonCommandPoint extends Point_<BrecciaCursor> {
 
 
-    protected NonCommandPoint( BrecciaCursor cursor ) {
+    NonCommandPoint( BrecciaCursor cursor ) {
         super( cursor );
         components = new DelimitableMarkupList( perfectIndent, bullet, descriptorWhenPresent ); }
 

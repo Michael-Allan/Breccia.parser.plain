@@ -12,7 +12,7 @@ abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
       *
       *     @see #c0_white
       */
-    protected CommentaryHolder_( final Markup_ c0_white, final BrecciaCursor cursor ) {
+    CommentaryHolder_( final Markup_ c0_white, final BrecciaCursor cursor ) {
         super( cursor.buffer );
         this.cursor = cursor;
         final Markup[] cc = new Markup_[5];
@@ -26,7 +26,7 @@ abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
 
     /** @see #c3_commentaryWhenPresent
       */
-    protected final void initialize( Markup_ c3_commentaryWhenPresent ) {
+    final void initialize( Markup_ c3_commentaryWhenPresent ) {
         components.set( 3, this.c3_commentaryWhenPresent = c3_commentaryWhenPresent ); }
 
 

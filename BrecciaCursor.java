@@ -48,6 +48,26 @@ public class BrecciaCursor implements ReusableCursor {
    // ━━━  C u r s o r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
+    public final @Override @NarrowNot AlarmPoint asAlarmPoint() {
+        return state == alarmPoint? alarmPoint : null; }
+
+
+
+    public final @Override @NarrowNot AlarmPoint.End asAlarmPointEnd() {
+        return state == alarmPointEnd? alarmPointEnd : null; }
+
+
+
+    public final @Override @NarrowNot AsidePoint asAsidePoint() {
+        return state == asidePoint? asidePoint : null; }
+
+
+
+    public final @Override @NarrowNot AsidePoint.End asAsidePointEnd() {
+        return state == asidePointEnd? asidePointEnd : null; }
+
+
+
     public final @Override @NarrowNot AssociativeReference asAssociativeReference() {
         return state == associativeReference? associativeReference : null; }
 
@@ -157,6 +177,16 @@ public class BrecciaCursor implements ReusableCursor {
 
     public final @Override @NarrowNot Privatizer.End asPrivatizerEnd() {
         return state == privatizerEnd? privatizerEnd : null; }
+
+
+
+    public final @Override @NarrowNot TaskPoint asTaskPoint() {
+        return state == taskPoint? taskPoint : null; }
+
+
+
+    public final @Override @NarrowNot TaskPoint.End asTaskPointEnd() {
+        return state == taskPointEnd? taskPointEnd : null; }
 
 
 
@@ -1132,7 +1162,14 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Resolve the concrete parse state
       // ────────────────────────────────
-        final NonCommandPoint p = basicPlainPoint; // TEST, the only supported case at present.
+        final char chLast = buffer.get( bulletEnd - 1 );
+        final NonCommandPoint p;
+        if( chLast == '+' ) p = basicTaskPoint;
+        else if( bulletEnd - bullet/*length*/ == 1 ) {
+            if( chLast == '/' ) p = basicAsidePoint;
+            else p = basicPlainPoint; }
+        else if( chLast == '!'  &&  buffer.get(bulletEnd-2) == '!' ) p = basicAlarmPoint;
+        else p = basicPlainPoint;
 
       // Therein delimit the components proper to all types of non-command point, and already parsed
       // ──────────────────────────────
@@ -1243,9 +1280,8 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Resolve the concrete parse state
       // ────────────────────────────────
-        xSeq.delimit( bullet, bulletEnd );
         final Point_<?> p;
-        if( equalInContent( ":", xSeq )) {
+        if( bulletEnd - bullet/*length*/ == 1  &&  buffer.get(bullet) == ':' ) {
             if( endSeeker != null ) { // Then the only case is that of the bullet ending (wrongly for
                 assert buffer.get(bulletEnd) == '\u00A0'; // a command point) at a no-break space.
                 throw spaceExpected( bufferPointer( bulletEnd )); }
@@ -1398,6 +1434,40 @@ public class BrecciaCursor implements ReusableCursor {
 
 
    // ┈┈┈  s t a t e   t y p i n g  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+
+
+    final void alarmPoint( AlarmPoint p ) { alarmPoint = p; }
+
+
+        private AlarmPoint alarmPoint;
+
+
+        private final AlarmPoint_ basicAlarmPoint = new AlarmPoint_( this ).endSet(); // [CIC]
+
+
+
+    final void alarmPointEnd( AlarmPoint.End e ) { alarmPointEnd = e; }
+
+
+        private AlarmPoint.End alarmPointEnd;
+
+
+
+    final void asidePoint( AsidePoint p ) { asidePoint = p; }
+
+
+        private AsidePoint asidePoint;
+
+
+        private final AsidePoint_ basicAsidePoint = new AsidePoint_( this ).endSet(); // [CIC]
+
+
+
+    final void asidePointEnd( AsidePoint.End e ) { asidePointEnd = e; }
+
+
+        private AsidePoint.End asidePointEnd;
+
 
 
     final void associativeReference( AssociativeReference r ) { associativeReference = r; }
@@ -1577,6 +1647,23 @@ public class BrecciaCursor implements ReusableCursor {
 
 
         private Privatizer.End privatizerEnd;
+
+
+
+    final void taskPoint( TaskPoint p ) { taskPoint = p; }
+
+
+        private TaskPoint taskPoint;
+
+
+        private final TaskPoint_ basicTaskPoint = new TaskPoint_( this ).endSet(); // [CIC]
+
+
+
+    final void taskPointEnd( TaskPoint.End e ) { taskPointEnd = e; }
+
+
+        private TaskPoint.End taskPointEnd;
 
 
 

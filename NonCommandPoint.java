@@ -23,9 +23,7 @@ abstract class NonCommandPoint extends Point_<BrecciaCursor> {
 
 
 
-    final Descriptor descriptorWhenPresent = new Descriptor() {
-
-        public @Override List<Markup> components() { return components; }};
+    final Descriptor descriptorWhenPresent = new Descriptor();
 
 
 
@@ -36,11 +34,41 @@ abstract class NonCommandPoint extends Point_<BrecciaCursor> {
 
 
 
-   // ━━━  P o i n t  ━━━  C o m m a n d   P o i n t _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override Descriptor descriptor() { return descriptor; }}
+    public final @Override Descriptor descriptor() { return descriptor; }
 
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    final class Descriptor extends Point_<BrecciaCursor>.Descriptor {
+
+
+        /** Late composition control flag.  Cleared on committing this non-command point
+          * through the `reifyNonCommandPoint` method of the cursor.  Set on late composition
+          * of this descriptor, which is triggered by a call for its `components`.
+          *
+          *     @see BrecciaCursor#reifyNonCommandPoint()
+          *     @see #components()
+          */
+        boolean isComposed; /* Justification of late parsing and composition of the descriptor: Free in
+          form, the unparsed components contribute nothing essential to the point.  Use cases may exist,
+          therefore, which demand no further parsing and benefit from the time saved by omitting it. */
+
+
+
+       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public final @Override List<Markup> components() throws MalformedMarkup {
+            if( !isComposed ) {
+                cursor.composeDescriptor( NonCommandPoint.this );
+                isComposed = true; }
+            assert components.isFlush();
+            return components; }}}
 
 
                                                         // Copyright © 2021  Michael Allan.  Licence MIT.

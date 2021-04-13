@@ -484,6 +484,24 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** @see NonCommandPoint.Descriptor#isComposed
+      */
+    final void composeDescriptor( final NonCommandPoint p ) throws MalformedMarkup {
+        assert !p.descriptor.isComposed;
+        final CoalescentMarkupList cc = p.descriptor.components;
+        cc.clear();
+        int b = p.bullet.text.end();
+        assert segmentEnd > b;
+        if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) {
+            throw new IllegalStateException( "Postgap expected\n" + bufferPointer(b).markedLine() ); }
+            // Because no alternative is possible if `reifyPoint` has done its job.
+        while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
+            && b /*moved*/!= (b = parseAnyPostgap( b, cc )));
+        assert b == segmentEnd: "Parse ends with the segment\n" + bufferPointer(b).markedLine();
+        cc.flush(); }
+
+
+
     /** @see SimpleCommandPoint.Descriptor#isComposed
       */
     final void composeDescriptor( final SimpleCommandPoint<?> p ) throws MalformedMarkup {
@@ -1125,6 +1143,7 @@ public class BrecciaCursor implements ReusableCursor {
         if( bulletEnd < segmentEnd ) {
             final var d = p.descriptorWhenPresent;
             d          .text.delimit( /*2*/bulletEnd,    /*3*/segmentEnd );
+            d.isComposed = false; // Pending demand.
             cc.end( 3 ); // Extended to include the descriptor.
             p.descriptor = d; }
         else { // A descriptorless point at file end.

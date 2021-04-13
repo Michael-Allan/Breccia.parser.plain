@@ -54,17 +54,17 @@ public abstract class SimpleCommandPoint<C extends BrecciaCursor> extends Comman
 
 
 
-        /** Late composition control flag.  Cleared on committing this command point
+        /** Late composition control flag.  Cleared on committing this simple command point
           * through its `commit` method.  Set on late composition of this descriptor,
           * which is triggered by a call for its `components`.
           *
           *     @see SimpleCommandPoint#commit()
           *     @see #components()
           */
-        boolean isComposed; /* Justification of late composition: the components of the descriptor
-          contribute nothing further to the command point that is essential, beyond what is already
-          present at commit time.  The only addition is the content of a postgap, if one is present.
-          Use cases will exist, therefore, which demand no composition. */
+        boolean isComposed; /* Justification of late parsing and composition of the full descriptor,
+          viz. beyond what was parsed at commit time:  The yet-unparsed components (at most a postgap)
+          contribute nothing further to the command point that is essential.  Use cases may exist,
+          therefore, which demand no further parsing and benefit from the time saved by omitting it. */
 
 
 

@@ -532,6 +532,24 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** @see PlainCommandPoint.Descriptor#isComposed
+      */
+    final void composeDescriptor( final PlainCommandPoint_ p ) throws MalformedMarkup {
+        // This method omits to encapsulate the command as such, pending a use case that would justify
+        // the effort, the main part of which would lie in discovering the end boundary of the command
+        // *exclusive of any trailing postgap*.
+        assert !p.descriptor.isComposed;
+        final CoalescentMarkupList cc = p.descriptor.components;
+        cc.clear();
+        int b;
+        cc.appendFlat( p.bullet.text.end(), b = p.keyword.end() );
+        while( b /*moved*/!= (b = parseAnyPostgap( b, cc ))
+            && b /*moved*/!= (b = parseAnyTerm( b, cc )));
+        assert b == segmentEnd: "Parse ends with the segment\n" + bufferPointer(b).markedLine();
+        cc.flush(); }
+
+
+
     /** @see SimpleCommandPoint.Descriptor#isComposed
       */
     final void composeDescriptor( final SimpleCommandPoint<?> p ) throws MalformedMarkup {

@@ -14,9 +14,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    final Descriptor descriptor = new Descriptor() {
-
-        public @Override List<Markup> components() { return components; }};
+    final Descriptor descriptor = new Descriptor();
 
 
 
@@ -26,7 +24,30 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    public ImperativeClause imperativeClause() { throw new UnsupportedOperationException(); }
+    /** Late composition control flag.  Cleared on committing this associative reference through
+      * its `commit` method.  Set on late composition, which is triggered either by calling
+      * on the descriptor `components` or the reifying `asAssociativeReference` getter.
+      *
+      *     @see #commit()
+      *     @see Descriptor#components()
+      *     @see BrecciaCursor#asAssociativeReference()
+      */
+    boolean isComposed; /* Justification of late parsing and composition,
+      viz. beyond what was parsed at commit time: Use cases exist which care nothing
+      for associative references but their reification, and these may benefit from the time
+      saved by leaving unparsed those components which contribute nothing to that reification. */
+
+
+
+    public ReferentClause referentClause() { throw new UnsupportedOperationException(); }
+
+
+
+    public Markup referentialCommand() { throw new UnsupportedOperationException(); }
+
+
+
+    public ReferrerClause referrerClause() { throw new UnsupportedOperationException(); }
 
 
 
@@ -35,6 +56,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
     protected @Override void commit() {
         super.commit();
+        isComposed = false; // Pending demand.
         cursor.associativeReference( this ); }
 
 
@@ -43,6 +65,24 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
     public final @Override Descriptor descriptor() { return descriptor; }
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    final class Descriptor extends Point_<BrecciaCursor>.Descriptor {
+
+
+       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public final @Override List<Markup> components() throws MalformedMarkup {
+            if( !isComposed ) {
+                cursor.composeAssociativeReference();
+                isComposed = true; }
+            assert components.isFlush();
+            return components; }}
 
 
 

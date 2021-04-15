@@ -37,9 +37,27 @@ public class BrecciaCursor implements ReusableCursor {
 
     public BrecciaCursor() {
         final String[] commandPointKeywords = { // Those specific to Breccia, in lexicographic order.
-            "private" };
+            "cf.",
+            "e.g.",
+            "i.e.",
+            "join",
+            "N.B.",
+            "NB",
+            "private",
+            "re",
+            "see",
+            "viz." };
         final CommandPoint_<?>[] commandPoints = { // Each at the same index as its keyword above.
-            basicPrivatizer }; // ‘private’
+            basicAssociativeReference,   // ‘cf.’
+            basicAssociativeReference,   // ‘e.g.’
+            basicAssociativeReference,   // ‘i.e.’
+            basicAssociativeReference,   // ‘join’
+            basicAssociativeReference,   // ‘N.B.’
+            basicAssociativeReference,   // ‘NB’
+            basicPrivatizer,             // ‘private’
+            basicAssociativeReference,   // ‘re’
+            basicAssociativeReference,   // ‘see’
+            basicAssociativeReference }; // ‘viz.’
         this.commandPointKeywords = commandPointKeywords;
         this.commandPoints = commandPoints; }
 
@@ -69,7 +87,11 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     public final @Override @NarrowNot AssociativeReference asAssociativeReference() {
-        return state == associativeReference? associativeReference : null; }
+        if( state != associativeReference ) return null;
+        if( !associativeReference.isComposed ) {
+            composeAssociativeReference();
+            associativeReference.isComposed = true; }
+        return associativeReference; }
 
 
 
@@ -514,6 +536,33 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** @see AssociativeReference_#isComposed
+      */
+    final void composeAssociativeReference() {
+        final AssociativeReference_ rA = associativeReference;
+        assert !rA.isComposed;
+        final CoalescentMarkupList cc = rA.descriptor.components;
+        cc.clear();
+        int b;
+
+      // Referrer clause
+      // ───────────────
+      // TODO
+
+      // Referential command
+      // ───────────────────
+      // TODO
+
+      // Referent clause
+      // ───────────────
+      // TODO
+
+        b = segmentEnd; // TEST
+        assert b == segmentEnd: parseEndsWithSegment(b);
+        cc.flush(); }
+
+
+
     /** @see NonCommandPoint.Descriptor#isComposed
       */
     final void composeDescriptor( final NonCommandPoint p ) throws MalformedMarkup {
@@ -527,7 +576,7 @@ public class BrecciaCursor implements ReusableCursor {
             // Because no alternative is possible if `reifyPoint` has done its job.
         while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
             && b /*moved*/!= (b = parseAnyPostgap( b, cc )));
-        assert b == segmentEnd: "Parse ends with the segment\n" + bufferPointer(b).markedLine();
+        assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush(); }
 
 
@@ -545,7 +594,7 @@ public class BrecciaCursor implements ReusableCursor {
         cc.appendFlat( p.bullet.text.end(), b = p.keyword.end() );
         while( b /*moved*/!= (b = parseAnyPostgap( b, cc ))
             && b /*moved*/!= (b = parseAnyTerm( b, cc )));
-        assert b == segmentEnd: "Parse ends with the segment\n" + bufferPointer(b).markedLine();
+        assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush(); }
 
 
@@ -581,7 +630,7 @@ public class BrecciaCursor implements ReusableCursor {
             // Because no alternative is possible if `delimitSegment` has done its job.
         while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
             && b /*moved*/!= (b = parseAnyPostgap( b, cc )));
-        assert b == segmentEnd: "Parse ends with the segment\n" + bufferPointer(b).markedLine();
+        assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush(); }
 
 
@@ -1069,6 +1118,11 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    private String parseEndsWithSegment( final int b ) {
+        return "Parse ends with the segment\n" + bufferPointer(b).markedLine(); }
+
+
+
     /** Parses a postgap at buffer position `b`, adding each of its components to the given markup list.
       *
       *     @return The end boundary of the postgap.
@@ -1488,10 +1542,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    final void associativeReference( AssociativeReference r ) { associativeReference = r; }
+    final void associativeReference( AssociativeReference_ r ) { associativeReference = r; }
 
 
-        private AssociativeReference associativeReference;
+        private AssociativeReference_ associativeReference;
 
 
         private final AssociativeReference_ basicAssociativeReference // [CIC]

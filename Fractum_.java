@@ -16,6 +16,8 @@ abstract class Fractum_<C extends BrecciaCursor> extends Markup_ implements Frac
 
 
 
+    /** Sets this fractum as the present parse state.
+      */
     void commit() { cursor.fractum( this ); }
 
 

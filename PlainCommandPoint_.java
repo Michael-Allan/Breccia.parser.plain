@@ -57,7 +57,7 @@ final class PlainCommandPoint_ extends CommandPoint_<BrecciaCursor> implements P
         boolean isComposed; /* Justification of late parsing and composition of the full descriptor,
           viz. beyond what was parsed at commit time: Use cases exist which care nothing for
           plain command points but their reification, and these may benefit from the time saved
-          by leaving unparsed those components which contributes nothing to reification. */
+          by leaving unparsed those components which contribute nothing to that reification. */
 
 
 

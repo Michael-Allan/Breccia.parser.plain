@@ -22,7 +22,7 @@ final class CoalescentArrayList extends ArrayList<Markup> implements CoalescentM
           // Coalesce, appending by deferred coalescence
           // ────────
             assert start == flatEnd;
-            flatEnd = end; } // Ensures flushing is enabled unless (caller error) `end == flatEnd`.
+            flatEnd = end; } // Ensures flushing is enabled unless (caller error) `end == flatFlush`.
         else {
 
           // Compose, appending by the addition of a new component

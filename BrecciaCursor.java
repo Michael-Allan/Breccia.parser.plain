@@ -424,9 +424,9 @@ public class BrecciaCursor implements ReusableCursor {
         lineResolver.resolveLine( position );
         final int lineStart = lineResolver.start;
         final int lineLength; { // Or partial length, if the whole line has yet to enter the buffer.
-            final int lineIndexNext = lineResolver.index + 1;
-            if( lineIndexNext < fractumLineEnds.length ) { // Then measure the easy way:
-                lineLength = fractumLineEnds.array[lineIndexNext] - lineStart; }
+            final int lineIndex = lineResolver.index;
+            if( lineIndex < fractumLineEnds.length ) { // Then measure the easy way:
+                lineLength = fractumLineEnds.array[lineIndex] - lineStart; }
             else { // The line has yet to be parsed to its end.  Measure it the hard way:
                 final int pN = buffer.limit();
                 int p = position;

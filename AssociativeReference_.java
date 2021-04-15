@@ -47,7 +47,15 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    public ReferrerClause referrerClause() { throw new UnsupportedOperationException(); }
+    ReferrerClause referrerClause;
+
+
+
+    public ReferrerClause referrerClause() { return referrerClause; }
+
+
+
+    ReferrerClause_ referrerClauseWhenPresent = new ReferrerClause_();
 
 
 
@@ -94,7 +102,55 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
         protected @Override void commit() {
             super.commit();
-            cursor.associativeReferenceEnd( this ); }}}
+            cursor.associativeReferenceEnd( this ); }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    final class ReferrerClause_ extends Markup_ implements ReferrerClause {
+
+
+        ReferrerClause_() { super( cursor.buffer ); }
+
+
+
+        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
+
+
+
+        final Pattern pattern = new Pattern( cursor );
+
+
+
+       // ━━━  R e f e r r e r   C l a u s e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public Markup pattern() { return pattern; }
+
+
+
+       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override final int column() {
+          return bullet.column() + cursor.bufferColumnarSpan(bullet.text.start(),keyword.start()); }
+
+
+
+        public @Override List<Markup> components() {
+            assert components.isFlush();
+            return components; }
+
+
+
+        public @Override final int lineNumber() { return AssociativeReference_.this.lineNumber(); }
+          // Always the referrer clause begins on the first line of the associative reference.
+
+
+
+        public @Override final String tagName() { return "ReferrerClause"; }}}
 
 
 

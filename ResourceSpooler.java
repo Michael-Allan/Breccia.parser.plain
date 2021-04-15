@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.TagName;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
@@ -11,10 +12,11 @@ final class ResourceSpooler {
 
     ResourceSpooler( final BrecciaCursor cursor ) {
         final ArrayList<Spool<?>> spools = new ArrayList<>();
+        spools.add( flatMarkup       = new Spool<>( () -> FlatMarkup.make( cursor )));
+        spools.add( patternDelimiter = new Spool<>( () -> FlatMarkup.make( cursor, "PatternDelimiter" )));
         spools.add( commentAppender  = new Spool<>( () -> new CommentAppender_   ( cursor )));
         spools.add( commentBlock     = new Spool<>( () -> new CommentBlock_      ( cursor )));
         spools.add( commentBlockLine = new Spool<>( () -> new CommentBlock_.Line_( cursor )));
-        spools.add( flatMarkup       = new Spool<>( () -> FlatMarkup.make        ( cursor )));
         spools.add( indentBlind      = new Spool<>( () -> new IndentBlind_       ( cursor )));
         spools.add( indentBlindLine  = new Spool<>( () -> new IndentBlind_.Line_ ( cursor )));
         this.spools = spools.toArray( spoolTypeArray ); } /* Bypassing the list interface
@@ -40,7 +42,7 @@ final class ResourceSpooler {
 
 
 
-    /** Spool of flat-markup instances, each with a generic tag name of ‘Markup’.
+    /** Spool of generic flat-markup instances, each with a tag name of ‘Markup’.
       *
       *     @see Breccia.parser.Markup#tagName()
       */
@@ -57,6 +59,12 @@ final class ResourceSpooler {
     /** Spool of indent-blind lines.
       */
     final Spool<IndentBlind_.Line_> indentBlindLine;
+
+
+
+    /** Spool of pattern delimiters.
+      */
+    final Spool<@TagName("PatternDelimiter") FlatMarkup> patternDelimiter;
 
 
 

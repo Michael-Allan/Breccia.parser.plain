@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static Java.CharBuffers.newDelimitableCharSequence;
 import static Java.CharBuffers.transferDirectly;
@@ -86,7 +85,8 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    public final @Override @NarrowNot AssociativeReference asAssociativeReference() {
+    public final @Override @NarrowNot AssociativeReference asAssociativeReference()
+          throws MalformedMarkup {
         if( state != associativeReference ) return null;
         if( !associativeReference.isComposed ) {
             composeAssociativeReference();
@@ -538,7 +538,7 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** @see AssociativeReference_#isComposed
       */
-    final void composeAssociativeReference() {
+    final void composeAssociativeReference() throws MalformedMarkup {
         final AssociativeReference_ rA = associativeReference;
         assert !rA.isComposed;
         final CoalescentMarkupList cc = rA.descriptor.components;
@@ -547,7 +547,16 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Referrer clause
       // ───────────────
-      // TODO
+        if( equalInContent( "re", rA.keyword )) {
+            final var cR = rA.referrerClauseWhenPresent;
+            final CoalescentMarkupList cRcc = cR.components;
+            cRcc.clear();
+            cRcc.appendFlat( rA.bullet.text.end(), b = rA.keyword.end() );
+            b = parsePostgap( b, cRcc );
+            b = parseDelimitedPattern( b, cRcc, cR.pattern );
+            cRcc.flush();
+            cc.add( rA.referrerClause = cR ); }
+        else rA.referrerClause = null;
 
       // Referential command
       // ───────────────────
@@ -871,7 +880,8 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private final Matcher graphemeClusterMatcher = Pattern.compile( "\\X" ).matcher( "" );
+    private final Matcher graphemeClusterMatcher
+      = java.util.regex.Pattern.compile( "\\X" ).matcher( "" );
       // The alternative for cluster discovery (within the JDK) is `java.txt.BreakIterator`, but
       // apparently it is outdated in this regard, wheras `java.util.regex` was updated for JDK 15.
       // https://bugs.openjdk.java.net/browse/JDK-8174266
@@ -1120,6 +1130,48 @@ public class BrecciaCursor implements ReusableCursor {
 
     private String parseEndsWithSegment( final int b ) {
         return "Parse ends with the segment\n" + bufferPointer(b).markedLine(); }
+
+
+
+    /** Parses at buffer position `b` a regular-expression pattern complete with its delimiters,
+      * adding each to the given markup list.
+      *
+      *     @param pattern The pattern instance to use for the purpose.
+      *     @return The end boundary of the delimiter.
+      *     @throws MalformedMarkup If no such delimiter occurs at `b`.
+      */
+    private int parseDelimitedPattern( int b, final List<Markup> markup, final Pattern pattern )
+          throws MalformedMarkup {
+        if( b < segmentEnd  &&  buffer.get(b) == '`' ) {
+            final FlatMarkup dP = spooler.patternDelimiter.unwind();
+            dP.text.delimit( b, ++b );
+            markup.add( dP ); }
+        else throw new MalformedMarkup( bufferPointer(b), "Pattern delimiter expected" );
+        final CoalescentMarkupList cc = pattern.components;
+        cc.clear();
+        boolean inEscape = false;
+        for( final int bPattern = b; b < segmentEnd; ) {
+            final char ch = buffer.get( b );
+            if( impliesNewline( ch )) break;
+            if( inEscape ) {
+                cc.appendFlat( b - 1, ++b ); // Viz. the whole escape sequence.
+                inEscape = false;
+                continue; }
+            if( ch == '\\' ) inEscape = true;
+            else if( ch == '`' ) {
+                if( b == bPattern ) throw new MalformedMarkup( bufferPointer(b), "Empty pattern" );
+                pattern.text.delimit( bPattern, b );
+                cc.flush();
+                markup.add( pattern );
+                final FlatMarkup dP = spooler.patternDelimiter.unwind();
+                dP.text.delimit( b, ++b );
+                markup.add( dP );
+                return b; }
+            else {
+                cc.appendFlat( b, ++b );
+                continue; }
+            ++b; }
+        throw new MalformedMarkup( bufferPointer(b), "Truncated pattern" ); }
 
 
 

@@ -1143,35 +1143,94 @@ public class BrecciaCursor implements ReusableCursor {
     private int parseDelimitedPattern( int b, final List<Markup> markup, final Pattern pattern )
           throws MalformedMarkup {
         if( b < segmentEnd  &&  buffer.get(b) == '`' ) {
-            final FlatMarkup dP = spooler.patternDelimiter.unwind();
-            dP.text.delimit( b, ++b );
-            markup.add( dP ); }
+            final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
+            delimiter.text.delimit( b, ++b );
+            markup.add( delimiter ); }
         else throw new MalformedMarkup( bufferPointer(b), "Pattern delimiter expected" );
         final CoalescentMarkupList cc = pattern.components;
         cc.clear();
-        boolean inEscape = false;
+        boolean inEscape = false; // Whether the last character was a backslash ‘\’.
         for( final int bPattern = b; b < segmentEnd; ) {
             final char ch = buffer.get( b );
             if( impliesNewline( ch )) break;
+
+          // Backslashed sequences
+          // ─────────────────────
             if( inEscape ) {
-                cc.appendFlat( b - 1, ++b ); // Viz. the whole escape sequence.
+                if( ch == 'b' || ch == 'd' || ch == 'R' || ch == 't' ) {
+                    final FlatMarkup special = spooler.backslashedSpecial.unwind();
+                    special.text.delimit( b - 1, ++b ); // Including the prior backslash.
+                    cc.add( special ); }
+                else if( ch == 'N' ) {
+                    final int bStart = b - 1; // The prior backslash.
+                    b = throughBackslashedSpecialNQualifier( ++b );
+                    final FlatMarkup special = spooler.backslashedSpecial.unwind();
+                    special.text.delimit( bStart, b );
+                    cc.add( special ); }
+                else {
+                    final FlatMarkup literalizer = spooler.literalizer.unwind();
+                    literalizer.text.delimit( b - 1, b );
+                    cc.add( literalizer );
+                    cc.appendFlat( b, ++b ); }
                 inEscape = false;
                 continue; }
-            if( ch == '\\' ) inEscape = true;
-            else if( ch == '`' ) {
+            if( ch == '\\' ) {
+                inEscape = true;
+                ++b;
+                continue; }
+
+          // Metacharacters
+          // ──────────────
+            if( ch == '^' ) {
+                final int bStart = b++;
+                if( b < segmentEnd  &&  buffer.get(b) == '^' ) { // A second ‘^’, so making ‘^^’.
+                    final FlatMarkup indent = spooler.perfectIndent.unwind();
+                    indent.text.delimit( bStart, ++b );
+                    cc.add( indent ); }
+                else {
+                    final FlatMarkup metacharacter = spooler.metacharacter.unwind();
+                    metacharacter.text.delimit( bStart, b );
+                    cc.add( metacharacter ); }
+                continue; }
+            if( ch == '.' || ch == '$' || ch == '|' || ch == '*' || ch == '+' || ch == '?' ) {
+                final FlatMarkup metacharacter = spooler.metacharacter.unwind();
+                metacharacter.text.delimit( b, ++b );
+                cc.add( metacharacter );
+                continue; }
+
+          // Group delimiters
+          // ────────────────
+            if( ch == '(' ) {
+                final int bStart = b++;
+                if( b < segmentEnd  &&  buffer.get(b) == '?' ) {
+                    final int c = b + 1;
+                    if( c < segmentEnd  &&  buffer.get(c) == ':' ) b = c + 1;}
+                final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
+                delimiter.text.delimit( bStart, b );
+                cc.add( delimiter );
+                continue; }
+            if( ch == ')' ) {
+                final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
+                delimiter.text.delimit( b, ++b );
+                cc.add( delimiter );
+                continue; }
+
+          // Closing pattern delimiter
+          // ─────────────────────────
+            if( ch == '`' ) {
                 if( b == bPattern ) throw new MalformedMarkup( bufferPointer(b), "Empty pattern" );
                 pattern.text.delimit( bPattern, b );
                 cc.flush();
                 markup.add( pattern );
-                final FlatMarkup dP = spooler.patternDelimiter.unwind();
-                dP.text.delimit( b, ++b );
-                markup.add( dP );
+                final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
+                delimiter.text.delimit( b, ++b );
+                markup.add( delimiter );
                 return b; }
-            else {
-                cc.appendFlat( b, ++b );
-                continue; }
-            ++b; }
-        throw new MalformedMarkup( bufferPointer(b), "Truncated pattern" ); }
+
+          // Literal characters
+          // ──────────────────
+            cc.appendFlat( b, ++b ); }
+        throw truncatedPattern( bufferPointer( b )); }
 
 
 
@@ -1520,6 +1579,42 @@ public class BrecciaCursor implements ReusableCursor {
             if( comprisesBackslashes ) return bOriginal; }
         else while( b < segmentEnd && !isWhitespace(buffer.get(b)) ) ++b; // The fast way. (typical case)
         return b; }
+
+
+
+    /** Scans through the bracketed qualifier of a ‘\N{⋯}’ sequence at buffer position `b`,
+      * beginning with the ‘{’ delimitier.
+      *
+      *     @see <a href='https://perldoc.perl.org/perlrebackslash#Named-or-numbered-characters-and-character-sequences'>
+      *       Named or numbered characters</a>
+      *     @return The end boundary of the qualifier, after the terminal ‘}’.
+      *     @throws MalformedMarkup If no such qualifier occurs at `b`.
+      */
+    private int throughBackslashedSpecialNQualifier( int b ) throws MalformedMarkup {
+        if( b < segmentEnd  &&  buffer.get(b) == '{' ) ++b;
+        else throw new MalformedMarkup( bufferPointer(b), "Curly bracket ‘{’ expected" );
+        final int bContent = b; // Subsequent to the opening ‘{’ delimiter.
+        boolean inNumeric = false; // Whether the content begins ‘U+’, denoting a numbered qualifier.
+        for( char ch = '\u0000', chLast = '\u0000';  b < segmentEnd;  chLast = ch, ++b ) {
+            ch = buffer.get( b );
+            if( impliesNewline( ch )) break;
+            if( ch == '}' ) {
+                if( inNumeric ) {
+                    if( b - bContent < 3 ) {
+                        throw new MalformedMarkup( bufferPointer(b), "Hexadecimal digit expected" ); }}
+                else if( b == bContent ) {
+                    throw new MalformedMarkup( bufferPointer(b), "Empty qualifier" ); }
+                return ++b; }
+            if( ch == '+'  &&  chLast == 'U'  &&  b - bContent == 1 ) inNumeric = true;
+            else if( inNumeric ) {
+                if( !( ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'F' || ch >= 'a' && ch <= 'f' )) {
+                    throw new MalformedMarkup( bufferPointer(b), "Hexadecimal digit expected" ); }}
+            else if( !( ch >= 'A' && ch <= 'Z'
+              || b > bContent && ( ch >= '0' && ch <= '9' || ch == ' ' || ch == '-' ))) {
+                // See Names § 4.8, `https://www.unicode.org/versions/Unicode13.0.0/ch04.pdf`
+                throw new MalformedMarkup( bufferPointer(b),
+                  "Character not allowed here, Unicode " + (int)ch ); }}
+        throw truncatedPattern( bufferPointer( b )); }
 
 
 

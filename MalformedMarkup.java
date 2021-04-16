@@ -57,6 +57,13 @@ public class MalformedMarkup extends ParseError {
 
     /** @see #pointer
       */
+    static MalformedMarkup truncatedPattern( final Pointer pointer ) {
+        return new MalformedMarkup( pointer, "Truncated pattern" ); }
+
+
+
+    /** @see #pointer
+      */
     static MalformedMarkup unexpectedTerm( final Pointer pointer ) {
         return new MalformedMarkup( pointer, "Unexpected Term" ); }
 

@@ -10,17 +10,32 @@ import java.util.function.Supplier;
 final class ResourceSpooler {
 
 
-    ResourceSpooler( final BrecciaCursor cursor ) {
-        final ArrayList<Spool<?>> spools = new ArrayList<>();
-        spools.add( flatMarkup       = new Spool<>( () -> FlatMarkup.make( cursor )));
-        spools.add( patternDelimiter = new Spool<>( () -> FlatMarkup.make( cursor, "PatternDelimiter" )));
-        spools.add( commentAppender  = new Spool<>( () -> new CommentAppender_   ( cursor )));
-        spools.add( commentBlock     = new Spool<>( () -> new CommentBlock_      ( cursor )));
-        spools.add( commentBlockLine = new Spool<>( () -> new CommentBlock_.Line_( cursor )));
-        spools.add( indentBlind      = new Spool<>( () -> new IndentBlind_       ( cursor )));
-        spools.add( indentBlindLine  = new Spool<>( () -> new IndentBlind_.Line_ ( cursor )));
-        this.spools = spools.toArray( spoolTypeArray ); } /* Bypassing the list interface
+    ResourceSpooler( final BrecciaCursor c ) {
+        final ArrayList<Spool<?>> ss = new ArrayList<>();
+        ss.add( flatMarkup         = new Spool<>( () -> FlatMarkup.make( c )));
+        ss.add( backslashedSpecial = new Spool<>( () -> FlatMarkup.make( c, "BackslashedSpecial" )));
+        ss.add( groupDelimiter     = new Spool<>( () -> FlatMarkup.make( c, "GroupDelimiter" )));
+        ss.add( literalizer        = new Spool<>( () -> FlatMarkup.make( c, "Literalizer" )));
+        ss.add( metacharacter      = new Spool<>( () -> FlatMarkup.make( c, "Metacharacter" )));
+        ss.add( patternDelimiter   = new Spool<>( () -> FlatMarkup.make( c, "PatternDelimiter" )));
+        ss.add( perfectIndent      = new Spool<>( () -> FlatMarkup.make( c, "PerfectIndent" )));
+        ss.add( commentAppender    = new Spool<>( () -> new CommentAppender_   ( c )));
+        ss.add( commentBlock       = new Spool<>( () -> new CommentBlock_      ( c )));
+        ss.add( commentBlockLine   = new Spool<>( () -> new CommentBlock_.Line_( c )));
+        ss.add( indentBlind        = new Spool<>( () -> new IndentBlind_       ( c )));
+        ss.add( indentBlindLine    = new Spool<>( () -> new IndentBlind_.Line_ ( c )));
+        spools = ss.toArray( spoolTypeArray ); } /* Bypassing the list interface
           in favour of a bare array, because speed of iteration matters here. */
+
+
+
+    /** Spool of flat-markup instances, each reflective of a ‘backslash sequence’,
+      * a sequence commencing with a backslash that has special meaning in a pattern.
+      *
+      *     @see <a href='https://perldoc.perl.org/perlrebackslash#The-backslash'>The backslash</a>
+      *     @see #literalizer
+      */
+    final Spool<@TagName("BackslashedSpecial") FlatMarkup> backslashedSpecial;
 
 
 
@@ -50,6 +65,13 @@ final class ResourceSpooler {
 
 
 
+    /** Spool of flat-markup instances, each reflective of a group delimiter within a pattern,
+      * one of ‘(’, ‘(?:’ or ‘)’.
+      */
+    final Spool<@TagName("GroupDelimiter") FlatMarkup> groupDelimiter;
+
+
+
     /** Spool of indent blinds.
       */
     final Spool<IndentBlind_> indentBlind;
@@ -62,9 +84,33 @@ final class ResourceSpooler {
 
 
 
-    /** Spool of pattern delimiters.
+    /** Spool of flat-markup instances, each reflective of a literalizing backslash within a pattern,
+      * one that ‘takes away [any] special meaning of the character following it’.
+      *
+      *     @see <a href='https://perldoc.perl.org/perlrebackslash#The-backslash'>The backslash</a>
+      *     @see #backslashedSpecial
+      */
+    final Spool<@TagName("Literalizer") FlatMarkup> literalizer;
+
+
+
+    /** Spool of flat-markup instances, each reflective of a metacharacter within a pattern.
+      *
+      *     @see <a href='https://perldoc.perl.org/perlre#Metacharacters'>Metacharacters</a>
+      */
+    final Spool<@TagName("Metacharacter") FlatMarkup> metacharacter;
+
+
+
+    /** Spool of flat-markup instances, each reflective of a pattern delimiter ‘`’.
       */
     final Spool<@TagName("PatternDelimiter") FlatMarkup> patternDelimiter;
+
+
+
+    /** Spool of flat-markup instances, each reflective of a perfect indent ‘^^’ within a pattern.
+      */
+    final Spool<@TagName("PerfectIndent") FlatMarkup> perfectIndent;
 
 
 

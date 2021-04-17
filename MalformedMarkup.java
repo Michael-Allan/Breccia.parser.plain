@@ -65,7 +65,7 @@ public class MalformedMarkup extends ParseError {
     /** @see #pointer
       */
     static MalformedMarkup unexpectedTerm( final Pointer pointer ) {
-        return new MalformedMarkup( pointer, "Unexpected Term" ); }
+        return new MalformedMarkup( pointer, "Unexpected term" ); }
 
 
 

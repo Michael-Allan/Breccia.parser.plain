@@ -10,7 +10,8 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
     AssociativeReference_( BrecciaCursor cursor ) {
         super( cursor );
-        initialize(); }
+        initialize();
+        referentialCommand = FlatMarkup.make( cursor, "ReferentialCommand" ); }
 
 
 
@@ -43,7 +44,11 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    public Markup referentialCommand() { throw new UnsupportedOperationException(); }
+    final FlatMarkup referentialCommand;
+
+
+
+    public Markup referentialCommand() { return referentialCommand; }
 
 
 
@@ -55,7 +60,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    ReferrerClause_ referrerClauseWhenPresent = new ReferrerClause_();
+    final ReferrerClause_ referrerClauseWhenPresent = new ReferrerClause_();
 
 
 

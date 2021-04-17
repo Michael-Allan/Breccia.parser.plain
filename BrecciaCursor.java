@@ -541,26 +541,52 @@ public class BrecciaCursor implements ReusableCursor {
     final void composeAssociativeReference() throws MalformedMarkup {
         final AssociativeReference_ rA = associativeReference;
         assert !rA.isComposed;
+        final DelimitableCharSequence keyword = rA.keyword;
         final CoalescentMarkupList cc = rA.descriptor.components;
         cc.clear();
         int b;
+        cc.appendFlat( rA.bullet.text.end(), b = keyword.start() );
+        final int bReferentialCommand;
+        final DelimitableCharSequence referentialCommandKeyword;
+        if( equalInContent( "re", keyword )) {
 
-      // Referrer clause
-      // ───────────────
-        if( equalInContent( "re", rA.keyword )) {
+          // Referrer clause, from keyword
+          // ───────────────
             final var cR = rA.referrerClauseWhenPresent;
             final CoalescentMarkupList cRcc = cR.components;
             cRcc.clear();
-            cRcc.appendFlat( rA.bullet.text.end(), b = rA.keyword.end() );
+            final int a = b;
+            cRcc.appendFlat( b, b = keyword.end() );
             b = parsePostgap( b, cRcc );
             b = parseDelimitedPattern( b, cRcc, cR.pattern );
+            cR.text.delimit( a, b );
             cRcc.flush();
-            cc.add( rA.referrerClause = cR ); }
-        else rA.referrerClause = null;
+            cc.add( rA.referrerClause = cR );
+            b = parsePostgap( b, cc );
 
-      // Referential command
-      // ───────────────────
-      // TODO
+          // Referential command, from scratch
+          // ───────────────────
+            bReferentialCommand = b;
+            b = throughTerm( b );
+            xSeq.delimit( bReferentialCommand, b );
+            referentialCommandKeyword = xSeq; }
+        else { // A referrer clause is absent.
+            rA.referrerClause = null;
+
+          // Referential command, from keyword
+          // ───────────────────
+            bReferentialCommand = keyword.start();
+            b = keyword.end();
+            referentialCommandKeyword = keyword; }
+        if( equalInContent( "see", referentialCommandKeyword )) {
+            final int c;
+            int d = b;
+            if( d /*moved*/!= (d = c = throughAnyS( d ))
+             && d /*moved*/!= (d = throughAnyTerm( d ))) {
+                xSeq.delimit( c, d );
+                if( equalInContent( "also", xSeq )) b = d; }}
+        rA.referentialCommand.text.delimit( bReferentialCommand, b );
+        cc.add( rA.referentialCommand );
 
       // Referent clause
       // ───────────────

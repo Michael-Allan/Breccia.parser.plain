@@ -2,10 +2,10 @@ package Breccia.parser.plain;
 
 import Breccia.parser.Markup;
 import Java.DelimitableCharSequence;
-import java.util.ArrayList;
+import Java.RangedArrayList;
 
 
-final class CoalescentArrayList extends ArrayList<Markup> implements CoalescentMarkupList {
+final class CoalescentArrayList extends RangedArrayList<Markup> implements CoalescentMarkupList {
 
 
     CoalescentArrayList( ResourceSpooler spooler ) { this.spooler = spooler; }

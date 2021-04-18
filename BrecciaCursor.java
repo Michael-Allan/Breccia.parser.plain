@@ -558,7 +558,7 @@ public class BrecciaCursor implements ReusableCursor {
             final int a = b;
             cRcc.appendFlat( b, b = keyword.end() );
             b = parsePostgap( b, cRcc );
-            b = parseDelimitedPattern( b, cRcc, cR.pattern );
+            b = parseDelimited( b, cRcc, cR.pattern );
             cR.text.delimit( a, b );
             cRcc.flush();
             cc.add( rA.referrerClause = cR );
@@ -587,13 +587,33 @@ public class BrecciaCursor implements ReusableCursor {
                 if( equalInContent( "also", xSeq )) b = d; }}
         rA.referentialCommand.text.delimit( bReferentialCommand, b );
         cc.add( rA.referentialCommand );
+        b = parseAnyPostgap( b, cc );
+        if( b < segmentEnd ) {
 
-      // Referent clause
-      // ───────────────
-      // TODO
-
-        b = segmentEnd; // TEST
-        assert b == segmentEnd: parseEndsWithSegment(b);
+          // Referent clause
+          // ───────────────
+            final var cR = rA.referentClauseWhenPresent;
+            xSeq.delimit( b, throughTerm(b) ); // As parameter to `parseAnyInferentialReferentIndicant`.
+            if( b /*moved*/!= (b = parseAnyInferentialReferentIndicant( b, cR, cc ))) {
+                cR.fractumIndicant = null; // Instead an inferential referent indicant is present:
+                final var iIR = cR.inferentialReferentIndicant
+                  = cR.inferentialReferentIndicantWhenPresent;
+                cR.components = cR.componentAsInferentialReferentIndicant;
+             /* cR.text.delimit( ...
+                cc.add( cR );
+                b = parseAnyPostgap( b, cc ); */ } /* No need, as `parseAnyInferentialReferentIndicant`,
+                which was called above, has already done all this. */
+            else {
+                cR.inferentialReferentIndicant = null; // Instead a fractum indicant is present:
+                final var iF = cR.fractumIndicant = cR.fractumIndicantWhenPresent;
+                cR.text.delimit( b, b = parse( b, iF ));
+                cR.components = cR.componentAsFractumIndicant;
+                cc.add( cR );
+                b = parseAnyPostgap( b, cc ); }
+            rA.referentClause = cR; }
+        else rA.referentClause = null;
+        if( b < segmentEnd ) throw unexpectedTerm( bufferPointer( b ));
+        else assert b == segmentEnd;
         cc.flush(); }
 
 
@@ -644,7 +664,8 @@ public class BrecciaCursor implements ReusableCursor {
         cc.appendFlat( p.bullet.text.end(), command.text.start() );
         cc.add( command );
         final int b = parseAnyPostgap( command.text.end(), cc );
-        if( b != segmentEnd ) throw unexpectedTerm( bufferPointer( b ));
+        if( b < segmentEnd ) throw unexpectedTerm( bufferPointer( b ));
+        else assert b == segmentEnd;
         cc.flush(); }
 
 
@@ -1024,6 +1045,17 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Parses a fractum indicant at buffer position `b`.
+      *
+      *     @return The end boundary of the fractum indicant.
+      *     @throws MalformedMarkup If no fractum indicant occurs at `b`.
+      */
+    private int parse( int b, final FractumIndicant_ iF ) throws MalformedMarkup {
+     // iF.text.delimit( ...
+        throw new UnsupportedOperationException(); }
+
+
+
     /** Parses any comment appender, the delimiter of which (a backslash sequence)
       * would begin at buffer position `b`, adding it to the given markup list.
       * Already the markup before `b` is known to be well formed for the purpose.
@@ -1106,6 +1138,106 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Parses any inferential referent indicant at buffer position `b`, adding its components to
+      * `cR.inferentialReferentIndicantWhenPresent.components`, delimiting `cR.text`,
+      * and adding `cR` with any subsequent postgap to `rADcc`.
+      *
+      *     @param rADcc The descriptor component list of the associative reference containing `cR`.
+      *     @return The end boundary of the last thing parsed (inferential referent indicant or postgap)
+      *       or `b` if no inferential referent indicant is present, in which case this method leaves
+      *       `cR.inferentialReferentIndicantWhenPresent.components` empty, but otherwise leaves
+      *       `cR` and `rADcc` untouched. *//*
+      *
+      *     @paramImplied xSeq The character sequence in the buffer of the first term of `cR`.
+      */
+    private int parseAnyInferentialReferentIndicant( int b,  final AssociativeReference_.
+          ReferentClause_ cR, final CoalescentMarkupList rADcc ) throws MalformedMarkup {
+        final int bOriginal = b;
+        final var iIR = cR.inferentialReferentIndicantWhenPresent;
+        final CoalescentArrayList cc = iIR.components;
+        cc.clear();
+        final var seqTerm = xSeq; // The character sequence of the last discovered term of `cR`.
+        int cTermEnd = 0; // The end boundary in `cc` of the last term added.
+        composition: {
+
+          // i. Referrer similarity
+          // ──────────────────────
+            if( equalInContent( "same", seqTerm ) || equalInContent( "similar", seqTerm )) {
+                b = seqTerm.end();
+                final var sim = iIR.referrerSimilarityWhenPresent;
+                iIR.referrerSimilarity = sim;
+                sim.text.delimit( seqTerm.start(), b );
+                cc.add( sim );
+                cTermEnd = cc.size();
+                if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) break composition;
+                final int d = throughAnyTerm( b );
+                if( d /*unmoved*/== b ) break composition;
+                seqTerm.delimit( b, d ); }
+
+          // ii. Referential form
+          // ────────────────────
+            if( equalInContent( "head", seqTerm ) || equalInContent( "term", seqTerm )) {
+                b = seqTerm.end();
+                final var form = iIR.referentialFormWhenPresent;
+                iIR.referentialForm = form;
+                form.text.delimit( seqTerm.start(), b );
+                cc.add( form );
+                cTermEnd = cc.size();
+                if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) break composition;
+                final int d = throughAnyTerm( b );
+                if( d /*unmoved*/== b ) break composition;
+                seqTerm.delimit( b, d ); }
+
+          // iii. Containment
+          // ────────────────
+            if( equalInContent( "@", seqTerm )) {
+                final var cC = iIR.containmentClauseWhenPresent;
+                final CoalescentMarkupList cCcc = cC.components;
+                cCcc.clear();
+                cCcc.appendFlat( b, ++b ); // The ‘@’.
+                b = parsePostgap( b, cCcc );
+                final var iF = iIR.fractumIndicant = iIR.fractumIndicantWhenPresent;
+                b = parse( b, iF );
+                cCcc.add( iF );
+                cC.text.delimit( seqTerm.start(), b );
+                cCcc.flush();
+                cc.add( cC );
+
+              // Finalization of `cR` and `iIR` wherein the latter ends with a containment clause (iii)
+              // ────────────
+                iIR.text.delimit( bOriginal, b );
+                cc.flush();
+                cR.text.delimit( bOriginal, b );
+                rADcc.add( cR );
+
+              // Postgap subsequent to `cR`
+              // ───────
+                b = parseAnyPostgap( b, rADcc );
+                return b; }
+            if( b == bOriginal ) return b; } // No inferential referent indicant is present.
+
+      // Finalization of `cR` and `iIR` wherein the latter comprises one or both
+      // ────────────        of referrer similarity (i) and referential form (ii)
+        final int d = seqTerm.end();
+        iIR.text.delimit( bOriginal, d ); // Using `d`, not `b` which bounds instead any postgap.
+        cc.flush();
+        cR.text.delimit( bOriginal, d );
+        rADcc.add( cR );
+
+      // Postgap subsequent to `cR`
+      // ───────
+        final int cN = cc.size();
+        assert cTermEnd != 0; // It has been set.
+        if( cTermEnd < cN ) { /* Then a final postgap is present, which inadvertently
+              was appended to `cc`.  Move it from `cc` to `rADcc`, where it belongs.
+              Having to do so is why this method itself must (above) add `cR` to `rADcc`. */
+            for( int c = cTermEnd; c < cN; ++c ) rADcc.add( cc.get( c ));
+            cc.removeRange( cTermEnd, cN ); } /* With this removal, `cc` would be broken by any
+              further coalescence.  There will be none, however, as its content is now complete. */
+        return b; }
+
+
+
     /** Parses any sequence of newlines at buffer position `b`, adding it to the given markup list.
       *
       *     @return The end boundary of the sequence, or `b` if there is none.
@@ -1166,7 +1298,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the delimiter.
       *     @throws MalformedMarkup If no such delimiter occurs at `b`.
       */
-    private int parseDelimitedPattern( int b, final List<Markup> markup, final Pattern pattern )
+    private int parseDelimited( int b, final List<Markup> markup, final Pattern pattern )
           throws MalformedMarkup {
         if( b < segmentEnd  &&  buffer.get(b) == '`' ) {
             final FlatMarkup delimiter = spooler.patternDelimiter.unwind();

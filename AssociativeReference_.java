@@ -1,7 +1,6 @@
 package Breccia.parser.plain;
 
-import Breccia.parser.AssociativeReference;
-import Breccia.parser.Markup;
+import Breccia.parser.*;
 import java.util.List;
 
 
@@ -40,7 +39,11 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    public ReferentClause referentClause() { throw new UnsupportedOperationException(); }
+    ReferentClause referentClause;
+
+
+
+    final ReferentClause_ referentClauseWhenPresent = new ReferentClause_();
 
 
 
@@ -48,19 +51,26 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    public Markup referentialCommand() { return referentialCommand; }
-
-
-
     ReferrerClause referrerClause;
 
 
 
-    public ReferrerClause referrerClause() { return referrerClause; }
-
-
-
     final ReferrerClause_ referrerClauseWhenPresent = new ReferrerClause_();
+
+
+
+   // ━━━  A s s o c i a t i v e   R e f e r e n c e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public @Override ReferentClause referentClause() { return referentClause; }
+
+
+
+    public @Override Markup referentialCommand() { return referentialCommand; }
+
+
+
+    public @Override ReferrerClause referrerClause() { return referrerClause; }
 
 
 
@@ -78,6 +88,41 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
     public final @Override Descriptor descriptor() { return descriptor; }
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    final class ContainmentClause extends Markup_ {
+
+
+        ContainmentClause() { super( cursor.buffer ); }
+
+
+
+        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
+
+
+
+       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override final int column() { return cursor.bufferColumn( text.start() ); }
+
+
+
+        public @Override List<Markup> components() {
+            assert components.isFlush();
+            return components; }
+
+
+
+        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+
+
+
+        public @Override final String tagName() { return "ContainmentClause"; }}
 
 
 
@@ -114,6 +159,157 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
+    final class InferentialReferentIndicant_ extends Markup_ implements InferentialReferentIndicant {
+
+
+        InferentialReferentIndicant_() { super( cursor.buffer ); }
+
+
+
+        final CoalescentArrayList components = new CoalescentArrayList( cursor.spooler );
+
+
+
+        final ContainmentClause containmentClauseWhenPresent = new ContainmentClause();
+
+
+
+        FractumIndicant fractumIndicant;
+
+
+
+        final FractumIndicant_ fractumIndicantWhenPresent = new FractumIndicant_( cursor );
+
+
+
+        Markup referentialForm;
+
+
+
+        final FlatMarkup referentialFormWhenPresent = FlatMarkup.make( cursor, "ReferentialForm" );
+
+
+
+        Markup referrerSimilarity;
+
+
+
+        final FlatMarkup referrerSimilarityWhenPresent = FlatMarkup.make( cursor, "ReferrerSimilarity" );
+
+
+
+       // ━━━  I n f e r e n t i a l   R e f e r e n t   I n d i c a n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override FractumIndicant fractumIndicant() { return fractumIndicant; }
+
+
+
+        public @Override Markup referentialForm() { return referentialForm; }
+
+
+
+        public @Override Markup referrerSimilarity() { return referrerSimilarity; }
+
+
+
+       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override final int column() { return cursor.bufferColumn( text.start() ); }
+
+
+
+        public @Override List<Markup> components() {
+            assert components.isFlush();
+            return components; }
+
+
+
+        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+
+
+
+        public @Override final String tagName() { return "InferentialReferentIndicant"; }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    final class ReferentClause_ extends Markup_ implements ReferentClause {
+
+
+        ReferentClause_() {
+            super( cursor.buffer );
+            componentAsFractumIndicant = List.of( fractumIndicantWhenPresent );
+            componentAsInferentialReferentIndicant = List.of( inferentialReferentIndicantWhenPresent ); }
+
+
+
+        List<Markup> components;
+
+
+
+        final List<Markup> componentAsFractumIndicant;
+
+
+
+        final List<Markup> componentAsInferentialReferentIndicant;
+
+
+
+        FractumIndicant fractumIndicant;
+
+
+
+        final FractumIndicant_ fractumIndicantWhenPresent = new FractumIndicant_( cursor );
+
+
+
+        InferentialReferentIndicant inferentialReferentIndicant;
+
+
+
+        final InferentialReferentIndicant_ inferentialReferentIndicantWhenPresent
+          = new InferentialReferentIndicant_();
+
+
+
+       // ━━━  R e f e r e n t   C l a u s e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override FractumIndicant fractumIndicant() { return fractumIndicant; }
+
+
+
+        public @Override InferentialReferentIndicant inferentialReferentIndicant() {
+            return inferentialReferentIndicant; }
+
+
+
+       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override final int column() { return cursor.bufferColumn( text.start() ); }
+
+
+
+        public @Override List<Markup> components() { return components; }
+
+
+
+        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+
+
+
+        public @Override final String tagName() { return "ReferentClause"; }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
     final class ReferrerClause_ extends Markup_ implements ReferrerClause {
 
 
@@ -132,7 +328,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  R e f e r r e r   C l a u s e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public Markup pattern() { return pattern; }
+        public @Override Markup pattern() { return pattern; }
 
 
 

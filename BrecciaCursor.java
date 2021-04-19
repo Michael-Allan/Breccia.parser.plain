@@ -593,8 +593,8 @@ public class BrecciaCursor implements ReusableCursor {
           // Referent clause
           // ───────────────
             final var cR = rA.referentClauseWhenPresent;
-            xSeq.delimit( b, throughTerm(b) ); // As parameter to `parseAnyInferentialReferentIndicant`.
-            if( b /*moved*/!= (b = parseAnyInferentialReferentIndicant( b, cR, cc ))) {
+            final var cRIParser = referentClauseIndicantParser;
+            if( b /*moved*/!= (b = cRIParser.parseAnyInferentialReferentIndicant( b, cR, cc ))) {
                 cR.fractumIndicant = null; // Instead an inferential referent indicant is present:
                 final var iIR = cR.inferentialReferentIndicant
                   = cR.inferentialReferentIndicantWhenPresent;
@@ -605,8 +605,9 @@ public class BrecciaCursor implements ReusableCursor {
                 which was called above, has already done all this. */
             else {
                 cR.inferentialReferentIndicant = null; // Instead a fractum indicant is present:
-                final var iF = cR.fractumIndicant = cR.fractumIndicantWhenPresent;
-                cR.text.delimit( b, b = parse( b, iF ));
+                final var iF = cR.fractumIndicantWhenPresent;
+                cR.fractumIndicant = iF;
+                cR.text.delimit( b, b = cRIParser.parse( b, iF ));
                 cR.components = cR.componentAsFractumIndicant;
                 cc.add( cR );
                 b = parseAnyPostgap( b, cc ); }
@@ -1045,17 +1046,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses a fractum indicant at buffer position `b`.
-      *
-      *     @return The end boundary of the fractum indicant.
-      *     @throws MalformedMarkup If no fractum indicant occurs at `b`.
-      */
-    private int parse( int b, final FractumIndicant_ iF ) throws MalformedMarkup {
-     // iF.text.delimit( ...
-        throw new UnsupportedOperationException(); }
-
-
-
     /** Parses any comment appender, the delimiter of which (a backslash sequence)
       * would begin at buffer position `b`, adding it to the given markup list.
       * Already the markup before `b` is known to be well formed for the purpose.
@@ -1134,106 +1124,6 @@ public class BrecciaCursor implements ReusableCursor {
                 markup.appendFlat( bFlat, b );
                 break; }
             ch = buffer.get( b ); }
-        return b; }
-
-
-
-    /** Parses any inferential referent indicant at buffer position `b`, adding its components to
-      * `cR.inferentialReferentIndicantWhenPresent.components`, delimiting `cR.text`,
-      * and adding `cR` with any subsequent postgap to `rADcc`.
-      *
-      *     @param rADcc The descriptor component list of the associative reference containing `cR`.
-      *     @return The end boundary of the last thing parsed (inferential referent indicant or postgap)
-      *       or `b` if no inferential referent indicant is present, in which case this method leaves
-      *       `cR.inferentialReferentIndicantWhenPresent.components` empty, but otherwise leaves
-      *       `cR` and `rADcc` untouched. *//*
-      *
-      *     @paramImplied xSeq The character sequence in the buffer of the first term of `cR`.
-      */
-    private int parseAnyInferentialReferentIndicant( int b,  final AssociativeReference_.
-          ReferentClause_ cR, final CoalescentMarkupList rADcc ) throws MalformedMarkup {
-        final int bOriginal = b;
-        final var iIR = cR.inferentialReferentIndicantWhenPresent;
-        final CoalescentArrayList cc = iIR.components;
-        cc.clear();
-        final var seqTerm = xSeq; // The character sequence of the last discovered term of `cR`.
-        int cTermEnd = 0; // The end boundary in `cc` of the last term added.
-        composition: {
-
-          // i. Referrer similarity
-          // ──────────────────────
-            if( equalInContent( "same", seqTerm ) || equalInContent( "similar", seqTerm )) {
-                b = seqTerm.end();
-                final var sim = iIR.referrerSimilarityWhenPresent;
-                iIR.referrerSimilarity = sim;
-                sim.text.delimit( seqTerm.start(), b );
-                cc.add( sim );
-                cTermEnd = cc.size();
-                if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) break composition;
-                final int d = throughAnyTerm( b );
-                if( d /*unmoved*/== b ) break composition;
-                seqTerm.delimit( b, d ); }
-
-          // ii. Referential form
-          // ────────────────────
-            if( equalInContent( "head", seqTerm ) || equalInContent( "term", seqTerm )) {
-                b = seqTerm.end();
-                final var form = iIR.referentialFormWhenPresent;
-                iIR.referentialForm = form;
-                form.text.delimit( seqTerm.start(), b );
-                cc.add( form );
-                cTermEnd = cc.size();
-                if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) break composition;
-                final int d = throughAnyTerm( b );
-                if( d /*unmoved*/== b ) break composition;
-                seqTerm.delimit( b, d ); }
-
-          // iii. Containment
-          // ────────────────
-            if( equalInContent( "@", seqTerm )) {
-                final var cC = iIR.containmentClauseWhenPresent;
-                final CoalescentMarkupList cCcc = cC.components;
-                cCcc.clear();
-                cCcc.appendFlat( b, ++b ); // The ‘@’.
-                b = parsePostgap( b, cCcc );
-                final var iF = iIR.fractumIndicant = iIR.fractumIndicantWhenPresent;
-                b = parse( b, iF );
-                cCcc.add( iF );
-                cC.text.delimit( seqTerm.start(), b );
-                cCcc.flush();
-                cc.add( cC );
-
-              // Finalization of `cR` and `iIR` wherein the latter ends with a containment clause (iii)
-              // ────────────
-                iIR.text.delimit( bOriginal, b );
-                cc.flush();
-                cR.text.delimit( bOriginal, b );
-                rADcc.add( cR );
-
-              // Postgap subsequent to `cR`
-              // ───────
-                b = parseAnyPostgap( b, rADcc );
-                return b; }
-            if( b == bOriginal ) return b; } // No inferential referent indicant is present.
-
-      // Finalization of `cR` and `iIR` wherein the latter comprises one or both
-      // ────────────        of referrer similarity (i) and referential form (ii)
-        final int d = seqTerm.end();
-        iIR.text.delimit( bOriginal, d ); // Using `d`, not `b` which bounds instead any postgap.
-        cc.flush();
-        cR.text.delimit( bOriginal, d );
-        rADcc.add( cR );
-
-      // Postgap subsequent to `cR`
-      // ───────
-        final int cN = cc.size();
-        assert cTermEnd != 0; // It has been set.
-        if( cTermEnd < cN ) { /* Then a final postgap is present, which inadvertently
-              was appended to `cc`.  Move it from `cc` to `rADcc`, where it belongs.
-              Having to do so is why this method itself must (above) add `cR` to `rADcc`. */
-            for( int c = cTermEnd; c < cN; ++c ) rADcc.add( cc.get( c ));
-            cc.removeRange( cTermEnd, cN ); } /* With this removal, `cc` would be broken by any
-              further coalescence.  There will be none, however, as its content is now complete. */
         return b; }
 
 
@@ -1444,6 +1334,11 @@ public class BrecciaCursor implements ReusableCursor {
         basicFileFractum.text.delimit( fractumStart, segmentEnd ); // Proper to fracta.
         basicFileFractum.isComposed = false; // Pending demand.
         return basicFileFractum; }
+
+
+
+    private final ReferentClauseIndicantParser referentClauseIndicantParser
+      = new ReferentClauseIndicantParser();
 
 
 
@@ -2431,6 +2326,132 @@ public class BrecciaCursor implements ReusableCursor {
         /** The start position of the resolved line in the buffer.
           */
         int start; }
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    /** A parser of the indicants that populate referent clauses, namely fractum indicants
+      * and inferential referent indicants.
+      */
+    private final class ReferentClauseIndicantParser {
+
+
+        /** Parses a fractum indicant at buffer position `b`.
+          *
+          *     @return The end boundary of the fractum indicant.
+          *     @throws MalformedMarkup If no fractum indicant occurs at `b`.
+          */
+        private int parse( int b, final FractumIndicant_ iF ) throws MalformedMarkup {
+         // iF.text.delimit( ...
+            throw new UnsupportedOperationException(); }
+
+
+
+        /** Parses any inferential referent indicant at buffer position `b`, adding its components to
+          * `cR.inferentialReferentIndicantWhenPresent.components`, delimiting `cR.text`,
+          * and adding `cR` with any subsequent postgap to `rADcc`.
+          *
+          *     @param rADcc The descriptor component list of the associative reference containing `cR`.
+          *     @return The end boundary of the last thing that was parsed (inferential referent indicant
+          *       or postgap), or `b` if no inferential referent indicant is present, in which case
+          *       this method leaves `cR.inferentialReferentIndicantWhenPresent.components` empty,
+          *       but otherwise leaves `cR` and `rADcc` untouched. *//*
+          *
+          *     @paramImplied xSeq The character sequence in the buffer of the first term of `cR`.
+          */
+        private int parseAnyInferentialReferentIndicant( int b,  final AssociativeReference_.
+              ReferentClause_ cR, final CoalescentMarkupList rADcc ) throws MalformedMarkup {
+            final int bOriginal = b;
+            final var iIR = cR.inferentialReferentIndicantWhenPresent;
+            final CoalescentArrayList cc = iIR.components;
+            cc.clear();
+            final var seqTerm = xSeq; // The character sequence of the last discovered term of `cR`.
+            seqTerm.delimit( b, throughTerm(b) );
+            cTermEnd = 0; // The end boundary in `cc` of the last term added.
+            composition: {
+
+              // i. Referrer similarity
+              // ──────────────────────
+                if( equalInContent( "same", seqTerm ) || equalInContent( "similar", seqTerm )) {
+                    b = seqTerm.end();
+                    final var sim = iIR.referrerSimilarityWhenPresent;
+                    sim.text.delimit( seqTerm.start(), b );
+                    cc.add( iIR.referrerSimilarity = sim );
+                    cTermEnd = cc.size();
+                    if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) {
+                        iIR.referentialForm = null; // No referential form (ii) is present.
+                        break composition; }
+                    final int d = throughAnyTerm( b );
+                    if( d /*unmoved*/== b ) {
+                        iIR.referentialForm = null; // No referential form (ii) is present.
+                        break composition; }
+                    seqTerm.delimit( b, d ); }
+                else iIR.referrerSimilarity = null; // None is present.
+
+              // ii. Referential form
+              // ────────────────────
+                if( equalInContent( "head", seqTerm ) || equalInContent( "term", seqTerm )) {
+                    b = seqTerm.end();
+                    final var form = iIR.referentialFormWhenPresent;
+                    form.text.delimit( seqTerm.start(), b );
+                    cc.add( iIR.referentialForm = form );
+                    cTermEnd = cc.size();
+                    if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) break composition;
+                    final int d = throughAnyTerm( b );
+                    if( d /*unmoved*/== b ) break composition;
+                    seqTerm.delimit( b, d ); }
+                else iIR.referentialForm = null; // None is present.
+
+              // iii. Containment
+              // ────────────────
+                if( equalInContent( "@", seqTerm )) {
+                    final var cC = iIR.containmentClauseWhenPresent;
+                    final CoalescentMarkupList cCcc = cC.components;
+                    cCcc.clear();
+                    cCcc.appendFlat( b, ++b ); // The ‘@’.
+                    b = parsePostgap( b, cCcc );
+                    final var iF = iIR.fractumIndicantWhenPresent;
+                    b = parse( b, iF );
+                    cCcc.add( iIR.fractumIndicant = iF );
+                    cC.text.delimit( seqTerm.start(), b );
+                    cCcc.flush();
+                    cc.add( cC );
+
+                  // Finalization of `cR` and `iIR` wherein the latter ends with a containment clause (iii)
+                  // ────────────
+                    iIR.text.delimit( bOriginal, b );
+                    cc.flush();
+                    cR.text.delimit( bOriginal, b );
+                    rADcc.add( cR );
+
+                  // Postgap subsequent to `cR`
+                  // ───────
+                    b = parseAnyPostgap( b, rADcc );
+                    return b; }
+                if( b == bOriginal ) return b; } // No inferential referent indicant is present.
+
+          // Finalization of `cR` and `iIR` wherein the latter comprises one or both
+          // ────────────        of referrer similarity (i) and referential form (ii)
+            iIR.fractumIndicant = null; // No containment clause (iii) is present.
+            final int d = seqTerm.end();
+            iIR.text.delimit( bOriginal, d ); // Using `d`, not `b` which bounds instead any postgap.
+            cc.flush();
+            cR.text.delimit( bOriginal, d );
+            rADcc.add( cR );
+
+          // Postgap subsequent to `cR`
+          // ───────
+            final int cN = cc.size();
+            assert cTermEnd != 0; // It has been set.
+            if( cTermEnd < cN ) { /* Then a final postgap is present, which inadvertently
+                  was appended to `cc`.  Move it from `cc` to `rADcc`, where it belongs.
+                  Having to do so is why this method itself must (above) add `cR` to `rADcc`. */
+                for( int c = cTermEnd; c < cN; ++c ) rADcc.add( cc.get( c ));
+                cc.removeRange( cTermEnd, cN ); } /* With this removal, `cc` would be broken by any
+                  further coalescence.  There will be none, however, as its content is now complete. */
+            return b; }}
 
 
 

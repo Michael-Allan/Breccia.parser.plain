@@ -602,7 +602,8 @@ public class BrecciaCursor implements ReusableCursor {
                 cR.components = cR.componentAsInferentialReferentIndicant; }
             else {
                 cR.inferentialReferentIndicant = null; // Instead a fractum indicant is present:
-                b = cRIParser.parse( b, cR.fractumIndicantWhenPresent );
+                b = cRIParser.parse( b, cR.fractumIndicantWhenPresent,
+                  /*failureMessage*/null/*impossible as the foregoing guarantees at least a term*/ );
                 cR.fractumIndicant = cR.fractumIndicantWhenPresent;
                 cR.components = cR.componentAsFractumIndicant; }
             cR.text.delimit( bStart, cRIParser.bEnd );
@@ -1068,6 +1069,23 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Parses at buffer position `b` any regular-expression pattern complete with its delimiters,
+      * adding each to the given markup list, and adding the pattern to the given pattern list.
+      * Alone any delimiter ‘`’ at `b` will commit this method to parsing a delimited pattern in full,
+      * failing which it will throw a malformed-markup exception.
+      *
+      *     @return The end boundary of the delimited pattern, or `b` if there is none.
+      */
+    private int parseAnyDelimited( int b, final List<Markup> markup, final List<Pattern> patterns )
+          throws MalformedMarkup {
+        if( b < segmentEnd && buffer.get(b) == '`' ) {
+            final Pattern pattern = spooler.pattern.unwind();
+            b = parseDelimitedAt( b, markup, pattern );
+            patterns.add( pattern ); }
+        return b; }
+
+
+
     /** Parses any foregap at buffer position `b`, adding each of its components
       * to the given markup list.  Already `b` is known to bound either the end
       * of the fractal segment (edge case) or the start of a line within it.
@@ -1177,13 +1195,8 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int parseAnyTerm( final int b, final CoalescentMarkupList markup ) {
         final int c = throughAnyTerm( b );
-        if( b != c ) markup.appendFlat( b, c );
+        if( c /*moved*/!= b ) markup.appendFlat( b, c );
         return c; }
-
-
-
-    private String parseEndsWithSegment( final int b ) {
-        return "Parse ends with the segment\n" + bufferPointer(b).markedLine(); }
 
 
 
@@ -1191,16 +1204,29 @@ public class BrecciaCursor implements ReusableCursor {
       * adding each to the given markup list.
       *
       *     @param pattern The pattern instance to use for the purpose.
-      *     @return The end boundary of the delimiter.
-      *     @throws MalformedMarkup If no such delimiter occurs at `b`.
+      *     @return The end boundary of the delimited pattern.
+      *     @throws MalformedMarkup If no such pattern occurs at `b`.
       */
     private int parseDelimited( int b, final List<Markup> markup, final Pattern pattern )
           throws MalformedMarkup {
-        if( b < segmentEnd  &&  buffer.get(b) == '`' ) {
+        if( b < segmentEnd && buffer.get(b) == '`' ) return parseDelimitedAt( b, markup, pattern );
+        throw new MalformedMarkup( bufferPointer(b), "Pattern delimiter expected" ); }
+
+
+
+    /** Parses at buffer position `b` a regular-expression pattern complete with its delimiters,
+      * adding each to the given markup list.  Already `b` is known to hold the lead delimiter ‘`’.
+      *
+      *     @param pattern The pattern instance to use for the purpose.
+      *     @return The end boundary of the delimited pattern.
+      *     @throws MalformedMarkup If no such pattern occurs at `b`.
+      */
+    private int parseDelimitedAt( int b, final List<Markup> markup, final Pattern pattern )
+          throws MalformedMarkup {
+        assert b < segmentEnd  &&  buffer.get(b) == '`'; {
             final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
             delimiter.text.delimit( b, ++b );
             markup.add( delimiter ); }
-        else throw new MalformedMarkup( bufferPointer(b), "Pattern delimiter expected" );
         final CoalescentMarkupList cc = pattern.components;
         cc.clear();
         boolean inEscape = false; // Whether the last character was a backslash ‘\’.
@@ -1285,6 +1311,11 @@ public class BrecciaCursor implements ReusableCursor {
           // ──────────────────
             cc.appendFlat( b, ++b ); }
         throw truncatedPattern( bufferPointer( b )); }
+
+
+
+    private String parseEndsWithSegment( final int b ) {
+        return "Parse ends with the segment\n" + bufferPointer(b).markedLine(); }
 
 
 
@@ -2368,14 +2399,63 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** Parses a fractum indicant at buffer position `b`.
+        /** Parses a fractum indicant at buffer position `b`, adding its components to `iF.components`
+          * and updating the fields of this parser.
           *
-          *     @return The end boundary of the fractum indicant.
+          *     @param failureMessage The malformed-markup message to use in the event a fractum indicant
+          *       is absent, or null to throw instead an illegal-state exception.
+          *     @return The end boundary of the last thing that was parsed (fractum indicant
+          *       or subsequent postgap).
           *     @throws MalformedMarkup If no fractum indicant occurs at `b`.
           */
-        private int parse( int b, final FractumIndicant_ iF ) throws MalformedMarkup {
-         // iF.text.delimit( ...
-            throw new UnsupportedOperationException(); }
+        private int parse( int b, final FractumIndicant_ iF, final String failureMessage )
+              throws MalformedMarkup {
+            final int bOriginal = b;
+            final CoalescentArrayList cc = iF.components;
+            cc.clear();
+            composition: {
+
+              // Pattern series
+              // ──────────────
+                final List<Pattern> patterns = iF.patternsWhenPresent;
+                patterns.clear();
+                while( b /*moved*/!= (b = parseAnyDelimited( b, cc, patterns ))) {
+                    cTermEnd = cc.size();
+                    b = parseAnyPostgap( bEnd = b, cc );
+                    if( b /*unmoved*/== bEnd || b >= segmentEnd || buffer.get(b) != '@' ) {
+                        iF.resourceIndicant = null; // No resource indicant is present,
+                        iF.patterns = patterns;     // only a pattern series.
+                        break composition; }
+                    cc.appendFlat( b, ++b );     // The ‘@’ of the containment separator,
+                    b = parsePostgap( b, cc ); } // and its trailing postgap.
+                final int pN = patterns.size();
+                iF.patterns = pN == 0? null : patterns;
+
+              // Resource indicant
+              // ─────────────────
+                final var iR = iF.resourceIndicantWhenPresent;
+                if( b /*unmoved*/== (b = parseAny( b, iR ))) {
+                    if( pN > 0 ) { // Then that pattern series ended with a containment separator.
+                        throw new MalformedMarkup( bufferPointer(b), "Resource indicant expected" ); }
+                    // No fractum indicant is present, at all.
+                    if( failureMessage == null ) throw new IllegalStateException();
+                    throw new MalformedMarkup( bufferPointer(b), failureMessage ); }
+                cc.add( iF.resourceIndicant = iR );
+
+              // Finalization where `iF` ends with a resource indicant
+              // ────────────
+                wasAnyPostgapParsed = false;
+                iF.text.delimit( bOriginal, bEnd = b );
+                cc.flush();
+                return b; }
+
+          // Finalization where `iF` comprises a pattern series
+          // ────────────
+            wasAnyPostgapParsed = true;
+            components = cc;
+            iF.text.delimit( bOriginal, bEnd ); // `bEnd` not `b`, which bounds instead any postgap.
+            cc.flush();
+            return b; }
 
 
 
@@ -2390,7 +2470,6 @@ public class BrecciaCursor implements ReusableCursor {
             final int bOriginal = b;
             final CoalescentArrayList cc = iIR.components;
             cc.clear();
-            final var seqTerm = xSeq; // The character sequence of the last discovered term of `cR`.
             seqTerm.delimit( b, throughTerm(b) );
             composition: {
 
@@ -2435,7 +2514,7 @@ public class BrecciaCursor implements ReusableCursor {
                     cCcc.appendFlat( b, ++b ); // The ‘@’.
                     b = parsePostgap( b, cCcc );
                     final var iF = iIR.fractumIndicantWhenPresent;
-                    b = parse( b, iF ); // Which in turn sets the result fields of the present class.
+                    b = parse( b, iF, "Fractum indicant expected" ); // Which sets the parser fields.
                     cCcc.add( iIR.fractumIndicant = iF );
                     cC.text.delimit( seqTerm.start(), b );
                     cCcc.flush();
@@ -2443,6 +2522,7 @@ public class BrecciaCursor implements ReusableCursor {
 
                   // Finalization where `iIR` ends with a containment clause (iii)
                   // ────────────
+                    wasAnyPostgapParsed = false;
                     iIR.text.delimit( bOriginal, b );
                     cc.flush();
                     return b; }
@@ -2457,6 +2537,40 @@ public class BrecciaCursor implements ReusableCursor {
             iIR.text.delimit( bOriginal, bEnd ); // `bEnd` not `b`, which bounds instead any postgap.
             cc.flush();
             return b; }
+
+
+
+        /** Parses any resource indicant at buffer position `b`,
+          * adding its components to `iR.components`.
+          *
+          *     @return The end boundary of the resource indicant, or `b` if there is none.
+          */
+        private int parseAny( final int b, final ResourceIndicant_ iR ) throws MalformedMarkup {
+            int d = throughAnyTerm( b );
+            if( d /*moved*/!= b ) {
+                final CoalescentMarkupList cc = iR.components;
+                cc.clear();
+                xSeq.delimit( b, d );
+                final int bReference;
+                if( equalInContent( "non-fractal", xSeq )) {
+                    iR.isFractal = false;
+                    cc.appendFlat( b, d );
+                    bReference = parsePostgap( d, cc );
+                    d = throughTerm( bReference ); }
+                else { // Only a reference is present.
+                    iR.isFractal = true;
+                    bReference = b; }
+                iR.reference.text.delimit( bReference, d );
+                cc.add( iR.reference );
+                iR.text.delimit( b, d );
+                cc.flush(); }
+            return d; }
+
+
+
+        private final DelimitableCharSequence seqTerm = newDelimitableCharSequence( buffer );
+          // Used by `parseAny(int,AssociativeReference_.InferentialReferentIndicant_)`
+          // to hold the character sequence of the last discovered term of the referent clause.
 
 
 

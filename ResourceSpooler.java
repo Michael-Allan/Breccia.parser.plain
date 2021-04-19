@@ -24,6 +24,7 @@ final class ResourceSpooler {
         ss.add( commentBlockLine   = new Spool<>( () -> new CommentBlock_.Line_( c )));
         ss.add( indentBlind        = new Spool<>( () -> new IndentBlind_       ( c )));
         ss.add( indentBlindLine    = new Spool<>( () -> new IndentBlind_.Line_ ( c )));
+        ss.add( pattern            = new Spool<>( () -> new Pattern            ( c )));
         spools = ss.toArray( spoolTypeArray ); } /* Bypassing the list interface
           in favour of a bare array, because speed of iteration matters here. */
 
@@ -99,6 +100,12 @@ final class ResourceSpooler {
       *     @see <a href='https://perldoc.perl.org/perlre#Metacharacters'>Metacharacters</a>
       */
     final Spool<@TagName("Metacharacter") FlatMarkup> metacharacter;
+
+
+
+    /** Spool of patterns.
+      */
+    final Spool<Pattern> pattern;
 
 
 

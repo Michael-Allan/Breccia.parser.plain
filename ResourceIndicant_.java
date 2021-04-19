@@ -12,7 +12,7 @@ final class ResourceIndicant_ extends Markup_ implements ResourceIndicant {
         super( cursor.buffer );
         this.cursor = cursor;
         components = new CoalescentArrayList( cursor.spooler );
-        reference = FlatMarkup.make( cursor ); }
+        reference = FlatMarkup.make( cursor, "Reference" ); }
 
 
 

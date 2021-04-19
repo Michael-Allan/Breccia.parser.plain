@@ -18,11 +18,11 @@ final class FractumIndicant_ extends Markup_ implements FractumIndicant {
 
 
 
-    final CoalescentMarkupList components;
+    final CoalescentArrayList components;
 
 
 
-    List<Markup> patterns;
+    List<? extends Markup> patterns;
 
 
 
@@ -41,7 +41,7 @@ final class FractumIndicant_ extends Markup_ implements FractumIndicant {
    // ━━━  F r a c t u m   I n d i c a n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override List<Markup> patterns() { return patterns; }
+    public @Override List<? extends Markup> patterns() { return patterns; }
 
 
 

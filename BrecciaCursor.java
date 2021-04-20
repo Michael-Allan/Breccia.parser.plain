@@ -36,23 +36,23 @@ public class BrecciaCursor implements ReusableCursor {
 
     public BrecciaCursor() {
         final String[] commandPointKeywords = { // Those specific to Breccia, in lexicographic order.
+            "N.B.",
+            "NB",
             "cf.",
             "e.g.",
             "i.e.",
             "join",
-            "N.B.",
-            "NB",
             "private",
             "re",
             "see",
             "viz." };
         final CommandPoint_<?>[] commandPoints = { // Each at the same index as its keyword above.
+            basicAssociativeReference,   // ‘N.B.’
+            basicAssociativeReference,   // ‘NB’
             basicAssociativeReference,   // ‘cf.’
             basicAssociativeReference,   // ‘e.g.’
             basicAssociativeReference,   // ‘i.e.’
             basicAssociativeReference,   // ‘join’
-            basicAssociativeReference,   // ‘N.B.’
-            basicAssociativeReference,   // ‘NB’
             basicPrivatizer,             // ‘private’
             basicAssociativeReference,   // ‘re’
             basicAssociativeReference,   // ‘see’

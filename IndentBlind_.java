@@ -39,13 +39,19 @@ final class IndentBlind_ extends Markup_ implements IndentBlind {
         Line_( final BrecciaCursor cursor ) {
             super( cursor.buffer );
             this.cursor = cursor;
-            delimiter            = FlatMarkup.make( cursor, "Delimiter" );
+            components = new ArrayList<>( /*initial capacity*/componentsMaximum );
             indentWhenPresent    = FlatMarkup.make( cursor );
+            delimiter            = FlatMarkup.make( cursor, "Delimiter" );
             substanceWhenPresent = FlatMarkup.make( cursor ); }
 
 
 
-        final List<Markup> components = new ArrayList<>();
+        final List<Markup> components;
+
+
+
+        private static final int componentsMaximum = 4;
+          // Indent, delimiter, substance and comment appender.
 
 
 
@@ -83,7 +89,9 @@ final class IndentBlind_ extends Markup_ implements IndentBlind {
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public final @Override List<Markup> components() { return components; }
+        public final @Override List<Markup> components() {
+            assert components.size() <= componentsMaximum; // Within optimal capacity, as initialized.
+            return components; }
 
 
 

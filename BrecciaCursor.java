@@ -2401,8 +2401,8 @@ public class BrecciaCursor implements ReusableCursor {
         /** Parses a fractum indicant at buffer position `b`, adding its components to `iF.components`
           * and updating the fields of this parser.
           *
-          *     @param failureMessage The malformed-markup message to use in the event a fractum indicant
-          *       is absent, or null to throw instead an illegal-state exception.
+          *     @param failureMessage The failure message to use in the event no fractum indicant occurs,
+          *       or null if one must occur, in which case an illegal-state exception is thrown instead.
           *     @return The end boundary of the last thing that was parsed (fractum indicant
           *       or subsequent postgap).
           *     @throws MalformedMarkup If no fractum indicant occurs at `b`.
@@ -2437,7 +2437,7 @@ public class BrecciaCursor implements ReusableCursor {
                     if( pN > 0 ) { // Then that pattern series ended with a containment separator.
                         throw new MalformedMarkup( errorPointer(b), "Resource indicant expected" ); }
                     // No fractum indicant is present, at all.
-                    if( failureMessage == null ) throw new IllegalStateException();
+                    if( failureMessage == null ) throw new IllegalStateException(); // Impossible.
                     throw new MalformedMarkup( errorPointer(b), failureMessage ); }
                 cc.add( iF.resourceIndicant = iR );
 

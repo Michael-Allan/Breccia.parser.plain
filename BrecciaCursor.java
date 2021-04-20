@@ -408,41 +408,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-
-    private @Subst MalformedMarkup.Pointer bufferPointer() { return bufferPointer( buffer.position() ); }
-
-
-
-    /** Makes an error pointer to the given buffer position, resolving its line within
-      * the parsed region of the present fractum.  If the position lies outside
-      * of the parsed region, then the fallbacks of `resolveLine` apply.
-      *
-      *     @param position A buffer position within the parsed region of the present fractum.
-      *     @see LineResolver#resolveLine(int)
-      */
-    private @Subst MalformedMarkup.Pointer bufferPointer( final int position ) {
-        lineResolver.resolveLine( position );
-        final int lineStart = lineResolver.start;
-        final int lineLength; { // Or partial length, if the whole line has yet to enter the buffer.
-            final int lineIndex = lineResolver.index;
-            if( lineIndex < fractumLineEnds.length ) { // Then measure the easy way:
-                lineLength = fractumLineEnds.array[lineIndex] - lineStart; }
-            else { // The line has yet to be parsed to its end.  Measure it the hard way:
-                final int pN = buffer.limit();
-                int p = position;
-                while( p < pN && !completesNewline(buffer.get(p++)) );
-                lineLength = p - lineStart; }}
-        final String line = buffer.slice( lineStart, lineLength ).toString();
-        final int column = bufferColumnarSpan( lineStart, position );
-        return new MalformedMarkup.Pointer( lineResolver.number, line, column ); }
-
-
-
-    private @Subst MalformedMarkup.Pointer bufferPointerBack() {
-        return bufferPointer( buffer.position() - 1 ); }
-
-
-
     private final BulletEndSeeker bulletEndSeeker = new BulletEndSeeker();
 
 
@@ -620,7 +585,7 @@ public class BrecciaCursor implements ReusableCursor {
                       by any further coalescence.  There will be none, however, as it is now complete. */
             else b = parseAnyPostgap( b, cc ); }
         else rA.referentClause = null;
-        if( b < segmentEnd ) throw unexpectedTerm( bufferPointer( b ));
+        if( b < segmentEnd ) throw unexpectedTerm( errorPointer( b ));
         else assert b == segmentEnd;
         cc.flush(); }
 
@@ -635,7 +600,7 @@ public class BrecciaCursor implements ReusableCursor {
         int b = p.bullet.text.end();
         assert segmentEnd > b;
         if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) {
-            throw new IllegalStateException( "Postgap expected\n" + bufferPointer(b).markedLine() ); }
+            throw new IllegalStateException( "Postgap expected\n" + errorPointer(b).markedLine() ); }
             // Because no alternative is possible if `reifyPoint` has done its job.
         while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
             && b /*moved*/!= (b = parseAnyPostgap( b, cc )));
@@ -672,7 +637,7 @@ public class BrecciaCursor implements ReusableCursor {
         cc.appendFlat( p.bullet.text.end(), command.text.start() );
         cc.add( command );
         final int b = parseAnyPostgap( command.text.end(), cc );
-        if( b < segmentEnd ) throw unexpectedTerm( bufferPointer( b ));
+        if( b < segmentEnd ) throw unexpectedTerm( errorPointer( b ));
         else assert b == segmentEnd;
         cc.flush(); }
 
@@ -690,7 +655,7 @@ public class BrecciaCursor implements ReusableCursor {
         int b = 0;
         assert segmentEnd > 0;
         if( b /*unmoved*/== (b = parseAnyForegap( b, cc ))) {
-            throw new IllegalStateException( "Foregap expected\n" + bufferPointer(b).markedLine() ); }
+            throw new IllegalStateException( "Foregap expected\n" + errorPointer(b).markedLine() ); }
             // Because no alternative is possible if `delimitSegment` has done its job.
         while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
             && b /*moved*/!= (b = parseAnyPostgap( b, cc )));
@@ -803,7 +768,7 @@ public class BrecciaCursor implements ReusableCursor {
                 buffer.limit( p ).reset(); // Whether to resume scanning, or regardless for consistency.
                 if( count < 0 ) { // Then the markup source is exhausted.
                     if( impliesWithoutCompletingNewline( ch )) { // So ends with e.g. a carriage return.
-                        throw truncatedNewline( bufferPointer(), ch ); }
+                        throw truncatedNewline( errorPointer(), ch ); }
                     segmentEnd = segmentEndIndicant = p;
                     segmentEndIndicantChar = '\u0000';
                     fractumLineEnds.add( segmentEnd ); /* The end of the final line.  All lines end with
@@ -831,14 +796,14 @@ public class BrecciaCursor implements ReusableCursor {
                 continue; }
             if( impliesWithoutCompletingNewline( ch )) continue; // To its completion.
             if( impliesWithoutCompletingNewline( chLast )) { // Then its completion has failed.
-                throw truncatedNewline( bufferPointerBack(), chLast ); }
+                throw truncatedNewline( errorPointerBack(), chLast ); }
 
           // Or forbidden whitespace
           // ───────────────────────
             if( ch != ' ' && yetIsGenerallyWhitespace(ch) ) {
                   // A partial test, limited to Unicode plane zero, pending a cause to suffer
                   // the added complexity and potential speed drag of testing full code points.
-                throw new ForbiddenWhitespace( bufferPointerBack(), ch ); }
+                throw new ForbiddenWhitespace( errorPointerBack(), ch ); }
 
           // Or the end boundary
           // ───────────────────
@@ -879,14 +844,14 @@ public class BrecciaCursor implements ReusableCursor {
                       Nowhere else could imperfectly indented backslashes occur.  So either way, this
                       no-break space lies outside of the first line of a point where `reifyPoint`
                       does the policing.  No need ∴ to guard against trespassing on its jurisdiction. */
-                    throw misplacedNoBreakSpace( bufferPointerBack() ); }
+                    throw misplacedNoBreakSpace( errorPointerBack() ); }
                 inIndentedBackslashes = false; }
             else if( ch == '\u00A0' ) { // A no-break space not `inMargin` ∴ delimiting no indent blind.
                 if( inCommentBlock ) continue;
                 if( !isFileHead && !isDividerDrawing(segmentEndIndicantChar) // In a point head,
                  && fractumLineEnds.isEmpty() ) {                           // on the first line.
                     continue; } // Leaving the first line of this point to be policed by `reifyPoint`.
-                throw misplacedNoBreakSpace( bufferPointerBack() ); }}}
+                throw misplacedNoBreakSpace( errorPointerBack() ); }}}
 
 
 
@@ -896,6 +861,40 @@ public class BrecciaCursor implements ReusableCursor {
     private void disable() {
         if( state != null && state.isFinal() ) return; // Already this cursor is effectively unusable.
         basicHalt.commit(); }
+
+
+
+    private @Subst ErrorPointer errorPointer() { return errorPointer( buffer.position() ); }
+
+
+
+    /** Makes an error pointer to the given buffer position, resolving its line within
+      * the parsed region of the present fractum.  If the position lies outside
+      * of the parsed region, then the fallbacks of `resolveLine` apply.
+      *
+      *     @param position A buffer position within the parsed region of the present fractum.
+      *     @see LineResolver#resolveLine(int)
+      */
+    private @Subst ErrorPointer errorPointer( final int position ) {
+        lineResolver.resolveLine( position );
+        final int lineStart = lineResolver.start;
+        final int lineLength; { // Or partial length, if the whole line has yet to enter the buffer.
+            final int lineIndex = lineResolver.index;
+            if( lineIndex < fractumLineEnds.length ) { // Then measure the easy way:
+                lineLength = fractumLineEnds.array[lineIndex] - lineStart; }
+            else { // The line has yet to be parsed to its end.  Measure it the hard way:
+                final int pN = buffer.limit();
+                int p = position;
+                while( p < pN && !completesNewline(buffer.get(p++)) );
+                lineLength = p - lineStart; }}
+        final String line = buffer.slice( lineStart, lineLength ).toString();
+        final int column = bufferColumnarSpan( lineStart, position );
+        return new ErrorPointer( lineResolver.number, line, column ); }
+
+
+
+    private @Subst ErrorPointer errorPointerBack() {
+        return errorPointer( buffer.position() - 1 ); }
 
 
 
@@ -1210,7 +1209,7 @@ public class BrecciaCursor implements ReusableCursor {
     private int parseDelimited( int b, final List<Markup> markup, final Pattern pattern )
           throws MalformedMarkup {
         if( b < segmentEnd && buffer.get(b) == '`' ) return parseDelimitedAt( b, markup, pattern );
-        throw new MalformedMarkup( bufferPointer(b), "Pattern delimiter expected" ); }
+        throw new MalformedMarkup( errorPointer(b), "Pattern delimiter expected" ); }
 
 
 
@@ -1298,7 +1297,7 @@ public class BrecciaCursor implements ReusableCursor {
           // Closing pattern delimiter
           // ─────────────────────────
             if( ch == '`' ) {
-                if( b == bPattern ) throw new MalformedMarkup( bufferPointer(b), "Empty pattern" );
+                if( b == bPattern ) throw new MalformedMarkup( errorPointer(b), "Empty pattern" );
                 pattern.text.delimit( bPattern, b );
                 cc.flush();
                 markup.add( pattern );
@@ -1310,12 +1309,12 @@ public class BrecciaCursor implements ReusableCursor {
           // Literal characters
           // ──────────────────
             cc.appendFlat( b, ++b ); }
-        throw truncatedPattern( bufferPointer( b )); }
+        throw truncatedPattern( errorPointer( b )); }
 
 
 
     private String parseEndsWithSegment( final int b ) {
-        return "Parse ends with the segment\n" + bufferPointer(b).markedLine(); }
+        return "Parse ends with the segment\n" + errorPointer(b).markedLine(); }
 
 
 
@@ -1326,7 +1325,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int parsePostgap( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
         if( b /*moved*/!= (b = parseAnyPostgap( b, markup ))) return b;
-        throw new MalformedMarkup( bufferPointer(b), "Postgap expected" ); }
+        throw new MalformedMarkup( errorPointer(b), "Postgap expected" ); }
 
 
 
@@ -1515,7 +1514,7 @@ public class BrecciaCursor implements ReusableCursor {
                         b = s.bNextNonSpace;
                         chLast = codePointAt( buffer, b );
                         continue; }
-                    if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( b )); }
+                    if( ch == '\u00A0' ) throw misplacedNoBreakSpace( errorPointer( b )); }
                 else { // `chLast` is non-alphanumeric and (by contract) non-whitespace.
                     if( ch == ' ' ) {
                         wasLineEndFound = false; // Ends at space.
@@ -1549,7 +1548,7 @@ public class BrecciaCursor implements ReusableCursor {
             for(; b < segmentEnd; ++b ) {
                 final char ch = buffer.get( b );
                 if( impliesNewline( ch )) break;
-                if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( b )); }}
+                if( ch == '\u00A0' ) throw misplacedNoBreakSpace( errorPointer( b )); }}
 
       // Resolve the concrete parse state
       // ────────────────────────────────
@@ -1557,9 +1556,9 @@ public class BrecciaCursor implements ReusableCursor {
         if( bulletEnd - bullet/*length*/ == 1  &&  buffer.get(bullet) == ':' ) {
             if( endSeeker != null ) { // Then the only case is that of the bullet ending (wrongly for
                 assert buffer.get(bulletEnd) == '\u00A0'; // a command point) at a no-break space.
-                throw spaceExpected( bufferPointer( bulletEnd )); }
+                throw spaceExpected( errorPointer( bulletEnd )); }
             if( wasLineEndFound ) { // Then the bullet ends directly at the line end, with no
-                throw termExpected( bufferPointer( b )); } // command between the two.
+                throw termExpected( errorPointer( b )); } // command between the two.
             assert buffer.get(bulletEnd) == ' '; // The only remaining case.
             p = reifyCommandPoint( bullet, bulletEnd ); }
         else p = reifyNonCommandPoint( bullet, bulletEnd );
@@ -1682,7 +1681,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int throughBackslashedSpecialNQualifier( int b ) throws MalformedMarkup {
         if( b < segmentEnd  &&  buffer.get(b) == '{' ) ++b;
-        else throw new MalformedMarkup( bufferPointer(b), "Curly bracket ‘{’ expected" );
+        else throw new MalformedMarkup( errorPointer(b), "Curly bracket ‘{’ expected" );
         final int bContent = b; // Subsequent to the opening ‘{’ delimiter.
         boolean inNumeric = false; // Whether the content begins ‘U+’, denoting a numbered qualifier.
         for( char ch = '\u0000', chLast = '\u0000';  b < segmentEnd;  chLast = ch, ++b ) {
@@ -1691,20 +1690,20 @@ public class BrecciaCursor implements ReusableCursor {
             if( ch == '}' ) {
                 if( inNumeric ) {
                     if( b - bContent < 3 ) {
-                        throw new MalformedMarkup( bufferPointer(b), "Hexadecimal digit expected" ); }}
+                        throw new MalformedMarkup( errorPointer(b), "Hexadecimal digit expected" ); }}
                 else if( b == bContent ) {
-                    throw new MalformedMarkup( bufferPointer(b), "Empty qualifier" ); }
+                    throw new MalformedMarkup( errorPointer(b), "Empty qualifier" ); }
                 return ++b; }
             if( ch == '+'  &&  chLast == 'U'  &&  b - bContent == 1 ) inNumeric = true;
             else if( inNumeric ) {
                 if( !( ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'F' || ch >= 'a' && ch <= 'f' )) {
-                    throw new MalformedMarkup( bufferPointer(b), "Hexadecimal digit expected" ); }}
+                    throw new MalformedMarkup( errorPointer(b), "Hexadecimal digit expected" ); }}
             else if( !( ch >= 'A' && ch <= 'Z'
               || b > bContent && ( ch >= '0' && ch <= '9' || ch == ' ' || ch == '-' ))) {
                 // See Names § 4.8, `https://www.unicode.org/versions/Unicode13.0.0/ch04.pdf`
-                throw new MalformedMarkup( bufferPointer(b),
+                throw new MalformedMarkup( errorPointer(b),
                   "Character not allowed here, Unicode " + (int)ch ); }}
-        throw truncatedPattern( bufferPointer( b )); }
+        throw truncatedPattern( errorPointer( b )); }
 
 
 
@@ -1716,7 +1715,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int throughS( int b ) throws MalformedMarkup {
         if( b /*moved*/!= (b = throughAnyS( b ))) return b;
-        throw spaceExpected( bufferPointer( b )); }
+        throw spaceExpected( errorPointer( b )); }
 
 
 
@@ -1728,7 +1727,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int throughTerm( int b ) throws MalformedMarkup {
         if( b /*moved*/!= (b = throughAnyTerm( b ))) return b;
-        throw termExpected( bufferPointer( b )); }
+        throw termExpected( errorPointer( b )); }
 
 
 
@@ -2042,12 +2041,12 @@ public class BrecciaCursor implements ReusableCursor {
                 if( ch == ' ' ) {
                     seekFromSpace( b );
                     if( wasLineEndFound || wasAppenderFound ) return;
-                    throw misplacedNoBreakSpace( bufferPointer( b - 1 )); }
+                    throw misplacedNoBreakSpace( errorPointer( b - 1 )); }
                 if( impliesNewline( ch )) {
                     wasAppenderFound = false;
                     wasLineEndFound = true; }
                 else {
-                    if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( b ));
+                    if( ch == '\u00A0' ) throw misplacedNoBreakSpace( errorPointer( b ));
                     wasAppenderFound = false;
                     wasLineEndFound = false; }}
             bNextNonSpace = b; }
@@ -2076,7 +2075,7 @@ public class BrecciaCursor implements ReusableCursor {
                         wasAppenderFound = false;
                         wasLineEndFound = true; }
                     else {
-                        if( ch == '\u00A0' ) throw misplacedNoBreakSpace( bufferPointer( b ));
+                        if( ch == '\u00A0' ) throw misplacedNoBreakSpace( errorPointer( b ));
                         wasAppenderFound = false;
                         wasLineEndFound = false; }
                     break; }}
@@ -2436,10 +2435,10 @@ public class BrecciaCursor implements ReusableCursor {
                 final var iR = iF.resourceIndicantWhenPresent;
                 if( b /*unmoved*/== (b = parseAny( b, iR ))) {
                     if( pN > 0 ) { // Then that pattern series ended with a containment separator.
-                        throw new MalformedMarkup( bufferPointer(b), "Resource indicant expected" ); }
+                        throw new MalformedMarkup( errorPointer(b), "Resource indicant expected" ); }
                     // No fractum indicant is present, at all.
                     if( failureMessage == null ) throw new IllegalStateException();
-                    throw new MalformedMarkup( bufferPointer(b), failureMessage ); }
+                    throw new MalformedMarkup( errorPointer(b), failureMessage ); }
                 cc.add( iF.resourceIndicant = iR );
 
               // Finalization where `iF` ends with a resource indicant

@@ -1,14 +1,17 @@
 package Breccia.parser.plain;
 
-import Breccia.parser.Division;
-import Breccia.parser.Markup;
-import java.util.List;
+import Breccia.parser.*;
+import java.util.*;
 
 
 final class Division_ extends BodyFractum_<BrecciaCursor> implements Division {
 
 
     Division_( BrecciaCursor cursor ) { super( cursor ); }
+
+
+
+    final DividerSegmentList components = new DividerSegmentList();
 
 
 
@@ -27,10 +30,54 @@ final class Division_ extends BodyFractum_<BrecciaCursor> implements Division {
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  M a r k u p  ━━━  D i v i s i o n  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override List<Markup> components() { return List.of(); } // TEST
+    public final @Override List<? extends DividerSegment> components() { return components; }
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    final class DividerSegmentList extends AbstractList<DividerSegment_> implements RandomAccess {
+
+
+        DividerSegment_ add() {
+            final DividerSegment_ segment;
+            if( size < back.size() ) segment = back.get( size );
+            else back.add( segment = new DividerSegment_( cursor ));
+            ++size;
+            assert size == back.size();
+            return segment; }
+
+
+
+        private final ArrayList<DividerSegment_> back = new ArrayList<>( /*initial capacity*/4 );
+
+
+
+        private int size;
+
+
+
+       // ━━━  C o l l e c t i o n  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override void clear() { size = 0; }
+
+
+
+        public @Override int size() { return size; }
+
+
+
+       // ━━━  L i s t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override DividerSegment_ get( final int index ) {
+            if( index < size ) return back.get( index );
+            throw new IndexOutOfBoundsException( index ); }}
 
 
 

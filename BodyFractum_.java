@@ -9,11 +9,13 @@ import Breccia.parser.Markup;
 abstract class BodyFractum_<C extends BrecciaCursor> extends Fractum_<C> implements BodyFractum {
 
 
-    BodyFractum_( C cursor ) { super( cursor ); }
+    BodyFractum_( C cursor ) {
+        super( cursor );
+        perfectIndent = new PerfectIndent( cursor.buffer, /*container*/this ); }
 
 
 
-    final PerfectIndent perfectIndent = new PerfectIndent();
+    final PerfectIndent perfectIndent;
 
 
 
@@ -41,32 +43,7 @@ abstract class BodyFractum_<C extends BrecciaCursor> extends Fractum_<C> impleme
 
         @Override void commit() {
             super.commit();
-            cursor.bodyFractumEnd( this ); }}
-
-
-
-   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-
-
-    final class PerfectIndent extends FlatMarkup {
-
-
-        PerfectIndent() { super( BodyFractum_.this ); }
-
-
-
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        public @Override int column() { return 0; }
-
-
-
-        public @Override int lineNumber() { return BodyFractum_.this.lineNumber(); }
-
-
-
-        public @Override String tagName() { return "Markup"; }}}
+            cursor.bodyFractumEnd( this ); }}}
 
 
 

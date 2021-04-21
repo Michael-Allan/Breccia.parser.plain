@@ -730,6 +730,11 @@ public class BrecciaCursor implements ReusableCursor {
                     buffer.position( shift ).compact(); // Shifted and limit extended, ready to refill.
                     fractumStart = 0; // Or `fractumStart -= shift`, so adjust the other variables:
                     segmentStart -= shift;
+                    if( isDividerDrawing( segmentEndIndicantChar )) { // Then in a division.
+                        final var segments = basicDivision.components;
+                        for( int s = segments.size() - 1; s >= 0; --s ) {
+                            final var sText = segments.get(s).text;
+                            sText.project( sText.start() - shift, sText.length() ); }}
                     final int[] endsArray = fractumLineEnds.array;
                     for( int e = fractumLineEnds.length - 1; e >= 0; --e ) { endsArray[e] -= shift; }
                     lineStart -= shift; }
@@ -967,7 +972,8 @@ public class BrecciaCursor implements ReusableCursor {
             segmentStart = segmentEnd = segmentEndIndicant = 0;
             delimitSegment(); }
         buffer.rewind(); // Concordant with `buffer` contract.
- /**/   readyFileFractum().commit();
+        readyFileFractum();
+ /**/   basicFileFractum.commit();
         hierarchy.clear(); }
 
 
@@ -1006,9 +1012,18 @@ public class BrecciaCursor implements ReusableCursor {
         fractumLineEnds.clear();
         if( isDividerDrawing( segmentEndIndicantChar )) { /* Then next is a divider segment,
               starting a division whose head comprises all contiguous divider segments. */
-            do nextSegment(); while( isDividerDrawing( segmentEndIndicantChar )); // Scan through each.
-            buffer.rewind(); // Concordant with `buffer` contract.
- /**/       readyDivision().commit(); }
+            int segmentIndentWidth = nextIndentWidth;
+            basicDivision.components.clear();
+            for( ;; ) { // Scan through and ready each divider segment.
+                nextSegment();
+                buffer.rewind(); // Concordant with `buffer` contract.
+                readyDividerSegment( segmentIndentWidth );
+                if( !isDividerDrawing( segmentEndIndicantChar )) break;
+                segmentIndentWidth = segmentEndIndicant - segmentEnd; /* Same as
+                  the calculation of `nextIndentWidth`, described further above. */
+                assert segmentIndentWidth >= 0 && segmentIndentWidth % 4 == 0; } // Perfectly indented.
+            readyDivision();
+ /**/       basicDivision.commit(); }
         else { // Next is a point.
             nextSegment(); // Scan through to the end boundary of its head.
             buffer.rewind(); // Concordant with `buffer` contract.
@@ -1329,21 +1344,33 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Readies and adds a divider segment to `basicDivision`.  Ensure before calling this method
+      * that all cursor fields other than `hierarchy` and `state` are initialized.
+      *
+      *     @see Division_.DividerSegment_#indentWidth
+      */
+    private void readyDividerSegment( final int indentWidth ) {
+        final var segment = basicDivision.components.add();
+        segment.text.delimit( segmentStart, segmentEnd ); /* Position nothing else in advance,
+          because `delimitSegment`, in the event of a buffer shift, will *shift* nothing else. */
+        segment.indentWidth = indentWidth; }
+
+
+
     /** Readies `basicDivision` to be committed as the present parse state.
       * Ensure before calling this method that all other cursor fields are initialized save `hierarchy`.
       */
-    private Division_ readyDivision() {
+    private void readyDivision() {
         basicDivision.text.delimit( fractumStart, segmentEnd ); // Proper to fracta.
         basicDivision.perfectIndent.text.delimit( // Proper to body fracta.
-          fractumStart, fractumStart + fractumIndentWidth );
-        return basicDivision; }
+          fractumStart, fractumStart + fractumIndentWidth ); }
 
 
 
     /** Readies `basicFileFractum` to be committed as the present parse state.
       * Ensure before calling this method that all other cursor fields are initialized save `hierarchy`.
       */
-    private FileFractum_ readyFileFractum() {
+    private void readyFileFractum() {
         assert fractumLineNumber() == 1; // Concordant with `FileFractum.lineNumber`.
         final FileFractum_ f = basicFileFractum;
         assert fractumStart == 0;
@@ -1351,8 +1378,7 @@ public class BrecciaCursor implements ReusableCursor {
         if( segmentEnd == 0 ) {
             f.components = FileFractum_.componentsWhenAbsent;
             f.isComposed = true; }
-        else f.isComposed = false; // Pending demand.
-        return f; }
+        else f.isComposed = false; } // Pending demand.
 
 
 

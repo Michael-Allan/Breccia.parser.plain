@@ -66,10 +66,6 @@ final class FractumIndicant_ extends Markup_ implements FractumIndicant {
 
 
 
-    public @Override final String tagName() { return "FractumIndicant"; }
-
-
-
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
 
 

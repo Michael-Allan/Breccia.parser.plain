@@ -226,11 +226,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
-
-
-
-        public @Override final String tagName() { return "InferentialReferentIndicant"; }}
+        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
 
 
 
@@ -299,11 +295,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
-
-
-
-        public @Override final String tagName() { return "ReferentClause"; }}
+        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
 
 
 
@@ -346,12 +338,8 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override final int lineNumber() { return AssociativeReference_.this.lineNumber(); }
+        public @Override int lineNumber() { return AssociativeReference_.this.lineNumber(); }}}
           // Always the referrer clause begins on the first line of the associative reference.
-
-
-
-        public @Override final String tagName() { return "ReferrerClause"; }}}
 
 
 

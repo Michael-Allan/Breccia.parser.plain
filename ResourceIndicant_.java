@@ -56,10 +56,6 @@ final class ResourceIndicant_ extends Markup_ implements ResourceIndicant {
 
 
 
-    public @Override final String tagName() { return "ResourceIndicant"; }
-
-
-
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
 
 

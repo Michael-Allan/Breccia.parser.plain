@@ -137,11 +137,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     public final @Override @NarrowNot FileFractum asFileFractum() {
-        if( state != fileFractum ) return null;
-        if( !fileFractum.isComposed ) {
-            composeFileFractum();
-            fileFractum.isComposed = true; }
-        return fileFractum; }
+        return state == fileFractum? fileFractum : null; }
 
 
 
@@ -643,42 +639,23 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** @see FileFractum_.FileDescriptor#isComposed
+    /** @see FileFractum_#isComposed
       */
-    final void composeFileDescriptor() {
-        final FileFractum_.FileDescriptor descriptor = fileFractum.descriptor;
-        assert !descriptor.isComposed;
-        final CoalescentMarkupList cc = descriptor.components;
+    final void composeFileFractum() {
+        final FileFractum_ f = fileFractum;
+        assert !f.isComposed;
+        final CoalescentMarkupList cc = f.componentsWhenPresent;
         cc.clear();
-        assert buffer.position() == 0;
-        assert fractumStart == 0;
         int b = 0;
-        assert segmentEnd > 0;
+        assert b == fractumStart && segmentEnd > b;
         if( b /*unmoved*/== (b = parseAnyForegap( b, cc ))) {
             throw new IllegalStateException( "Foregap expected\n" + errorPointer(b).markedLine() ); }
             // Because no alternative is possible if `delimitSegment` has done its job.
         while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
             && b /*moved*/!= (b = parseAnyPostgap( b, cc )));
         assert b == segmentEnd: parseEndsWithSegment(b);
-        cc.flush(); }
-
-
-
-    /** @see FileFractum_#isComposed
-      */
-    final void composeFileFractum() {
-        final FileFractum_ f = fileFractum;
-        assert !f.isComposed;
-        if( fractumStart == segmentEnd ) {
-            f.components = FileFractum_.componentsWhenAbsent;
-            f.descriptor = null; }
-        else {
-            assert fractumLineNumber() == 1; // Concordant with `FileFractum.lineNumber`.
-            final FileFractum_.FileDescriptor d = f.descriptorWhenPresent;
-            d.isComposed = false; // Pending demand.
-            // No need to delimit `d.text`, which being identical to `f.text` is already delimited.
-            f.components = f.componentsWhenPresent;
-            f.descriptor = d; }}
+        cc.flush();
+        f.components = cc; }
 
 
 
@@ -1367,9 +1344,15 @@ public class BrecciaCursor implements ReusableCursor {
       * Ensure before calling this method that all other cursor fields are initialized save `hierarchy`.
       */
     private FileFractum_ readyFileFractum() {
-        basicFileFractum.text.delimit( fractumStart, segmentEnd ); // Proper to fracta.
-        basicFileFractum.isComposed = false; // Pending demand.
-        return basicFileFractum; }
+        assert fractumLineNumber() == 1; // Concordant with `FileFractum.lineNumber`.
+        final FileFractum_ f = basicFileFractum;
+        assert fractumStart == 0;
+        f.text.delimit( 0, segmentEnd ); // Proper to fracta.
+        if( segmentEnd == 0 ) {
+            f.components = FileFractum_.componentsWhenAbsent;
+            f.isComposed = true; }
+        else f.isComposed = false; // Pending demand.
+        return f; }
 
 
 
@@ -1474,7 +1457,6 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private Point_<?> reifyPoint() throws MalformedMarkup {
         final int bullet = fractumStart + fractumIndentWidth;
-        assert buffer.position() == 0;
 
       // Find the end boundary of the bullet
       // ─────────────────────

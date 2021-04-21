@@ -10,7 +10,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
     FileFractum_( BrecciaCursor cursor ) {
         super( cursor );
-        componentsWhenPresent = List.of( descriptorWhenPresent ); }
+        componentsWhenPresent = new CoalescentArrayList( cursor.spooler ); }
 
 
 
@@ -18,19 +18,12 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-    static final List<Markup> componentsWhenAbsent = List.of();
+    static final List<Markup> componentsWhenAbsent = List.of(); /* Setting this will be marginally faster
+      than would be the alternative of `components.clear`, at least for a `CoalescentArrayList`. */
 
 
 
-    final List<Markup> componentsWhenPresent;
-
-
-
-    FileDescriptor descriptor;
-
-
-
-    final FileDescriptor descriptorWhenPresent = new FileDescriptor();
+    final CoalescentMarkupList componentsWhenPresent;
 
 
 
@@ -40,22 +33,16 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-    /** Late composition control flag.  Cleared on committing this fractum as the present parse state,
-      * which is done through the `readyFileFractum` method of the cursor.  Set on late composition,
-      * which is triggered either by a call to `components` or the reifying `asFileFractum` getter.
+    /** Late composition control flag.  Cleared on committing a non-empty configuration of this fractum
+      * as the present parse state, which is done through the `readyFileFractum` method of the cursor.
+      * Set on late composition, which is triggered either by a call to `components`.
       *
       *     @see BrecciaCursor#readyFileFractum()
       *     @see #components()
-      *     @see BrecciaCursor#asFileFractum()
       */
-    boolean isComposed;
-
-
-
-   // ━━━  F i l e   F r a c t u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-    public final @Override Markup descriptor() { return descriptor; }
+    boolean isComposed; /* Justification of late parsing and composition: Use cases exist which care
+      nothing for file fracta but their reification, and these may benefit from the time saved
+      by leaving the components unparsed, as they contribute nothing to that reification. */
 
 
 
@@ -75,6 +62,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
         if( !isComposed ) {
             cursor.composeFileFractum();
             isComposed = true; }
+        assert components == componentsWhenPresent? componentsWhenPresent.isFlush() : true;
         return components; }
 
 
@@ -87,56 +75,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
         @Override void commit() {
             super.commit();
-            cursor.fileFractumEnd( this ); }}
-
-
-
-   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-
-
-    final class FileDescriptor extends Markup_ {
-
-
-        FileDescriptor() { super( FileFractum_.this.text ); }
-
-
-
-        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
-
-
-
-        /** Late composition control flag.  Cleared on composition of the WHAT?, which is done through
-          * the `composeFileFractum` method of the cursor.  Set on late composition of this descriptor,
-          * which is triggered by a call for its `components`.
-          *
-          *     @see BrecciaCursor#composeFileFractum()
-          *     @see #components()
-          */
-        boolean isComposed; /* Justification of late composition: justified only by... WHAT? */
-
-
-
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        public @Override int column() { return FileFractum_.this.column(); }
-
-
-
-        public final @Override List<Markup> components() {
-            if( !isComposed ) {
-                cursor.composeFileDescriptor();
-                isComposed = true; }
-            assert components.isFlush();
-            return components; }
-
-
-
-        public @Override int lineNumber() { return FileFractum_.this.lineNumber(); }
-
-
-
-        public @Override String tagName() { return "FileDescriptor"; }}}
+            cursor.fileFractumEnd( this ); }}}
 
 
 

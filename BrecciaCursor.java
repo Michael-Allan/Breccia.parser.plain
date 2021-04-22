@@ -350,12 +350,7 @@ public class BrecciaCursor implements ReusableCursor {
     /** The capacity of the read buffer in 16-bit code units.  Parsing markup with a fractal head large
       * enough to overflow the buffer will cause an `{@linkplain OverlargeHead OverlargeHead}` exception.
       */
-    static final int bufferCapacity; static {
-        int n = 0x1_0000; // 65536, minimizing the likelihood of having to throw `OverlargeHead`.
-        // Now assume the IO system will transfer that much on each refill request by `delimitSegment`.
-        // Let it do so even while the buffer holds the already-read portion of the present segment:
-        n += 0x1000; // 4096, more than ample for that segment.
-        bufferCapacity = n; }
+    private static final int bufferCapacity;
 
 
 
@@ -388,6 +383,20 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private final DelimitableCharSequence bufferColumnarSpanSeq = newDelimitableCharSequence( buffer );
+
+
+
+    /** The threshold in 16-bit code units of free space required to initiate refill of the buffer
+      * without zero-shifting the already-read part of the present segment.  The main purpose is to avoid
+      * pointless shifting before the final, empty transfer that signals exhaustion of the markup source.
+      */
+    private static final int bufferHeadRoom; static {
+        bufferHeadRoom = 0x2000; // 8192, sufficient for the purpose.
+        int n = 0x1_0000; // 65536, minimizing the likelihood of having to throw `OverlargeHead`.
+        // Now assume the IO system will transfer that much on each refill request by `delimitSegment`.
+        // Let it do so even while the buffer holds the already-read portion of the present segment:
+        n += bufferHeadRoom / 2; // 4096, more than ample for that segment.
+        bufferCapacity = n; }
 
 
 
@@ -730,9 +739,11 @@ public class BrecciaCursor implements ReusableCursor {
 
               // Prepare buffer for refill
               // ──────────────
+                final int capacity = buffer.capacity();
                 if( fractumStart == 0 ) { // Then maybe the last fill was partial and capacity remains.
-                    final int capacity = buffer.capacity();
                     if( buffer.limit() == capacity ) throw new OverlargeHead( fractumLineNumber() );
+                    buffer.limit( capacity ); } // Ready to refill.
+                else if( capacity - buffer.limit() >= bufferHeadRoom ) {
                     buffer.limit( capacity ); } // Ready to refill.
                 else { // Shift out predecessor markup, freeing buffer space:
                     final int shift = fractumStart; // To put the (partly read) present fractum at zero.

@@ -594,11 +594,15 @@ public class BrecciaCursor implements ReusableCursor {
         cc.clear();
         int b = p.bullet.text.end();
         assert segmentEnd > b;
-        if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) {
-            throw new IllegalStateException( "Postgap expected\n" + errorPointer(b).markedLine() ); }
-            // Because no alternative is possible if `reifyPoint` has done its job.
-        while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
-            && b /*moved*/!= (b = parseAnyPostgap( b, cc )));
+        cc: {
+            if( buffer.get(b) == '\u00A0' ) { // A single no-break space may bound the bullet.
+                cc.appendFlat( b, ++b );
+                if( b >= segmentEnd ) break cc; } // It may also comprise the whole descriptor.
+            if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) {
+                throw new IllegalStateException( "Postgap expected\n" + errorPointer(b).markedLine() ); }
+                // Because no alternative is possible if `reifyPoint` has done its job.
+            while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
+                && b /*moved*/!= (b = parseAnyPostgap( b, cc ))); }
         assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush(); }
 

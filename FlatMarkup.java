@@ -6,8 +6,6 @@ import java.util.List;
 
 
 /** Non-composite markup; markup that has no parsed components.
-  *
-  *     @see DeepMarkup
   */
 abstract class FlatMarkup extends Markup_ {
 

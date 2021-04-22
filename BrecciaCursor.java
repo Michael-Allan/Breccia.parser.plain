@@ -1394,11 +1394,7 @@ public class BrecciaCursor implements ReusableCursor {
         assert fractumLineNumber() == 1; // Concordant with `FileFractum.lineNumber`.
         final FileFractum_ f = basicFileFractum;
         assert fractumStart == 0;
-        f.text.delimit( 0, segmentEnd ); // Proper to fracta.
-        if( segmentEnd == 0 ) {
-            f.components = FileFractum_.componentsWhenAbsent;
-            f.isComposed = true; }
-        else f.isComposed = false; } // Pending demand.
+        f.text.delimit( 0, segmentEnd ); } // Proper to fracta.
 
 
 
@@ -1609,7 +1605,7 @@ public class BrecciaCursor implements ReusableCursor {
       * or headless file fractum, the only cases of a zero length fractal segment.
       * If the value here is the buffer limit, then no segment remains in the markup source.
       */
-    private @Subst int segmentEnd;
+    @Subst int segmentEnd;
 
 
 

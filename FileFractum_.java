@@ -34,10 +34,9 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
     /** Late composition control flag.  Cleared on committing a non-empty configuration of this fractum
-      * as the present parse state, which is done through the `readyFileFractum` method of the cursor.
-      * Set on late composition, which is triggered either by a call to `components`.
+      * through its `commit` method.  Set on late composition as triggered by a call to `components`.
       *
-      *     @see BrecciaCursor#readyFileFractum()
+      *     @see #commit()
       *     @see #components()
       */
     boolean isComposed; /* Justification of late parsing and composition: Use cases exist which care
@@ -51,6 +50,10 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
     @Override void commit() {
         super.commit();
+        if( cursor.segmentEnd == 0 ) {
+            components = FileFractum_.componentsWhenAbsent;
+            isComposed = true; }
+        else isComposed = false; // Pending demand.
         cursor.fileFractum( this ); }
 
 

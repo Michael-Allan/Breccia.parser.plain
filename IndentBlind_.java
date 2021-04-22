@@ -39,14 +39,13 @@ final class IndentBlind_ extends Markup_ implements IndentBlind {
         Line_( final BrecciaCursor cursor ) {
             super( cursor.buffer );
             this.cursor = cursor;
-            components = new ArrayList<>( /*initial capacity*/componentsMaximum );
             indentWhenPresent    = FlatMarkup.make( cursor );
             delimiter            = FlatMarkup.make( cursor, "Delimiter" );
             substanceWhenPresent = FlatMarkup.make( cursor ); }
 
 
 
-        final List<Markup> components;
+        final List<Markup> components = new ArrayList<>( /*initial capacity*/componentsMaximum );
 
 
 

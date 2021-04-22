@@ -553,7 +553,14 @@ public class BrecciaCursor implements ReusableCursor {
             if( d /*moved*/!= (d = c = throughAnyS( d ))
              && d /*moved*/!= (d = throughAnyTerm( d ))) {
                 xSeq.delimit( c, d );
-                if( equalInContent( "also", xSeq )) b = d; }}
+                if( equalInContent("also",xSeq) || equalInContent("e.g.",xSeq) ) b = d; }}
+        else if( equalInContent( "cf.", referentialCommandKeyword )) {
+            final int c;
+            int d = b;
+            if( d /*moved*/!= (d = c = throughAnyS( d ))
+             && d /*moved*/!= (d = throughAnyTerm( d ))) {
+                xSeq.delimit( c, d );
+                if( equalInContent( "e.g.", xSeq )) b = d; }}
         rA.referentialCommand.text.delimit( bReferentialCommand, b );
         cc.add( rA.referentialCommand );
         b = parseAnyPostgap( b, cc );

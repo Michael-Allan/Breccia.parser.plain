@@ -347,7 +347,6 @@ public class BrecciaCursor implements ReusableCursor {
  //   .slice( 1, bufferCapacity );                                     // `arrayOffset`. [BAO]
 
 
-
     /** The capacity of the read buffer in 16-bit code units.  Parsing markup with a fractal head large
       * enough to overflow the buffer will cause an `{@linkplain OverlargeHead OverlargeHead}` exception.
       */
@@ -681,6 +680,12 @@ public class BrecciaCursor implements ReusableCursor {
       *     <li>`{@linkplain #segmentEnd             segmentEnd}`</li>
       *     <li>`{@linkplain #segmentEndIndicant     segmentEndIndicant}`</li>
       *     <li>`{@linkplain #segmentEndIndicantChar segmentEndIndicantChar}`</li></ul>
+      *
+      * <p>And in case of a buffer shift while delimiting a divider segment, for each segment `s`
+      *  of `{@linkplain #basicDivision basicDivision}.components`, this method updates:,</p>
+      *
+      * <ul><li>`{@linkplain DividerSegment s}.text.start`</li>
+      *     <li>`{@linkplain DividerSegment s}.text.end`</li></ul>
       *
       * <p>Always the first call to this method for a new source of markup will determine the bounds
       * of the file head.  For a headless file, the first call returns with `segmentEnd` equal

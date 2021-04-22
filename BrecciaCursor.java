@@ -1447,18 +1447,22 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @param bullet The buffer position of the bullet.
       *     @param bulletEnd The buffer position just after the bullet, viz. its end boundary.
+      *     @param mightBeSpecial Whether the point might be special: an alarm, aside or task point.
       */
-    private NonCommandPoint reifyNonCommandPoint( final int bullet, final int bulletEnd ) {
+    private NonCommandPoint reifyNonCommandPoint( final int bullet, final int bulletEnd,
+          final boolean mightBeSpecial ) {
 
       // Resolve the concrete parse state
       // ────────────────────────────────
-        final char chLast = buffer.get( bulletEnd - 1 );
         final NonCommandPoint p;
-        if( chLast == '+' ) p = basicTaskPoint;
-        else if( bulletEnd - bullet/*length*/ == 1 ) {
-            if( chLast == '/' ) p = basicAsidePoint;
+        if( mightBeSpecial ) {
+            final char chLast = buffer.get( bulletEnd - 1 );
+            if( chLast == '+' ) p = basicTaskPoint;
+            else if( bulletEnd - bullet/*length*/ == 1 ) {
+                if( chLast == '/' ) p = basicAsidePoint;
+                else p = basicPlainPoint; }
+            else if( chLast == '!'  &&  buffer.get(bulletEnd-2) == '!' ) p = basicAlarmPoint;
             else p = basicPlainPoint; }
-        else if( chLast == '!'  &&  buffer.get(bulletEnd-2) == '!' ) p = basicAlarmPoint;
         else p = basicPlainPoint;
 
       // Therein delimit the components proper to all types of non-command point, and already parsed
@@ -1569,16 +1573,19 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Resolve the concrete parse state
       // ────────────────────────────────
+        final boolean mightBeSpecial = endSeeker == null; /* Whether the point might be special (alarm,
+          aside, command or task point).  Its bullet would have to end with a non-alphanumeric character
+          (‘!’, ‘/’, ‘:’ or ‘+’) and not be directly followed by a no-break space.  With the code above,
+          this combination occurs only with `endSeeker == null`, which test suffices to guard against
+          the presence of a no-break space after a bullet of any form.  So assert: */
+        assert !(mightBeSpecial && bulletEnd < segmentEnd && buffer.get(bulletEnd) == '\u00A0');
         final Point_<?> p;
-        if( bulletEnd - bullet/*length*/ == 1  &&  buffer.get(bullet) == ':' ) {
-            if( endSeeker != null ) { // Then the only case is that of the bullet ending (wrongly for
-                assert buffer.get(bulletEnd) == '\u00A0'; // a command point) at a no-break space.
-                throw spaceExpected( errorPointer( bulletEnd )); }
-            if( wasLineEndFound ) { // Then the bullet ends directly at the line end, with no
-                throw termExpected( errorPointer( b )); } // command between the two.
+        if( mightBeSpecial  &&  bulletEnd - bullet/*length*/ == 1  &&  buffer.get(bullet) == ':' ) {
+            if( wasLineEndFound ) throw termExpected( errorPointer( b ));
+              // The bullet ends directly at the line end, with no intervening command.
             assert buffer.get(bulletEnd) == ' '; // The only remaining case.
             p = reifyCommandPoint( bullet, bulletEnd ); }
-        else p = reifyNonCommandPoint( bullet, bulletEnd );
+        else p = reifyNonCommandPoint( bullet, bulletEnd, mightBeSpecial );
 
       // Ready to commit
       // ───────────────

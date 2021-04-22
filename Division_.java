@@ -11,6 +11,21 @@ final class Division_ extends BodyFractum_<BrecciaCursor> implements Division {
 
 
 
+    /** Late composition control flag.  Cleared on committing this division through its `commit` method.
+      * Set on late composition of its divider segments, which is triggered by a call to `components`.
+      *
+      *     @see #commit()
+      *     @see #components()
+      */
+    boolean areSegmentsComposed; /* Justification of late parsing and composition, viz. beyond
+      what was parsed and composed at commit time: Use cases exist which care nothing for divisions
+      but their reification, and these may benefit from the time saved by leaving unparsed the content
+      of the divider segments which contributes nothing to that reification.
+          Instead triggering late composition on `components.get` and so forth (even later) would break
+      the `List` API, as late composition may throw parse errors which it makes no allowance for. */
+
+
+
     final DividerSegmentList components = new DividerSegmentList();
 
 
@@ -26,6 +41,7 @@ final class Division_ extends BodyFractum_<BrecciaCursor> implements Division {
 
     @Override void commit() {
         super.commit();
+        areSegmentsComposed = false; // Pending demand.
         cursor.division( this ); }
 
 
@@ -33,7 +49,11 @@ final class Division_ extends BodyFractum_<BrecciaCursor> implements Division {
    // ━━━  M a r k u p  ━━━  D i v i s i o n  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override List<? extends DividerSegment> components() { return components; }
+    public final @Override List<? extends DividerSegment> components() {
+        if( !areSegmentsComposed ) {
+            cursor.composeDividerSegments();
+            areSegmentsComposed = true; }
+        return components; }
 
 
 
@@ -46,9 +66,10 @@ final class Division_ extends BodyFractum_<BrecciaCursor> implements Division {
         DividerSegment_ add() {
             final DividerSegment_ segment;
             if( size < back.size() ) segment = back.get( size );
-            else back.add( segment = new DividerSegment_( cursor ));
+            else {
+                assert size == back.size();
+                back.add( segment = new DividerSegment_( cursor )); }
             ++size;
-            assert size == back.size();
             return segment; }
 
 

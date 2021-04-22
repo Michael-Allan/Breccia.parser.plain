@@ -651,6 +651,35 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** @see Divider_#areSegmentsComposed
+      */
+    final void composeDividerSegments() {
+        final Division_ div = basicDivision;
+        assert !div.areSegmentsComposed;
+        final var segments = div.components;
+        final int sN = segments.size();
+        int s = 0;
+        final int segmentEndWas = segmentEnd; // End of present fractal segment.
+        try { // With a shifting value of `segmentEnd`, for sake of calls herein to parsing methods.
+            do {
+                final DividerSegment_ seg = segments.get( s );
+                int b = seg.text.start();
+                seg.perfectIndent.text.delimit( b, b += seg.indentWidth );
+                final CoalescentMarkupList cc = seg.components;
+                cc.clear();
+                cc.add( seg.perfectIndent );
+                segmentEnd = seg.text.end(); // To the end of this divider segment, that is.
+                cc.appendFlat( b, b = throughAnyTerm( ++b/*after the initial drawing character*/ ));
+                while( b /*moved*/!= (b = parseAnyPostgap( b, cc ))
+                    && b /*moved*/!= (b = parseAnyTerm( b, cc )));
+                assert b == segmentEnd: parseEndsWithSegment(b);
+                cc.flush(); }
+            while( ++s < sN );
+            assert segmentEnd == segmentEndWas; } // The segments end with the present fractal segment.
+        finally { segmentEnd = segmentEndWas; }} // Restore the original value regardless.
+
+
+
     /** @see FileFractum_#isComposed
       */
     final void composeFileFractum() {

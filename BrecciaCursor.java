@@ -339,6 +339,301 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Parses any comment appender, the delimiter of which (a backslash sequence)
+      * would begin at buffer position `b`, adding it to the given markup list.
+      * Already the markup before `b` is known to be well formed for the purpose.
+      *
+      *     @return The end boundary of the comment appender, or `b` if there is none.
+      */
+    private int appendAnyCommentAppender( int b, final List<Markup> markup ) {
+        if( b < segmentEnd && buffer.get(b) == '\\'
+              && commentaryHoldDetector.slashStartsDelimiter(b) ) {
+            final CommentAppender_ appender = spooler.commentAppender.unwind();
+            appender.text.delimit( b, b = compose( appender ));
+            markup.add( appender ); }
+        return b; }
+
+
+
+    /** Parses at buffer position `b` any regular-expression pattern complete with its delimiters,
+      * adding each to the given markup list, and adding the pattern to the given pattern list.
+      * Alone any delimiter ‘`’ at `b` will commit this method to parsing a delimited pattern in full,
+      * failing which it will throw a malformed-markup exception.
+      *
+      *     @return The end boundary of the delimited pattern, or `b` if there is none.
+      */
+    private int appendAnyDelimited( int b, final List<Markup> markup, final List<Pattern> patterns )
+          throws MalformedMarkup {
+        if( b < segmentEnd && buffer.get(b) == '`' ) {
+            final Pattern pattern = spooler.pattern.unwind();
+            b = appendDelimitedAt( b, markup, pattern );
+            patterns.add( pattern ); }
+        return b; }
+
+
+
+    /** Parses any foregap at buffer position `b`, adding each of its components
+      * to the given markup list.  Already `b` is known to bound either the end
+      * of the fractal segment (edge case) or the start of a line within it.
+      *
+      *     @return The end boundary of the foregap, or `b` if there is none.
+      */
+    private int appendAnyForegap( int b, final CoalescentMarkupList markup ) {
+        if( b >= segmentEnd ) return b; /* As required, either `b` bounds the segment end (left),
+          or a line start (right). */ assert b == segmentStart || completesNewline(buffer.get(b-1));
+        int bLine = b; // The last position at which a line starts.
+        int bFlat = b; /* The last potential start position of flat markup,
+          each character being either a plain space or newline constituent. */
+
+      // Establish the loop invariant
+      // ────────────────────────────
+        char ch = buffer.get( b );
+        if( ch == ' ' ) {
+            b = throughAnyS( ++b );
+            if( b >= segmentEnd ) {
+                markup.appendFlat( bFlat, b );
+                return b; }
+            ch = buffer.get( b ); }
+
+      // Loop through the foregap form
+      // ─────────────────────────────
+        for( ;; ) { /* Loop invariant.  Character `ch` at `b` lies within the fractal segment and is not
+              a plain space.  Rather it is a newline constituent or the first character either of the
+              lead delimiter of a block construct in the foregap, or of a term just after the foregap. */
+            assert b < segmentEnd && ch != ' ';
+            if( completesNewline( ch )) {
+                ++b; // Past the newline.
+                if( b >= segmentEnd ) {
+                    markup.appendFlat( bFlat, b );
+                    break; }
+                bLine = b;
+                ch = buffer.get( b );
+                if( ch != ' ' ) continue; // Already the invariant is re-established.
+                b = throughAnyS( ++b ); } // Re-establishing the invariant, part 1.
+            else if( impliesWithoutCompletingNewline( ch )) {
+                ch = buffer.get( ++b ); // Toward its completion.
+                assert impliesNewline( ch ); // Already `delimitSegment` has tested for this.
+                continue; } // Already the invariant is re-established.
+            else { // Expect a comment block or indent blind, or a term that bounds the foregap.
+                if( bFlat < b ) markup.appendFlat( bFlat, b ); // Flat markup that came before.
+                final BlockParser parser;
+                if( ch == '\\' ) parser = commentBlockParser;
+                else if( ch == /*no-break space*/'\u00A0' ) parser = indentBlindParser;
+                else break; // The foregap ends at a non-backslashed term.
+                if( b /*unmoved*/== (b = parser.appendIfDelimiter( b, bLine, markup ))) {
+                    break; } // The foregap ends at a backslashed term.
+                if( b >= segmentEnd ) break; // This block ends both the foregap and fractal segment.
+                bLine = b; // This block has ended with a line break.
+                bFlat = b; // Potentially the next run of flat markup begins here.
+                b = parser.postSpaceEnd; } // Re-establishing the invariant, part 1.
+
+          // re-establish the invariant, part 2
+          // ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+            if( b >= segmentEnd ) {
+                assert bFlat < b;
+                markup.appendFlat( bFlat, b );
+                break; }
+            ch = buffer.get( b ); }
+        return b; }
+
+
+
+    /** Parses any sequence of newlines at buffer position `b`, adding it to the given markup list.
+      *
+      *     @return The end boundary of the sequence, or `b` if there is none.
+      */
+    private int appendAnyNewlines( final int b, final CoalescentMarkupList markup ) {
+        final int c = throughAnyNewlines( b );
+        if( b != c ) markup.appendFlat( b, c );
+        return c; }
+
+
+
+    /** Parses any postgap at buffer position `b`,
+      * adding each of its components to the given markup list.
+      *
+      *     @return The end boundary of the postgap, or `b` if there is none.
+      */
+    private int appendAnyPostgap( int b, final CoalescentMarkupList markup ) {
+        if( b /*moved*/!= (b = appendAnyS( b, markup ))) {
+            if( b /*moved*/!= (b = appendAnyCommentAppender( b, markup ))) {
+                return appendAnyForegap( b, markup ); }}
+        if( b /*moved*/!= (b = appendAnyNewlines( b, markup ))) b = appendAnyForegap( b, markup );
+        return b; }
+
+
+
+    /** Parses any sequence at buffer position `b` of plain space characters,
+      * namely ‘S’ in the language definition, adding it to the given markup list.
+      *
+      *     @return The end boundary of the sequence, or `b` if there is none.
+      */
+    private int appendAnyS( final int b, final CoalescentMarkupList markup ) {
+        final int c = throughAnyS( b );
+        if( b != c ) markup.appendFlat( b, c );
+        return c; }
+
+
+
+    /** Parses any term at buffer position `b`, adding it to the given markup list.
+      *
+      *     @return The end boundary of the term, or `b` if there is none.
+      */
+    private int appendAnyTerm( final int b, final CoalescentMarkupList markup ) {
+        final int c = throughAnyTerm( b );
+        if( c /*moved*/!= b ) markup.appendFlat( b, c );
+        return c; }
+
+
+
+    /** Parses at buffer position `b` a regular-expression pattern complete with its delimiters,
+      * adding each to the given markup list.
+      *
+      *     @param pattern The pattern instance to use for the purpose.
+      *     @return The end boundary of the delimited pattern.
+      *     @throws MalformedMarkup If no such pattern occurs at `b`.
+      */
+    private int appendDelimited( int b, final List<Markup> markup, final Pattern pattern )
+          throws MalformedMarkup {
+        if( b < segmentEnd && buffer.get(b) == '`' ) return appendDelimitedAt( b, markup, pattern );
+        throw new MalformedMarkup( errorPointer(b), "Pattern delimiter expected" ); }
+
+
+
+    /** Parses at buffer position `b` a regular-expression pattern complete with its delimiters,
+      * adding each to the given markup list.  Already `b` is known to hold the lead delimiter ‘`’.
+      *
+      *     @param pattern The pattern instance to use for the purpose.
+      *     @return The end boundary of the delimited pattern.
+      *     @throws MalformedMarkup If no such pattern occurs at `b`.
+      */
+    private int appendDelimitedAt( int b, final List<Markup> markup, final Pattern pattern )
+          throws MalformedMarkup {
+        assert b < segmentEnd  &&  buffer.get(b) == '`'; {
+            final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
+            delimiter.text.delimit( b, ++b );
+            markup.add( delimiter ); }
+        final CoalescentMarkupList cc = pattern.components;
+        cc.clear();
+        boolean inEscape = false; // Whether the last character was a backslash ‘\’.
+        for( final int bPattern = b; b < segmentEnd; ) {
+            final char ch = buffer.get( b );
+            if( impliesNewline( ch )) break;
+
+          // Backslashed sequences
+          // ─────────────────────
+            if( inEscape ) {
+                if( ch == 'b' || ch == 'd' || ch == 'R' || ch == 't' ) {
+                    final FlatMarkup special = spooler.backslashedSpecial.unwind();
+                    special.text.delimit( b - 1, ++b ); // Including the prior backslash.
+                    cc.add( special ); }
+                else if( ch == 'N' ) {
+                    final int bStart = b - 1; // The prior backslash.
+                    b = throughBackslashedSpecialNQualifier( ++b );
+                    final FlatMarkup special = spooler.backslashedSpecial.unwind();
+                    special.text.delimit( bStart, b );
+                    cc.add( special ); }
+                else {
+                    final FlatMarkup literalizer = spooler.literalizer.unwind();
+                    literalizer.text.delimit( b - 1, b );
+                    cc.add( literalizer );
+                    cc.appendFlat( b, ++b ); }
+                inEscape = false;
+                continue; }
+            if( ch == '\\' ) {
+                inEscape = true;
+                ++b;
+                continue; }
+
+          // Metacharacters
+          // ──────────────
+            if( ch == '^' ) {
+                final int bStart = b++;
+                if( b < segmentEnd  &&  buffer.get(b) == '^' ) { // A second ‘^’, so making ‘^^’.
+                    final FlatMarkup indent = spooler.perfectIndent.unwind();
+                    indent.text.delimit( bStart, ++b );
+                    cc.add( indent ); }
+                else {
+                    final FlatMarkup metacharacter = spooler.metacharacter.unwind();
+                    metacharacter.text.delimit( bStart, b );
+                    cc.add( metacharacter ); }
+                continue; }
+            if( ch == '.' || ch == '$' || ch == '|' || ch == '*' || ch == '+' || ch == '?' ) {
+                final FlatMarkup metacharacter = spooler.metacharacter.unwind();
+                metacharacter.text.delimit( b, ++b );
+                cc.add( metacharacter );
+                continue; }
+
+          // Group delimiters
+          // ────────────────
+            if( ch == '(' ) {
+                final int bStart = b++;
+                if( b < segmentEnd  &&  buffer.get(b) == '?' ) {
+                    final int c = b + 1;
+                    if( c < segmentEnd  &&  buffer.get(c) == ':' ) b = c + 1;}
+                final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
+                delimiter.text.delimit( bStart, b );
+                cc.add( delimiter );
+                continue; }
+            if( ch == ')' ) {
+                final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
+                delimiter.text.delimit( b, ++b );
+                cc.add( delimiter );
+                continue; }
+
+          // Closing pattern delimiter
+          // ─────────────────────────
+            if( ch == '`' ) {
+                if( b == bPattern ) throw new MalformedMarkup( errorPointer(b), "Empty pattern" );
+                pattern.text.delimit( bPattern, b );
+                cc.flush();
+                markup.add( pattern );
+                final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
+                delimiter.text.delimit( b, ++b );
+                markup.add( delimiter );
+                return b; }
+
+          // Literal characters
+          // ──────────────────
+            cc.appendFlat( b, ++b ); }
+        throw truncatedPattern( errorPointer( b )); }
+
+
+
+    /** Parses a postgap at buffer position `b`, adding each of its components to the given markup list.
+      *
+      *     @return The end boundary of the postgap.
+      *     @throws MalformedMarkup If no postgap occurs at `b`.
+      */
+    private int appendPostgap( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
+        if( b /*moved*/!= (b = appendAnyPostgap( b, markup ))) return b;
+        throw new MalformedMarkup( errorPointer(b), "Postgap expected" ); }
+
+
+
+    /** Parses a sequence at buffer position `b` of plain space characters,
+      * namely ‘S’ in the language definition, adding it to the given markup list.
+      *
+      *     @return The end boundary of the sequence.
+      *     @throws MalformedMarkup If no such sequence occurs at `b`.
+      */
+    private int appendS( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
+        markup.appendFlat( b, b = throughS(b) );
+        return b; }
+
+
+
+    /** Parses a term at buffer position `b`, adding it to the given markup list.
+      *
+      *     @return The end boundary of the term.
+      *     @throws MalformedMarkup If no term occurs at `b`.
+      */
+    private int appendTerm( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
+        markup.appendFlat( b, b = throughTerm(b) );
+        return b; }
+
+
+
     /** The source buffer.  Except where an API requires otherwise (e.g. `delimitSegment`), the buffer
       * is maintained at a default position of zero, whence it may be treated whole as a `CharSequence`.
       */
@@ -526,12 +821,12 @@ public class BrecciaCursor implements ReusableCursor {
             cRcc.clear();
             final int a = b;
             cRcc.appendFlat( b, b = keyword.end() );
-            b = parsePostgap( b, cRcc );
-            b = parseDelimited( b, cRcc, cR.pattern );
+            b = appendPostgap( b, cRcc );
+            b = appendDelimited( b, cRcc, cR.pattern );
             cR.text.delimit( a, b );
             cRcc.flush();
             cc.add( rA.referrerClause = cR );
-            b = parsePostgap( b, cc );
+            b = appendPostgap( b, cc );
 
           // Referential command, from scratch
           // ───────────────────
@@ -563,7 +858,7 @@ public class BrecciaCursor implements ReusableCursor {
                 if( equalInContent( "e.g.", xSeq )) b = d; }}
         rA.referentialCommand.text.delimit( bReferentialCommand, b );
         cc.add( rA.referentialCommand );
-        b = parseAnyPostgap( b, cc );
+        b = appendAnyPostgap( b, cc );
         if( b < segmentEnd ) {
 
           // Referent clause
@@ -571,14 +866,14 @@ public class BrecciaCursor implements ReusableCursor {
             final var cR = rA.referentClauseWhenPresent;
             final var cRIParser = referentClauseIndicantParser;
             final int bStart = b;
-            b = cRIParser.parseAny( b, cR.inferentialReferentIndicantWhenPresent );
+            b = cRIParser.appendAny( b, cR.inferentialReferentIndicantWhenPresent );
             if( b /*moved*/!= bStart ) {
                 cR.fractumIndicant = null; // Instead an inferential referent indicant is present:
                 cR.inferentialReferentIndicant = cR.inferentialReferentIndicantWhenPresent;
                 cR.components = cR.componentAsInferentialReferentIndicant; }
             else {
                 cR.inferentialReferentIndicant = null; // Instead a fractum indicant is present:
-                b = cRIParser.parse( b, cR.fractumIndicantWhenPresent,
+                b = cRIParser.append( b, cR.fractumIndicantWhenPresent,
                   /*failureMessage*/null/*impossible as the foregoing guarantees at least a term*/ );
                 cR.fractumIndicant = cR.fractumIndicantWhenPresent;
                 cR.components = cR.componentAsFractumIndicant; }
@@ -594,7 +889,7 @@ public class BrecciaCursor implements ReusableCursor {
                     do { cc.add( cRIcc.get( c++ )); } while( c < cN );
                     cRIcc.removeRange( cTermEnd, cN ); }} /* With this removal, `cRIcc` would be broken
                       by any further coalescence.  There will be none, however, as it is now complete. */
-            else b = parseAnyPostgap( b, cc ); }
+            else b = appendAnyPostgap( b, cc ); }
         else rA.referentClause = null;
         if( b < segmentEnd ) throw unexpectedTerm( errorPointer( b ));
         else assert b == segmentEnd;
@@ -614,11 +909,11 @@ public class BrecciaCursor implements ReusableCursor {
             if( buffer.get(b) == '\u00A0' ) { // A single no-break space may bound the bullet.
                 cc.appendFlat( b, ++b );
                 if( b >= segmentEnd ) break cc; } // It may also comprise the whole descriptor.
-            if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) {
+            if( b /*unmoved*/== (b = appendAnyPostgap( b, cc ))) {
                 throw new IllegalStateException( "Postgap expected\n" + errorPointer(b).markedLine() ); }
                 // Because no alternative is possible if `reifyPoint` has done its job.
-            while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
-                && b /*moved*/!= (b = parseAnyPostgap( b, cc ))); }
+            while( b /*moved*/!= (b = appendAnyTerm( b, cc ))
+                && b /*moved*/!= (b = appendAnyPostgap( b, cc ))); }
         assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush(); }
 
@@ -635,8 +930,8 @@ public class BrecciaCursor implements ReusableCursor {
         cc.clear();
         int b;
         cc.appendFlat( p.bullet.text.end(), b = p.keyword.end() );
-        while( b /*moved*/!= (b = parseAnyPostgap( b, cc ))
-            && b /*moved*/!= (b = parseAnyTerm( b, cc )));
+        while( b /*moved*/!= (b = appendAnyPostgap( b, cc ))
+            && b /*moved*/!= (b = appendAnyTerm( b, cc )));
         assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush(); }
 
@@ -651,7 +946,7 @@ public class BrecciaCursor implements ReusableCursor {
         final FlatMarkup command = p.descriptor.command;
         cc.appendFlat( p.bullet.text.end(), command.text.start() );
         cc.add( command );
-        final int b = parseAnyPostgap( command.text.end(), cc );
+        final int b = appendAnyPostgap( command.text.end(), cc );
         if( b < segmentEnd ) throw unexpectedTerm( errorPointer( b ));
         else assert b == segmentEnd;
         cc.flush(); }
@@ -677,8 +972,8 @@ public class BrecciaCursor implements ReusableCursor {
                 cc.add( seg.perfectIndent );
                 segmentEnd = seg.text.end(); // To the end of this divider segment, that is.
                 cc.appendFlat( b, b = throughAnyTerm( ++b/*after the initial drawing character*/ ));
-                while( b /*moved*/!= (b = parseAnyPostgap( b, cc ))
-                    && b /*moved*/!= (b = parseAnyTerm( b, cc )));
+                while( b /*moved*/!= (b = appendAnyPostgap( b, cc ))
+                    && b /*moved*/!= (b = appendAnyTerm( b, cc )));
                 assert b == segmentEnd: parseEndsWithSegment(b);
                 cc.flush(); }
             while( ++s < sN );
@@ -696,11 +991,11 @@ public class BrecciaCursor implements ReusableCursor {
         cc.clear();
         int b = 0;
         assert b == fractumStart && segmentEnd > b;
-        if( b /*unmoved*/== (b = parseAnyForegap( b, cc ))) {
+        if( b /*unmoved*/== (b = appendAnyForegap( b, cc ))) {
             throw new IllegalStateException( "Foregap expected\n" + errorPointer(b).markedLine() ); }
             // Because no alternative is possible if `delimitSegment` has done its job.
-        while( b /*moved*/!= (b = parseAnyTerm( b, cc ))
-            && b /*moved*/!= (b = parseAnyPostgap( b, cc )));
+        while( b /*moved*/!= (b = appendAnyTerm( b, cc ))
+            && b /*moved*/!= (b = appendAnyPostgap( b, cc )));
         assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush();
         f.components = cc; }
@@ -1100,303 +1395,8 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses any comment appender, the delimiter of which (a backslash sequence)
-      * would begin at buffer position `b`, adding it to the given markup list.
-      * Already the markup before `b` is known to be well formed for the purpose.
-      *
-      *     @return The end boundary of the comment appender, or `b` if there is none.
-      */
-    private int parseAnyCommentAppender( int b, final List<Markup> markup ) {
-        if( b < segmentEnd && buffer.get(b) == '\\'
-              && commentaryHoldDetector.slashStartsDelimiter(b) ) {
-            final CommentAppender_ appender = spooler.commentAppender.unwind();
-            appender.text.delimit( b, b = compose( appender ));
-            markup.add( appender ); }
-        return b; }
-
-
-
-    /** Parses at buffer position `b` any regular-expression pattern complete with its delimiters,
-      * adding each to the given markup list, and adding the pattern to the given pattern list.
-      * Alone any delimiter ‘`’ at `b` will commit this method to parsing a delimited pattern in full,
-      * failing which it will throw a malformed-markup exception.
-      *
-      *     @return The end boundary of the delimited pattern, or `b` if there is none.
-      */
-    private int parseAnyDelimited( int b, final List<Markup> markup, final List<Pattern> patterns )
-          throws MalformedMarkup {
-        if( b < segmentEnd && buffer.get(b) == '`' ) {
-            final Pattern pattern = spooler.pattern.unwind();
-            b = parseDelimitedAt( b, markup, pattern );
-            patterns.add( pattern ); }
-        return b; }
-
-
-
-    /** Parses any foregap at buffer position `b`, adding each of its components
-      * to the given markup list.  Already `b` is known to bound either the end
-      * of the fractal segment (edge case) or the start of a line within it.
-      *
-      *     @return The end boundary of the foregap, or `b` if there is none.
-      */
-    private int parseAnyForegap( int b, final CoalescentMarkupList markup ) {
-        if( b >= segmentEnd ) return b; /* As required, either `b` bounds the segment end (left),
-          or a line start (right). */ assert b == segmentStart || completesNewline(buffer.get(b-1));
-        int bLine = b; // The last position at which a line starts.
-        int bFlat = b; /* The last potential start position of flat markup,
-          each character being either a plain space or newline constituent. */
-
-      // Establish the loop invariant
-      // ────────────────────────────
-        char ch = buffer.get( b );
-        if( ch == ' ' ) {
-            b = throughAnyS( ++b );
-            if( b >= segmentEnd ) {
-                markup.appendFlat( bFlat, b );
-                return b; }
-            ch = buffer.get( b ); }
-
-      // Loop through the foregap form
-      // ─────────────────────────────
-        for( ;; ) { /* Loop invariant.  Character `ch` at `b` lies within the fractal segment and is not
-              a plain space.  Rather it is a newline constituent or the first character either of the
-              lead delimiter of a block construct in the foregap, or of a term just after the foregap. */
-            assert b < segmentEnd && ch != ' ';
-            if( completesNewline( ch )) {
-                ++b; // Past the newline.
-                if( b >= segmentEnd ) {
-                    markup.appendFlat( bFlat, b );
-                    break; }
-                bLine = b;
-                ch = buffer.get( b );
-                if( ch != ' ' ) continue; // Already the invariant is re-established.
-                b = throughAnyS( ++b ); } // Re-establishing the invariant, part 1.
-            else if( impliesWithoutCompletingNewline( ch )) {
-                ch = buffer.get( ++b ); // Toward its completion.
-                assert impliesNewline( ch ); // Already `delimitSegment` has tested for this.
-                continue; } // Already the invariant is re-established.
-            else { // Expect a comment block or indent blind, or a term that bounds the foregap.
-                if( bFlat < b ) markup.appendFlat( bFlat, b ); // Flat markup that came before.
-                final BlockParser parser;
-                if( ch == '\\' ) parser = commentBlockParser;
-                else if( ch == /*no-break space*/'\u00A0' ) parser = indentBlindParser;
-                else break; // The foregap ends at a non-backslashed term.
-                if( b /*unmoved*/== (b = parser.parseIfDelimiter( b, bLine, markup ))) {
-                    break; } // The foregap ends at a backslashed term.
-                if( b >= segmentEnd ) break; // This block ends both the foregap and fractal segment.
-                bLine = b; // This block has ended with a line break.
-                bFlat = b; // Potentially the next run of flat markup begins here.
-                b = parser.postSpaceEnd; } // Re-establishing the invariant, part 1.
-
-          // re-establish the invariant, part 2
-          // ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
-            if( b >= segmentEnd ) {
-                assert bFlat < b;
-                markup.appendFlat( bFlat, b );
-                break; }
-            ch = buffer.get( b ); }
-        return b; }
-
-
-
-    /** Parses any sequence of newlines at buffer position `b`, adding it to the given markup list.
-      *
-      *     @return The end boundary of the sequence, or `b` if there is none.
-      */
-    private int parseAnyNewlines( final int b, final CoalescentMarkupList markup ) {
-        final int c = throughAnyNewlines( b );
-        if( b != c ) markup.appendFlat( b, c );
-        return c; }
-
-
-
-    /** Parses any postgap at buffer position `b`,
-      * adding each of its components to the given markup list.
-      *
-      *     @return The end boundary of the postgap, or `b` if there is none.
-      */
-    private int parseAnyPostgap( int b, final CoalescentMarkupList markup ) {
-        if( b /*moved*/!= (b = parseAnyS( b, markup ))) {
-            if( b /*moved*/!= (b = parseAnyCommentAppender( b, markup ))) {
-                return parseAnyForegap( b, markup ); }}
-        if( b /*moved*/!= (b = parseAnyNewlines( b, markup ))) b = parseAnyForegap( b, markup );
-        return b; }
-
-
-
-    /** Parses any sequence at buffer position `b` of plain space characters,
-      * namely ‘S’ in the language definition, adding it to the given markup list.
-      *
-      *     @return The end boundary of the sequence, or `b` if there is none.
-      */
-    private int parseAnyS( final int b, final CoalescentMarkupList markup ) {
-        final int c = throughAnyS( b );
-        if( b != c ) markup.appendFlat( b, c );
-        return c; }
-
-
-
-    /** Parses any term at buffer position `b`, adding it to the given markup list.
-      *
-      *     @return The end boundary of the term, or `b` if there is none.
-      */
-    private int parseAnyTerm( final int b, final CoalescentMarkupList markup ) {
-        final int c = throughAnyTerm( b );
-        if( c /*moved*/!= b ) markup.appendFlat( b, c );
-        return c; }
-
-
-
-    /** Parses at buffer position `b` a regular-expression pattern complete with its delimiters,
-      * adding each to the given markup list.
-      *
-      *     @param pattern The pattern instance to use for the purpose.
-      *     @return The end boundary of the delimited pattern.
-      *     @throws MalformedMarkup If no such pattern occurs at `b`.
-      */
-    private int parseDelimited( int b, final List<Markup> markup, final Pattern pattern )
-          throws MalformedMarkup {
-        if( b < segmentEnd && buffer.get(b) == '`' ) return parseDelimitedAt( b, markup, pattern );
-        throw new MalformedMarkup( errorPointer(b), "Pattern delimiter expected" ); }
-
-
-
-    /** Parses at buffer position `b` a regular-expression pattern complete with its delimiters,
-      * adding each to the given markup list.  Already `b` is known to hold the lead delimiter ‘`’.
-      *
-      *     @param pattern The pattern instance to use for the purpose.
-      *     @return The end boundary of the delimited pattern.
-      *     @throws MalformedMarkup If no such pattern occurs at `b`.
-      */
-    private int parseDelimitedAt( int b, final List<Markup> markup, final Pattern pattern )
-          throws MalformedMarkup {
-        assert b < segmentEnd  &&  buffer.get(b) == '`'; {
-            final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
-            delimiter.text.delimit( b, ++b );
-            markup.add( delimiter ); }
-        final CoalescentMarkupList cc = pattern.components;
-        cc.clear();
-        boolean inEscape = false; // Whether the last character was a backslash ‘\’.
-        for( final int bPattern = b; b < segmentEnd; ) {
-            final char ch = buffer.get( b );
-            if( impliesNewline( ch )) break;
-
-          // Backslashed sequences
-          // ─────────────────────
-            if( inEscape ) {
-                if( ch == 'b' || ch == 'd' || ch == 'R' || ch == 't' ) {
-                    final FlatMarkup special = spooler.backslashedSpecial.unwind();
-                    special.text.delimit( b - 1, ++b ); // Including the prior backslash.
-                    cc.add( special ); }
-                else if( ch == 'N' ) {
-                    final int bStart = b - 1; // The prior backslash.
-                    b = throughBackslashedSpecialNQualifier( ++b );
-                    final FlatMarkup special = spooler.backslashedSpecial.unwind();
-                    special.text.delimit( bStart, b );
-                    cc.add( special ); }
-                else {
-                    final FlatMarkup literalizer = spooler.literalizer.unwind();
-                    literalizer.text.delimit( b - 1, b );
-                    cc.add( literalizer );
-                    cc.appendFlat( b, ++b ); }
-                inEscape = false;
-                continue; }
-            if( ch == '\\' ) {
-                inEscape = true;
-                ++b;
-                continue; }
-
-          // Metacharacters
-          // ──────────────
-            if( ch == '^' ) {
-                final int bStart = b++;
-                if( b < segmentEnd  &&  buffer.get(b) == '^' ) { // A second ‘^’, so making ‘^^’.
-                    final FlatMarkup indent = spooler.perfectIndent.unwind();
-                    indent.text.delimit( bStart, ++b );
-                    cc.add( indent ); }
-                else {
-                    final FlatMarkup metacharacter = spooler.metacharacter.unwind();
-                    metacharacter.text.delimit( bStart, b );
-                    cc.add( metacharacter ); }
-                continue; }
-            if( ch == '.' || ch == '$' || ch == '|' || ch == '*' || ch == '+' || ch == '?' ) {
-                final FlatMarkup metacharacter = spooler.metacharacter.unwind();
-                metacharacter.text.delimit( b, ++b );
-                cc.add( metacharacter );
-                continue; }
-
-          // Group delimiters
-          // ────────────────
-            if( ch == '(' ) {
-                final int bStart = b++;
-                if( b < segmentEnd  &&  buffer.get(b) == '?' ) {
-                    final int c = b + 1;
-                    if( c < segmentEnd  &&  buffer.get(c) == ':' ) b = c + 1;}
-                final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
-                delimiter.text.delimit( bStart, b );
-                cc.add( delimiter );
-                continue; }
-            if( ch == ')' ) {
-                final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
-                delimiter.text.delimit( b, ++b );
-                cc.add( delimiter );
-                continue; }
-
-          // Closing pattern delimiter
-          // ─────────────────────────
-            if( ch == '`' ) {
-                if( b == bPattern ) throw new MalformedMarkup( errorPointer(b), "Empty pattern" );
-                pattern.text.delimit( bPattern, b );
-                cc.flush();
-                markup.add( pattern );
-                final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
-                delimiter.text.delimit( b, ++b );
-                markup.add( delimiter );
-                return b; }
-
-          // Literal characters
-          // ──────────────────
-            cc.appendFlat( b, ++b ); }
-        throw truncatedPattern( errorPointer( b )); }
-
-
-
     private String parseEndsWithSegment( final int b ) {
         return "Parse ends with the segment\n" + errorPointer(b).markedLine(); }
-
-
-
-    /** Parses a postgap at buffer position `b`, adding each of its components to the given markup list.
-      *
-      *     @return The end boundary of the postgap.
-      *     @throws MalformedMarkup If no postgap occurs at `b`.
-      */
-    private int parsePostgap( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
-        if( b /*moved*/!= (b = parseAnyPostgap( b, markup ))) return b;
-        throw new MalformedMarkup( errorPointer(b), "Postgap expected" ); }
-
-
-
-    /** Parses a sequence at buffer position `b` of plain space characters,
-      * namely ‘S’ in the language definition, adding it to the given markup list.
-      *
-      *     @return The end boundary of the sequence.
-      *     @throws MalformedMarkup If no such sequence occurs at `b`.
-      */
-    private int parseS( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
-        markup.appendFlat( b, b = throughS(b) );
-        return b; }
-
-
-
-    /** Parses a term at buffer position `b`, adding it to the given markup list.
-      *
-      *     @return The end boundary of the term.
-      *     @throws MalformedMarkup If no term occurs at `b`.
-      */
-    private int parseTerm( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
-        markup.appendFlat( b, b = throughTerm(b) );
-        return b; }
 
 
 
@@ -2055,7 +2055,7 @@ public class BrecciaCursor implements ReusableCursor {
           *     @param bLine Buffer position of the start of the line wherein `b` lies.
           *     @return The end boundary of the block, or `b` if there is none.
           */
-        abstract int parseIfDelimiter( int b, int bLine, List<Markup> markup );
+        abstract int appendIfDelimiter( int b, int bLine, List<Markup> markup );
 
 
 
@@ -2263,7 +2263,7 @@ public class BrecciaCursor implements ReusableCursor {
         /** {@inheritDoc} <p>Here ‘lead delimiter’ means a backslash sequence
           * in the first line of the comment block.</p>
           */
-        @Override int parseIfDelimiter( int b, int bLine, final List<Markup> parentMarkup ) {
+        @Override int appendIfDelimiter( int b, int bLine, final List<Markup> parentMarkup ) {
             final CommentaryHoldDetector detector = commentaryHoldDetector;
             if( detector.slashStartsDelimiter( b )) {
                 // Changing what follows?  Sync → namesake method of `IndentBlindParser`.
@@ -2317,7 +2317,7 @@ public class BrecciaCursor implements ReusableCursor {
           *
           *     @return The end boundary of the block subsequent to `b`.
           */
-        @Override int parseIfDelimiter( int b, int bLine, final List<Markup> parentMarkup ) {
+        @Override int appendIfDelimiter( int b, int bLine, final List<Markup> parentMarkup ) {
             // Changing what follows?  Sync → namesake method of `CommentBlockParser`.
             final int bBlind = bLine;
             final IndentBlind_ blind = spooler.indentBlind.unwind();
@@ -2441,30 +2441,6 @@ public class BrecciaCursor implements ReusableCursor {
     private final class ReferentClauseIndicantParser {
 
 
-        /** Set on each successful parse to the end boundary in the buffer of the indicant.
-          */
-        int bEnd;
-
-
-
-        /** Set when `wasAnyPostgapParsed` to the component list containing the final term
-          * of the indicant.
-          *
-          *     @see #cTermEnd
-          */
-        CoalescentArrayList components;
-
-
-
-        /** Set when `wasAnyPostgapParsed` to the end boundary in `components` of the last term
-          * that was added (correctly), which is also the start boundary of any subsequent postgap
-          * whose components were appended (inadvertently and incorrectly).  The caller must remove
-          * any such components to the component list of the point descriptor, where they belong.
-          */
-        int cTermEnd;
-
-
-
         /** Parses a fractum indicant at buffer position `b`, adding its components to `iF.components`
           * and updating the fields of this parser.
           *
@@ -2474,7 +2450,7 @@ public class BrecciaCursor implements ReusableCursor {
           *       or subsequent postgap).
           *     @throws MalformedMarkup If no fractum indicant occurs at `b`.
           */
-        private int parse( int b, final FractumIndicant_ iF, final String failureMessage )
+        private int append( int b, final FractumIndicant_ iF, final String failureMessage )
               throws MalformedMarkup {
             final int bOriginal = b;
             final CoalescentArrayList cc = iF.components;
@@ -2485,22 +2461,22 @@ public class BrecciaCursor implements ReusableCursor {
               // ──────────────
                 final List<Pattern> patterns = iF.patternsWhenPresent;
                 patterns.clear();
-                while( b /*moved*/!= (b = parseAnyDelimited( b, cc, patterns ))) {
+                while( b /*moved*/!= (b = appendAnyDelimited( b, cc, patterns ))) {
                     cTermEnd = cc.size();
-                    b = parseAnyPostgap( bEnd = b, cc );
+                    b = appendAnyPostgap( bEnd = b, cc );
                     if( b /*unmoved*/== bEnd || b >= segmentEnd || buffer.get(b) != '@' ) {
                         iF.resourceIndicant = null; // No resource indicant is present,
                         iF.patterns = patterns;     // only a pattern series.
                         break composition; }
-                    cc.appendFlat( b, ++b );     // The ‘@’ of the containment separator,
-                    b = parsePostgap( b, cc ); } // and its trailing postgap.
+                    cc.appendFlat( b, ++b );      // The ‘@’ of the containment separator,
+                    b = appendPostgap( b, cc ); } // and its trailing postgap.
                 final int pN = patterns.size();
                 iF.patterns = pN == 0? null : patterns;
 
               // Resource indicant
               // ─────────────────
                 final var iR = iF.resourceIndicantWhenPresent;
-                if( b /*unmoved*/== (b = parseAny( b, iR ))) {
+                if( b /*unmoved*/== (b = appendAny( b, iR ))) {
                     if( pN > 0 ) { // Then that pattern series ended with a containment separator.
                         throw new MalformedMarkup( errorPointer(b), "Resource indicant expected" ); }
                     // No fractum indicant is present, at all.
@@ -2531,7 +2507,7 @@ public class BrecciaCursor implements ReusableCursor {
           *     @return The end boundary of the last thing that was parsed (inferential referent indicant
           *       or subsequent postgap), or `b` if no inferential referent indicant is present.
           */
-        private int parseAny( int b, final AssociativeReference_.
+        private int appendAny( int b, final AssociativeReference_.
               InferentialReferentIndicant_ iIR ) throws MalformedMarkup {
             final int bOriginal = b;
             final CoalescentArrayList cc = iIR.components;
@@ -2547,7 +2523,7 @@ public class BrecciaCursor implements ReusableCursor {
                     sim.text.delimit( seqTerm.start(), b );
                     cc.add( iIR.referrerSimilarity = sim );
                     cTermEnd = cc.size();
-                    if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) {
+                    if( b /*unmoved*/== (b = appendAnyPostgap( b, cc ))) {
                         iIR.referentialForm = null; // No referential form (ii) is present.
                         break composition; }
                     final int d = throughAnyTerm( b );
@@ -2565,7 +2541,7 @@ public class BrecciaCursor implements ReusableCursor {
                     form.text.delimit( seqTerm.start(), b );
                     cc.add( iIR.referentialForm = form );
                     cTermEnd = cc.size();
-                    if( b /*unmoved*/== (b = parseAnyPostgap( b, cc ))) break composition;
+                    if( b /*unmoved*/== (b = appendAnyPostgap( b, cc ))) break composition;
                     final int d = throughAnyTerm( b );
                     if( d /*unmoved*/== b ) break composition;
                     seqTerm.delimit( b, d ); }
@@ -2578,9 +2554,9 @@ public class BrecciaCursor implements ReusableCursor {
                     final CoalescentMarkupList cCcc = cC.components;
                     cCcc.clear();
                     cCcc.appendFlat( b, ++b ); // The ‘@’.
-                    b = parsePostgap( b, cCcc );
+                    b = appendPostgap( b, cCcc );
                     final var iF = iIR.fractumIndicantWhenPresent;
-                    b = parse( b, iF, "Fractum indicant expected" ); // Which sets the parser fields.
+                    b = append( b, iF, "Fractum indicant expected" ); // Which sets the parser fields.
                     cCcc.add( iIR.fractumIndicant = iF );
                     cC.text.delimit( seqTerm.start(), b );
                     cCcc.flush();
@@ -2611,7 +2587,7 @@ public class BrecciaCursor implements ReusableCursor {
           *
           *     @return The end boundary of the resource indicant, or `b` if there is none.
           */
-        private int parseAny( final int b, final ResourceIndicant_ iR ) throws MalformedMarkup {
+        private int appendAny( final int b, final ResourceIndicant_ iR ) throws MalformedMarkup {
             int d = throughAnyTerm( b );
             if( d /*moved*/!= b ) {
                 final CoalescentMarkupList cc = iR.components;
@@ -2621,7 +2597,7 @@ public class BrecciaCursor implements ReusableCursor {
                 if( equalInContent( "non-fractal", xSeq )) {
                     iR.isFractal = false;
                     cc.appendFlat( b, d );
-                    bReference = parsePostgap( d, cc );
+                    bReference = appendPostgap( d, cc );
                     d = throughTerm( bReference ); }
                 else { // Only a reference is present.
                     iR.isFractal = true;
@@ -2634,8 +2610,32 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+        /** Set on each successful parse to the end boundary in the buffer of the indicant.
+          */
+        int bEnd;
+
+
+
+        /** Set when `wasAnyPostgapParsed` to the component list containing the final term
+          * of the indicant.
+          *
+          *     @see #cTermEnd
+          */
+        CoalescentArrayList components;
+
+
+
+        /** Set when `wasAnyPostgapParsed` to the end boundary in `components` of the last term
+          * that was added (correctly), which is also the start boundary of any subsequent postgap
+          * whose components were appended (inadvertently and incorrectly).  The caller must remove
+          * any such components to the component list of the point descriptor, where they belong.
+          */
+        int cTermEnd;
+
+
+
         private final DelimitableCharSequence seqTerm = newDelimitableCharSequence( buffer );
-          // Used by `parseAny(int,AssociativeReference_.InferentialReferentIndicant_)`
+          // Used by `appendAny(int,AssociativeReference_.InferentialReferentIndicant_)`
           // to hold the character sequence of the last discovered term of the referent clause.
 
 

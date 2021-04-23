@@ -922,7 +922,7 @@ public class BrecciaCursor implements ReusableCursor {
                 cc.appendFlat( b, ++b );
                 if( b >= segmentEnd ) break cc; } // It may also comprise the whole descriptor.
             if( b /*unmoved*/== (b = appendAnyPostgap( b, cc ))) {
-                throw new IllegalStateException( "Postgap expected\n" + errorPointer(b).markedLine() ); }
+                throw new IllegalParseState( errorPointer(b), "Postgap expected" ); }
                 // Because no alternative is possible if `reifyPoint` has done its job.
             while( b /*moved*/!= (b = appendAnyTerm( b, cc ))
                 && b /*moved*/!= (b = appendAnyPostgap( b, cc ))); }
@@ -1007,8 +1007,7 @@ public class BrecciaCursor implements ReusableCursor {
                     else b = labelTermParser.throughAny( b );
                     int bLabelEnd = b;
                     if( bLabelEnd == bLabel ) { // This should have been impossible, given the foregoing.
-                        throw new IllegalStateException( "Division label expected\n"
-                          + errorPointer(b).markedLine() ); }
+                        throw new IllegalParseState( errorPointer(b), "Division label expected" ); }
                     boolean spacedAppenderFollows = false; /* Whether the label is directly followed
                       by space, which in turn is followed by comment appender. */
                     for( ;; ) {
@@ -1051,7 +1050,7 @@ public class BrecciaCursor implements ReusableCursor {
         int b = 0;
         assert b == fractumStart && segmentEnd > b;
         if( b /*unmoved*/== (b = appendAnyForegap( b, cc ))) {
-            throw new IllegalStateException( "Foregap expected\n" + errorPointer(b).markedLine() ); }
+            throw new IllegalParseState( errorPointer(b), "Foregap expected" ); }
             // Because no alternative is possible if `delimitSegment` has done its job.
         while( b /*moved*/!= (b = appendAnyTerm( b, cc ))
             && b /*moved*/!= (b = appendAnyPostgap( b, cc )));

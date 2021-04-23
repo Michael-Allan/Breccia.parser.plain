@@ -14,6 +14,7 @@ final class ResourceSpooler {
         final ArrayList<Spool<?>> ss = new ArrayList<>();
         ss.add( flatMarkup         = new Spool<>( () -> FlatMarkup.make( c )));
         ss.add( backslashedSpecial = new Spool<>( () -> FlatMarkup.make( c, "BackslashedSpecial" )));
+        ss.add( divisionLabel      = new Spool<>( () -> FlatMarkup.make( c, "DivisionLabel" )));
         ss.add( groupDelimiter     = new Spool<>( () -> FlatMarkup.make( c, "GroupDelimiter" )));
         ss.add( literalizer        = new Spool<>( () -> FlatMarkup.make( c, "Literalizer" )));
         ss.add( metacharacter      = new Spool<>( () -> FlatMarkup.make( c, "Metacharacter" )));
@@ -55,6 +56,12 @@ final class ResourceSpooler {
     /** Spool of comment-block lines.
       */
     final Spool<CommentBlock_.Line_> commentBlockLine;
+
+
+
+    /** Spool of flat-markup instances, each reflective of a division label.
+      */
+    final Spool<@TagName("DivisionLabel") FlatMarkup> divisionLabel;
 
 
 

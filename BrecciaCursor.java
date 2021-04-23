@@ -346,7 +346,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the comment appender, or `b` if there is none.
       */
     private int appendAnyCommentAppender( int b, final List<Markup> markup ) {
-        if( b < segmentEnd && buffer.get(b) == '\\'
+        if( b < segmentEnd  &&  buffer.get(b) == '\\'
               && commentaryHoldDetector.slashStartsDelimiter(b) ) {
             final CommentAppender_ appender = spooler.commentAppender.unwind();
             appender.text.delimit( b, b = compose( appender ));
@@ -369,6 +369,18 @@ public class BrecciaCursor implements ReusableCursor {
             b = appendDelimitedAt( b, markup, pattern );
             patterns.add( pattern ); }
         return b; }
+
+
+
+    /** Parses any sequence of divider drawing characters at buffer position `b`,
+      * adding it to the given markup list.
+      *
+      *     @return The end boundary of the term, or `b` if there is none.
+      */
+    private int appendAnyDrawing( final int b, final CoalescentMarkupList markup ) {
+        final int c = throughAnyDrawing( b );
+        if( c /*moved*/!= b ) markup.appendFlat( b, c );
+        return c; }
 
 
 
@@ -480,7 +492,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the term, or `b` if there is none.
       */
     private int appendAnyTerm( final int b, final CoalescentMarkupList markup ) {
-        final int c = throughAnyTerm( b );
+        final int c = termParser.throughAny( b );
         if( c /*moved*/!= b ) markup.appendFlat( b, c );
         return c; }
 
@@ -629,7 +641,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @throws MalformedMarkup If no term occurs at `b`.
       */
     private int appendTerm( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
-        markup.appendFlat( b, b = throughTerm(b) );
+        markup.appendFlat( b, b = termParser.through(b) );
         return b; }
 
 
@@ -831,7 +843,7 @@ public class BrecciaCursor implements ReusableCursor {
           // Referential command, from scratch
           // ───────────────────
             bReferentialCommand = b;
-            b = throughTerm( b );
+            b = termParser.through( b );
             xSeq.delimit( bReferentialCommand, b );
             referentialCommandKeyword = xSeq; }
         else { // A referrer clause is absent.
@@ -846,14 +858,14 @@ public class BrecciaCursor implements ReusableCursor {
             final int c;
             int d = b;
             if( d /*moved*/!= (d = c = throughAnyS( d ))
-             && d /*moved*/!= (d = throughAnyTerm( d ))) {
+             && d /*moved*/!= (d = termParser.throughAny( d ))) {
                 xSeq.delimit( c, d );
                 if( equalInContent("also",xSeq) || equalInContent("e.g.",xSeq) ) b = d; }}
         else if( equalInContent( "cf.", referentialCommandKeyword )) {
             final int c;
             int d = b;
             if( d /*moved*/!= (d = c = throughAnyS( d ))
-             && d /*moved*/!= (d = throughAnyTerm( d ))) {
+             && d /*moved*/!= (d = termParser.throughAny( d ))) {
                 xSeq.delimit( c, d );
                 if( equalInContent( "e.g.", xSeq )) b = d; }}
         rA.referentialCommand.text.delimit( bReferentialCommand, b );
@@ -969,11 +981,58 @@ public class BrecciaCursor implements ReusableCursor {
                 seg.perfectIndent.text.delimit( b, b += seg.indentWidth );
                 final CoalescentMarkupList cc = seg.components;
                 cc.clear();
+
+              // Perfect indent
+              // ──────────────
                 cc.add( seg.perfectIndent );
-                segmentEnd = seg.text.end(); // To the end of this divider segment, that is.
-                cc.appendFlat( b, b = throughAnyTerm( ++b/*after the initial drawing character*/ ));
-                while( b /*moved*/!= (b = appendAnyPostgap( b, cc ))
-                    && b /*moved*/!= (b = appendAnyTerm( b, cc )));
+                segmentEnd = seg.text.end(); // Setting temporarily to the end of this divider `seg`.
+
+              // Divider drawing sequence (initial)
+              // ────────────────────────
+                cc.appendFlat( b, b = throughAnyDrawing( ++b/*after the initial drawing character*/ ));
+                boolean lastWasDrawing = true;
+                for( ;; ) {
+                    for( ;; ) {
+                        if( b /*unmoved*/== (b = appendAnyPostgap( b, cc ))) break;
+                        lastWasDrawing = false;
+                        if( b /*unmoved*/== (b = appendAnyDrawing( b, cc ))) break;
+                        lastWasDrawing = true; }
+                    if( b >= segmentEnd ) break;
+
+                  // Division label
+                  // ──────────────
+                    final int bLabel = b;
+                    if( lastWasDrawing ) {
+                         b = labelTermParser.throughAnyContiguous( b ); }
+                    else b = labelTermParser.throughAny( b );
+                    int bLabelEnd = b;
+                    if( bLabelEnd == bLabel ) { // This should have been impossible, given the foregoing.
+                        throw new IllegalStateException( "Division label expected\n"
+                          + errorPointer(b).markedLine() ); }
+                    boolean spacedAppenderFollows = false; /* Whether the label is directly followed
+                      by space, which in turn is followed by comment appender. */
+                    for( ;; ) {
+                        final int bSpace = b;
+                        if( b /*unmoved*/== (b = throughAnyS( b ))) break;
+                        if( b >= segmentEnd ) break;
+                        if( buffer.get(b) == '\\' && commentaryHoldDetector.slashStartsDelimiter(b) ) {
+                            b = bSpace;
+                            spacedAppenderFollows = true;
+                            break; }
+                        if( b /*unmoved*/== (b = labelTermParser.throughAny( b ))) break;
+                        bLabelEnd = b; }
+                    final FlatMarkup label = spooler.divisionLabel.unwind();
+                    label.text.delimit( bLabel, bLabelEnd );
+                    cc.add( label );
+                    if( spacedAppenderFollows ) continue; /* Rather than trouble to append it (with any
+                      ensuing foregap) and then recover the loop invariant, simply let it be redetected
+                      and appended by `appendAnyPostgap` atop the loop. */
+                    if( b > bLabelEnd ) cc.appendFlat( bLabelEnd, b ); // Trailing plain whitespace.
+                    if( b >= segmentEnd ) break;
+
+                  // Divider drawing sequence, if any (continued atop the loop)
+                  // ────────────────────────
+                    if( b /*moved*/!= (b = appendAnyDrawing( b, cc ))) lastWasDrawing = true; }
                 assert b == segmentEnd: parseEndsWithSegment(b);
                 cc.flush(); }
             while( ++s < sN );
@@ -1297,6 +1356,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    private final LabelTermParser labelTermParser = new LabelTermParser();
+
+
+
     private final LineResolver lineResolver = new LineResolver();
 
 
@@ -1450,13 +1513,13 @@ public class BrecciaCursor implements ReusableCursor {
           throws MalformedMarkup {
         int b = bulletEnd + 1; // Past the known space character.
         b = throughAnyS( b ); // Past any others.
-        xSeq.delimit( b, b = throughTerm(b) );
+        xSeq.delimit( b, b = termParser.through(b) );
         final DelimitableCharSequence privately;
         final DelimitableCharSequence keyword;
         if( equalInContent( "privately", xSeq )) {
             privately = xSeq;
             b = throughS( b );
-            ySeq.delimit( b, b = throughTerm(b) );
+            ySeq.delimit( b, b = termParser.through(b) );
             keyword = ySeq; }
         else {
             privately = null;
@@ -1677,6 +1740,20 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    private final TermParser termParser = new TermParser();
+
+
+
+    /** Scans through any sequence of divider drawing characters at buffer position `b`.
+      *
+      *     @return The end boundary of the sequence, or `b` if there is none.
+      */
+    private int throughAnyDrawing( int b ) {
+        while( b < segmentEnd  &&  isDividerDrawing(buffer.get(b)) ) ++b;
+        return b; }
+
+
+
     /** Scans through any newline at buffer position `b`.
       *
       *     @return The end boundary of the newline, or `b` if there is none.
@@ -1710,30 +1787,6 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int throughAnyS( int b ) {
         while( b < segmentEnd  &&  buffer.get(b) == ' ' ) ++b;
-        return b; }
-
-
-
-    /** Scans through any term at buffer position `b`.  A term is (as the language defines it) a sequence
-      * of non-whitespace characters that does not comprise a sequence of backslashes ‘\’.
-      *
-      *     @return The end boundary of the term, or `b` if there is none.
-      */
-    private int throughAnyTerm( int b ) {
-        final int bOriginal;
-        final char chFirst; {
-            if( b >= segmentEnd ) return b;
-            chFirst = buffer.get( b );
-            if( isWhitespace( chFirst )) return b;
-            bOriginal = b++; }
-        if( chFirst == '\\' ) { // Then scan the remainder by the slow, exhaustive method. (edge case)
-            boolean comprisesBackslashes = true; // Thus far.
-            for(; b < segmentEnd; ++b ) {
-                final char ch = buffer.get( b );
-                if( isWhitespace( ch )) break;
-                if( ch != '\\' ) comprisesBackslashes = false; }
-            if( comprisesBackslashes ) return bOriginal; }
-        else while( b < segmentEnd && !isWhitespace(buffer.get(b)) ) ++b; // The fast way. (typical case)
         return b; }
 
 
@@ -1783,18 +1836,6 @@ public class BrecciaCursor implements ReusableCursor {
     private int throughS( int b ) throws MalformedMarkup {
         if( b /*moved*/!= (b = throughAnyS( b ))) return b;
         throw spaceExpected( errorPointer( b )); }
-
-
-
-    /** Scans through a term at buffer position `b`.  A term is (as the language defines it) a sequence
-      * of non-whitespace characters that does not comprise a sequence of backslashes ‘\’.
-      *
-      *     @return The end boundary of the term.
-      *     @throws MalformedMarkup If no term occurs at `b`.
-      */
-    private int throughTerm( int b ) throws MalformedMarkup {
-        if( b /*moved*/!= (b = throughAnyTerm( b ))) return b;
-        throw termExpected( errorPointer( b )); }
 
 
 
@@ -2392,6 +2433,46 @@ public class BrecciaCursor implements ReusableCursor {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
+    /** A parser of terms of division labels.
+      */
+    private final class LabelTermParser extends TermParser {
+
+
+        /** Scans through any term at buffer position `b`, given that `b` is known to succeed directly
+          * a divider drawing character.  If this is *not* known, then ensure the contrary is known
+          * and use instead `{@linkplain #throughAny(int) throughAny}`.
+          *
+          *     @return The end boundary of the term, or `b` if there is none.
+          */
+        int throughAnyContiguous( int b ) {
+            while( b < segmentEnd && isProper(buffer.get(b)) ) ++b; /* Whether the term comprises a
+              sequence of backslashes is immaterial, ∵ here it would not form a comment delimiter. */
+            return b; }
+
+
+
+       // ━━━  T e r m   P a r s e r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        protected @Override boolean isProper( final char ch ) {
+            return !isWhitespace(ch) && !isDividerDrawing(ch); }
+
+
+
+        protected @Override int resultOnBackslashes( final int bOriginal, final int bEnd,
+              final char chEnd ) {
+            return isDividerDrawing(chEnd)? bEnd: bOriginal; }
+
+
+
+        protected @Override MalformedMarkup termExpected( final int b ) {
+            return new MalformedMarkup( errorPointer(b), "Division-label term expected" ); }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
     private final class LineResolver {
 
 
@@ -2512,7 +2593,7 @@ public class BrecciaCursor implements ReusableCursor {
             final int bOriginal = b;
             final CoalescentArrayList cc = iIR.components;
             cc.clear();
-            seqTerm.delimit( b, throughTerm(b) );
+            seqTerm.delimit( b, termParser.through(b) );
             composition: {
 
               // i. Referrer similarity
@@ -2526,7 +2607,7 @@ public class BrecciaCursor implements ReusableCursor {
                     if( b /*unmoved*/== (b = appendAnyPostgap( b, cc ))) {
                         iIR.referentialForm = null; // No referential form (ii) is present.
                         break composition; }
-                    final int d = throughAnyTerm( b );
+                    final int d = termParser.throughAny( b );
                     if( d /*unmoved*/== b ) {
                         iIR.referentialForm = null; // No referential form (ii) is present.
                         break composition; }
@@ -2542,7 +2623,7 @@ public class BrecciaCursor implements ReusableCursor {
                     cc.add( iIR.referentialForm = form );
                     cTermEnd = cc.size();
                     if( b /*unmoved*/== (b = appendAnyPostgap( b, cc ))) break composition;
-                    final int d = throughAnyTerm( b );
+                    final int d = termParser.throughAny( b );
                     if( d /*unmoved*/== b ) break composition;
                     seqTerm.delimit( b, d ); }
                 else iIR.referentialForm = null; // None is present.
@@ -2588,7 +2669,7 @@ public class BrecciaCursor implements ReusableCursor {
           *     @return The end boundary of the resource indicant, or `b` if there is none.
           */
         private int appendAny( final int b, final ResourceIndicant_ iR ) throws MalformedMarkup {
-            int d = throughAnyTerm( b );
+            int d = termParser.throughAny( b );
             if( d /*moved*/!= b ) {
                 final CoalescentMarkupList cc = iR.components;
                 cc.clear();
@@ -2598,7 +2679,7 @@ public class BrecciaCursor implements ReusableCursor {
                     iR.isFractal = false;
                     cc.appendFlat( b, d );
                     bReference = appendPostgap( d, cc );
-                    d = throughTerm( bReference ); }
+                    d = termParser.through( bReference ); }
                 else { // Only a reference is present.
                     iR.isFractal = true;
                     bReference = b; }
@@ -2658,7 +2739,72 @@ public class BrecciaCursor implements ReusableCursor {
       * These are the parse states of {@linkplain Typestamp Typestamp} category (a).
       *
       */ @Documented @Retention(SOURCE) @Target({ FIELD, METHOD })
-    private static @interface Subst {}}
+    private static @interface Subst {}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    /** A parser of terms.  A term (as the language defines it) is a sequence of non-whitespace
+      * characters that does not comprise a sequence of backslashes ‘\’.
+      */
+    private class TermParser {
+
+
+        /** Tells whether `ch` is proper to a term.
+          */
+        protected boolean isProper( final char ch ) { return !isWhitespace( ch ); }
+
+
+
+        /** @param bEnd The end boundary of the backslash sequence comprising the would-be term.
+          * @param chEnd The character at `bEnd`, or the null character (00) if there is none.
+          */
+        protected int resultOnBackslashes( final int bOriginal, int bEnd, char chEnd ) {
+            return bOriginal; }
+
+
+
+        /** @see MalformedMarkup#pointer
+          */
+        protected MalformedMarkup termExpected( int b ) {
+            return MalformedMarkup.termExpected( errorPointer( b )); }
+
+
+
+        /** Scans through a term at buffer position `b`.
+          *
+          *     @return The end boundary of the term.
+          *     @throws MalformedMarkup If no term occurs at `b`.
+          */
+        final int through( int b ) throws MalformedMarkup {
+            if( b /*moved*/!= (b = throughAny( b ))) return b;
+            throw termExpected( b ); }
+
+
+
+        /** Scans through any term at buffer position `b`.
+          *
+          *     @return The end boundary of the term, or `b` if there is none.
+          */
+        final int throughAny( int b ) {
+            final int bOriginal;
+            final char chFirst; {
+                if( b >= segmentEnd ) return b;
+                chFirst = buffer.get( b );
+                if( !isProper( chFirst )) return b;
+                bOriginal = b++; }
+            if( chFirst == '\\' ) { // Then scan what remains by the exhaustive method. (edge case)
+                boolean comprisesBackslashes = true; // Thus far.
+                char ch = '\u0000';
+                for(; b < segmentEnd; ++b ) {
+                    ch = buffer.get( b );
+                    if( !isProper( ch )) break;
+                    if( ch != '\\' ) comprisesBackslashes = false; }
+                if( comprisesBackslashes ) return resultOnBackslashes( bOriginal, b, ch ); }
+            else while( b < segmentEnd && isProper(buffer.get(b)) ) ++b; // The easy way. (typical case)
+            return b; }}}
 
 
 

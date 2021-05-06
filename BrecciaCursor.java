@@ -1535,10 +1535,8 @@ public class BrecciaCursor implements ReusableCursor {
         p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );    // Proper to body fracta.
         p.bullet       .text.delimit( /*1*/bullet,       /*2*/bulletEnd );
         p.descriptor() .text.delimit( /*2*/bulletEnd,    /*3*/segmentEnd );
-        if( privately != null ) {
-            p.privatelyWhenPresent.delimitAs( privately );
-            p.modifierSet.add( CommandPoint.Modifier.privately ); }
-        else p.modifierSet.clear();
+        if( privately == null ) p.modifierSet.clear();
+        else p.modifierSet.add( CommandPoint.Modifier.privately );
         p.keyword.delimitAs( keyword );
 
       // Ready to commit

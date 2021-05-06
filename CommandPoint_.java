@@ -70,12 +70,6 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-    /** The `privately` modifier, if any.
-      */
-    final DelimitableCharSequence privatelyWhenPresent = newDelimitableCharSequence( cursor.buffer );
-
-
-
    // ━━━  F r a c t u m _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 

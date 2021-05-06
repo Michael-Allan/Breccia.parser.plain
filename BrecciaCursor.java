@@ -2528,7 +2528,7 @@ public class BrecciaCursor implements ReusableCursor {
           *       or subsequent postgap).
           *     @throws MalformedMarkup If no fractum indicant occurs at `b`.
           */
-        private int append( int b, final FractumIndicant_ iF, final String failureMessage )
+        int append( int b, final FractumIndicant_ iF, final String failureMessage )
               throws MalformedMarkup {
             final int bOriginal = b;
             final CoalescentArrayList cc = iF.components;
@@ -2585,8 +2585,8 @@ public class BrecciaCursor implements ReusableCursor {
           *     @return The end boundary of the last thing that was parsed (inferential referent indicant
           *       or subsequent postgap), or `b` if no inferential referent indicant is present.
           */
-        private int appendAny( int b, final AssociativeReference_.
-              InferentialReferentIndicant_ iIR ) throws MalformedMarkup {
+        int appendAny( int b, final AssociativeReference_. InferentialReferentIndicant_ iIR )
+              throws MalformedMarkup {
             final int bOriginal = b;
             final CoalescentArrayList cc = iIR.components;
             cc.clear();

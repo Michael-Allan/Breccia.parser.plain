@@ -2,6 +2,7 @@ package Breccia.parser.plain;
 
 import Breccia.parser.ResourceIndicant;
 import Breccia.parser.Markup;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -20,22 +21,24 @@ final class ResourceIndicant_ extends Markup_ implements ResourceIndicant {
 
 
 
-    boolean isFractal;
-
-
-
     final FlatMarkup reference;
+
+
+
+    final List<String> qualifiers = new ArrayList<>(
+      BrecciaCursor.resourceIndicantQualifiers_initialCapacity );
+        // Better would be `resourceIndicantQualifiers.size` were it fixed.
 
 
 
    // ━━━  F r a c t u m   I n d i c a n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override boolean isFractal() { return isFractal; }
-
-
-
     public @Override Markup reference() { return reference; }
+
+
+
+    public final @Override List<String> qualifiers() { return qualifiers; }
 
 
 

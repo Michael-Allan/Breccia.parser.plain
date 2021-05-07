@@ -1696,6 +1696,19 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** The recognized qualifiers of resource indicants.  Parser extensions may modify this list
+      * at any time prior to parsing.
+      */
+    protected final ArrayList<String> resourceIndicantQualifiers =     // A list as opposed to a set
+      new ArrayList<>( resourceIndicantQualifiers_initialCapacity ); { // for sake of fast iteration.
+        resourceIndicantQualifiers.add( "non-fractal" ); }
+
+
+
+    final static int resourceIndicantQualifiers_initialCapacity = 4;
+
+
+
     /** The end boundary in the buffer of the present fractal segment, which is the position
       * after its final character.  This is zero in case of an empty markup source
       * or headless file fractum, the only cases of a zero length fractal segment.
@@ -2558,7 +2571,8 @@ public class BrecciaCursor implements ReusableCursor {
                     if( pN > 0 ) { // Then that pattern series ended with a containment separator.
                         throw new MalformedMarkup( errorPointer(b), "Resource indicant expected" ); }
                     // No fractum indicant is present, at all.
-                    if( failureMessage == null ) throw new IllegalStateException(); // Impossible.
+                    if( failureMessage == null ) throw new IllegalStateException();
+                      // Concordant with contract.
                     throw new MalformedMarkup( errorPointer(b), failureMessage ); }
                 cc.add( iF.resourceIndicant = iR );
 
@@ -2660,29 +2674,32 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** Parses any resource indicant at buffer position `b`,
+        /** Parses any resource indicant at buffer position `a`,
           * adding its components to `iR.components`.
           *
-          *     @return The end boundary of the resource indicant, or `b` if there is none.
+          *     @return The end boundary of the resource indicant, or `a` if there is none.
           */
-        private int appendAny( final int b, final ResourceIndicant_ iR ) throws MalformedMarkup {
-            int d = termParser.throughAny( b );
-            if( d /*moved*/!= b ) {
+        private int appendAny( final int a, final ResourceIndicant_ iR ) throws MalformedMarkup {
+            int d = termParser.throughAny( a ); // End bound of term.
+            if( d /*moved*/!= a ) {
+                int b = a; // Start bound of term.
                 final CoalescentMarkupList cc = iR.components;
                 cc.clear();
-                xSeq.delimit( b, d );
-                final int bReference;
-                if( equalInContent( "non-fractal", xSeq )) {
-                    iR.isFractal = false;
+                iR.qualifiers.clear();
+                qualifiers: for( String qualifier;; ) {
+                    xSeq.delimit( b, d );
+                    for( int q = resourceIndicantQualifiers.size();; ) {
+                        --q;
+                        qualifier = resourceIndicantQualifiers.get( q );
+                        if( equalInContent( xSeq, qualifier )) break;
+                        if( q == 0 ) break qualifiers; }
+                    iR.qualifiers.add( qualifier );
                     cc.appendFlat( b, d );
-                    bReference = appendPostgap( d, cc );
-                    d = termParser.through( bReference ); }
-                else { // Only a reference is present.
-                    iR.isFractal = true;
-                    bReference = b; }
-                iR.reference.text.delimit( bReference, d );
+                    b = appendPostgap( d, cc );
+                    d = termParser.through( b ); }
+                iR.reference.text.delimit( b, d );
                 cc.add( iR.reference );
-                iR.text.delimit( b, d );
+                iR.text.delimit( a, d );
                 cc.flush(); }
             return d; }
 

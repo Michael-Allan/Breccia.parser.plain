@@ -19,6 +19,12 @@ Installation instructions for the plain Breccia parser
             : see http://reluk.ca/project/building/Makeshift/bin/build.brec
             >+ build Breccia/parser/plain class-files
 
+    rebuild script
+        - If you expect to modify the source code of dependencies (direct or indirect),
+          then a rebuild script may be useful.
+            : re `dependencies` see `^^.\+ Ensure the following projects are installed`
+            : re `rebuild script` e.g. http://reluk.ca/project/Breccia/parser/plain/build-all
+
     Web publication
         • Breccian files
             : join @ http://reluk.ca/project/Breccia/project_installation.brec

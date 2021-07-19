@@ -44,6 +44,7 @@ public class BrecciaCursor implements ReusableCursor {
             "join",
             "private",
             "re",
+            "sc.",
             "see",
             "viz." };
         final CommandPoint_<?>[] commandPoints = { // Each at the same index as its keyword above.
@@ -55,6 +56,7 @@ public class BrecciaCursor implements ReusableCursor {
             basicAssociativeReference,   // ‘join’
             basicPrivatizer,             // ‘private’
             basicAssociativeReference,   // ‘re’
+            basicAssociativeReference,   // ‘sc.’
             basicAssociativeReference,   // ‘see’
             basicAssociativeReference }; // ‘viz.’
         this.commandPointKeywords = commandPointKeywords;

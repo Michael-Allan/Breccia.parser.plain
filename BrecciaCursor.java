@@ -94,9 +94,7 @@ public class BrecciaCursor implements ReusableCursor {
     public final @Override @NarrowNot AssociativeReference asAssociativeReference()
           throws MalformedMarkup {
         if( state != associativeReference ) return null;
-        if( !associativeReference.isComposed ) {
-            composeAssociativeReference();
-            associativeReference.isComposed = true; }
+        associativeReference.ensureComposition();
         return associativeReference; }
 
 
@@ -345,15 +343,45 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses any comment appender, the delimiter of which (a backslash sequence)
+    /** Parses any appendage clause the delimiter of which (‘:’) would begin at buffer position `b`,
+      * adding it to the given markup list and assigning it to `p.appendageClause`.
+      * Already the markup before `b` is known to be well formed for the purpose.
+      *
+      * <p>If no appendage clause is found, this method assigns null to `p.appendageClause`.</p>
+      *
+      *     @return The end boundary of the appendage clause, or `b` if none was found.
+      */
+    private int appendAnyAppendageClause( int b, final List<Markup> markup, final CommandPoint_<?> p )
+          throws MalformedMarkup {
+        if( b < segmentEnd && buffer.get(b) == ':' ) {
+            final CommandPoint_<?>.AppendageClause_ cA = p.appendageClauseWhenPresent;
+            final int a = b;
+            cA.delimiter.text.delimit( a, ++b );
+            final CoalescentMarkupList cc = cA.appendage.components;
+            cc.clear();
+            b = appendPostgap( b, cc );
+            b = appendTerm( b, cc );
+            while( b /*moved*/!= (b = appendAnyPostgap( b, cc ))
+                && b /*moved*/!= (b = appendAnyTerm( b, cc )));
+            cA.appendage.text.delimit( a + 1, b );
+            cc.flush();
+            cA.text.delimit( a, b );
+            markup.add( cA );
+            p.appendageClause = cA; }
+        else p.appendageClause = null;
+        return b; }
+
+
+
+    /** Parses any comment appender the delimiter of which (a backslash sequence)
       * would begin at buffer position `b`, adding it to the given markup list.
       * Already the markup before `b` is known to be well formed for the purpose.
       *
-      *     @return The end boundary of the comment appender, or `b` if there is none.
+      *     @return The end boundary of the comment appender, or `b` if none was found.
       */
     private int appendAnyCommentAppender( int b, final List<Markup> markup ) {
-        if( b < segmentEnd  &&  buffer.get(b) == '\\'
-              && commentaryHoldDetector.slashStartsDelimiter(b) ) {
+        if( b < segmentEnd  &&  buffer.get(b) == '\\'  &&
+              commentaryHoldDetector.slashStartsDelimiter(b) ) {
             final CommentAppender_ appender = spooler.commentAppender.unwind();
             appender.text.delimit( b, b = compose( appender ));
             markup.add( appender ); }
@@ -366,7 +394,7 @@ public class BrecciaCursor implements ReusableCursor {
       * Alone any delimiter ‘`’ at `b` will commit this method to parsing a delimited pattern in full,
       * failing which it will throw a malformed-markup exception.
       *
-      *     @return The end boundary of the delimited pattern, or `b` if there is none.
+      *     @return The end boundary of the delimited pattern, or `b` if none was found.
       */
     private int appendAnyDelimited( int b, final List<Markup> markup, final List<Pattern> patterns )
           throws MalformedMarkup {
@@ -381,7 +409,7 @@ public class BrecciaCursor implements ReusableCursor {
     /** Parses any sequence of divider drawing characters at buffer position `b`,
       * adding it to the given markup list.
       *
-      *     @return The end boundary of the term, or `b` if there is none.
+      *     @return The end boundary of the term, or `b` if none was found.
       */
     private int appendAnyDrawing( final int b, final CoalescentMarkupList markup ) {
         final int c = throughAnyDrawing( b );
@@ -394,7 +422,7 @@ public class BrecciaCursor implements ReusableCursor {
       * to the given markup list.  Already `b` is known to bound either the end
       * of the fractal segment (edge case) or the start of a line within it.
       *
-      *     @return The end boundary of the foregap, or `b` if there is none.
+      *     @return The end boundary of the foregap, or `b` if none was found.
       */
     private int appendAnyForegap( int b, final CoalescentMarkupList markup ) {
         if( b >= segmentEnd ) return b; /* As required, either `b` bounds the segment end (left),
@@ -458,7 +486,7 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** Parses any sequence of newlines at buffer position `b`, adding it to the given markup list.
       *
-      *     @return The end boundary of the sequence, or `b` if there is none.
+      *     @return The end boundary of the sequence, or `b` if none was found.
       */
     private int appendAnyNewlines( final int b, final CoalescentMarkupList markup ) {
         final int c = throughAnyNewlines( b );
@@ -470,7 +498,7 @@ public class BrecciaCursor implements ReusableCursor {
     /** Parses any postgap at buffer position `b`,
       * adding each of its components to the given markup list.
       *
-      *     @return The end boundary of the postgap, or `b` if there is none.
+      *     @return The end boundary of the postgap, or `b` if none was found.
       */
     private int appendAnyPostgap( int b, final CoalescentMarkupList markup ) {
         if( b /*moved*/!= (b = appendAnyS( b, markup ))) {
@@ -484,7 +512,7 @@ public class BrecciaCursor implements ReusableCursor {
     /** Parses any sequence at buffer position `b` of plain space characters,
       * namely ‘S’ in the language definition, adding it to the given markup list.
       *
-      *     @return The end boundary of the sequence, or `b` if there is none.
+      *     @return The end boundary of the sequence, or `b` if none was found.
       */
     private int appendAnyS( final int b, final CoalescentMarkupList markup ) {
         final int c = throughAnyS( b );
@@ -495,7 +523,7 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** Parses any term at buffer position `b`, adding it to the given markup list.
       *
-      *     @return The end boundary of the term, or `b` if there is none.
+      *     @return The end boundary of the term, or `b` if none was found.
       */
     private int appendAnyTerm( final int b, final CoalescentMarkupList markup ) {
         final int c = termParser.throughAny( b );
@@ -527,7 +555,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int appendDelimitedAt( int b, final List<Markup> markup, final Pattern pattern )
           throws MalformedMarkup {
-        assert b < segmentEnd  &&  buffer.get(b) == '`'; {
+        assert b < segmentEnd && buffer.get(b) == '`'; {
             final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
             delimiter.text.delimit( b, ++b );
             markup.add( delimiter ); }
@@ -567,7 +595,7 @@ public class BrecciaCursor implements ReusableCursor {
           // ──────────────
             if( ch == '^' ) {
                 final int bStart = b++;
-                if( b < segmentEnd  &&  buffer.get(b) == '^' ) { // A second ‘^’, so making ‘^^’.
+                if( b < segmentEnd && buffer.get(b) == '^' ) { // A second ‘^’, so making ‘^^’.
                     final FlatMarkup indent = spooler.perfectIndent.unwind();
                     indent.text.delimit( bStart, ++b );
                     cc.add( indent ); }
@@ -586,9 +614,9 @@ public class BrecciaCursor implements ReusableCursor {
           // ────────────────
             if( ch == '(' ) {
                 final int bStart = b++;
-                if( b < segmentEnd  &&  buffer.get(b) == '?' ) {
+                if( b < segmentEnd && buffer.get(b) == '?' ) {
                     final int c = b + 1;
-                    if( c < segmentEnd  &&  buffer.get(c) == ':' ) b = c + 1;}
+                    if( c < segmentEnd && buffer.get(c) == ':' ) b = c + 1;}
                 final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
                 delimiter.text.delimit( bStart, b );
                 cc.add( delimiter );
@@ -818,7 +846,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** @see AssociativeReference_#isComposed
+    /** @see AssociativeReference_#compose()
       */
     final void composeAssociativeReference() throws MalformedMarkup {
         final AssociativeReference_ rA = associativeReference;
@@ -909,16 +937,16 @@ public class BrecciaCursor implements ReusableCursor {
                       by any further coalescence.  There will be none, however, as it is now complete. */
             else b = appendAnyPostgap( b, cc ); }
         else rA.referentClause = null;
-        if( b < segmentEnd ) throw unexpectedTerm( errorPointer( b ));
-        else assert b == segmentEnd;
+        b = appendAnyAppendageClause( b, cc, rA );
+        assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush(); }
 
 
 
-    /** @see NonCommandPoint.Descriptor#isComposed
+    /** @see NonCommandPoint#compose()
       */
     final void composeDescriptor( final NonCommandPoint p ) throws MalformedMarkup {
-        assert !p.descriptor.isComposed;
+        assert !p.isComposed;
         final CoalescentMarkupList cc = p.descriptor.components;
         cc.clear();
         int b = p.bullet.text.end();
@@ -937,13 +965,12 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** @see PlainCommandPoint.Descriptor#isComposed
+    /** @see PlainCommandPoint#compose()
       */
     final void composeDescriptor( final PlainCommandPoint_ p ) throws MalformedMarkup {
-        // This method omits to encapsulate the command as such, pending a use case that would justify
-        // the effort, the main part of which would lie in discovering the end boundary of the command
-        // *exclusive of any trailing postgap*.
-        assert !p.descriptor.isComposed;
+        // This method parses as such neither the command nor any appendage clause,
+        // as they would be difficult to parse without knowing the command form.
+        assert !p.isComposed;
         final CoalescentMarkupList cc = p.descriptor.components;
         cc.clear();
         int b;
@@ -951,22 +978,23 @@ public class BrecciaCursor implements ReusableCursor {
         while( b /*moved*/!= (b = appendAnyPostgap( b, cc ))
             && b /*moved*/!= (b = appendAnyTerm( b, cc )));
         assert b == segmentEnd: parseEndsWithSegment(b);
-        cc.flush(); }
+        cc.flush();
+        assert p.appendageClause == null; } // Never parsed, as explained above.
 
 
 
-    /** @see SimpleCommandPoint.Descriptor#isComposed
+    /** @see SimpleCommandPoint#compose()
       */
     final void composeDescriptor( final SimpleCommandPoint<?> p ) throws MalformedMarkup {
-        assert !p.descriptor.isComposed;
+        assert !p.isComposed;
         final CoalescentMarkupList cc = p.descriptor.components;
         cc.clear();
-        final FlatMarkup command = p.descriptor.command;
+        final FlatMarkup command = p.command;
         cc.appendFlat( p.bullet.text.end(), command.text.start() );
         cc.add( command );
-        final int b = appendAnyPostgap( command.text.end(), cc );
-        if( b < segmentEnd ) throw unexpectedTerm( errorPointer( b ));
-        else assert b == segmentEnd;
+        int b = appendAnyPostgap( command.text.end(), cc );
+        b = appendAnyAppendageClause( b, cc, p );
+        assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush(); }
 
 
@@ -1535,7 +1563,7 @@ public class BrecciaCursor implements ReusableCursor {
         b = binarySearch( commandPointKeywords, keyword, CharSequence::compare );
         final CommandPoint_<?> p = b >= 0? commandPoints[b] : basicPlainCommandPoint;
 
-      // Therein delimit the components proper to all types of command point, and already parsed
+      // Delimit therein the components already parsed, for they are proper to all types of command point
       // ──────────────────────────────
         p.text.delimit(                    fractumStart,      segmentEnd ); // Proper to fracta.
         p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );    // Proper to body fracta.
@@ -1570,7 +1598,7 @@ public class BrecciaCursor implements ReusableCursor {
             else if( bulletEnd - bullet/*length*/ == 1 ) {
                 if( chLast == '/' ) p = basicAsidePoint;
                 else p = basicPlainPoint; }
-            else if( chLast == '!'  &&  buffer.get(bulletEnd-2) == '!' ) p = basicAlarmPoint;
+            else if( chLast == '!' && buffer.get(bulletEnd-2) == '!' ) p = basicAlarmPoint;
             else p = basicPlainPoint; }
         else p = basicPlainPoint;
 
@@ -1583,7 +1611,6 @@ public class BrecciaCursor implements ReusableCursor {
         if( bulletEnd < segmentEnd ) {
             final var d = p.descriptorWhenPresent;
             d          .text.delimit( /*2*/bulletEnd,    /*3*/segmentEnd );
-            d.isComposed = false; // Pending demand.
             cc.end( 3 ); // Extended to include the descriptor.
             p.descriptor = d; }
         else { // A descriptorless point at file end.
@@ -1725,7 +1752,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     /** The buffer position of the first non-space character of the present fractal segment’s
-      * linear-order successor, or the buffer limit if there is none.
+      * linear-order successor, or the buffer limit failing a successor.
       */
     private @Subst int segmentEndIndicant;
 
@@ -1762,17 +1789,17 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** Scans through any sequence of divider drawing characters at buffer position `b`.
       *
-      *     @return The end boundary of the sequence, or `b` if there is none.
+      *     @return The end boundary of the sequence, or `b` if none was found.
       */
     private int throughAnyDrawing( int b ) {
-        while( b < segmentEnd  &&  isDividerDrawing(buffer.get(b)) ) ++b;
+        while( b < segmentEnd && isDividerDrawing(buffer.get(b)) ) ++b;
         return b; }
 
 
 
     /** Scans through any newline at buffer position `b`.
       *
-      *     @return The end boundary of the newline, or `b` if there is none.
+      *     @return The end boundary of the newline, or `b` if none was found.
       */
     private int throughAnyNewline( int b ) {
         for(; b < segmentEnd; ++b ) {
@@ -1787,10 +1814,10 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** Scans through any sequence of newlines at buffer position `b`.
       *
-      *     @return The end boundary of the sequence, or `b` if there is none.
+      *     @return The end boundary of the sequence, or `b` if none was found.
       */
     private int throughAnyNewlines( int b ) {
-        while( b < segmentEnd  &&  impliesNewline(buffer.get(b)) ) ++b; /* This implies a sequence of
+        while( b < segmentEnd && impliesNewline(buffer.get(b)) ) ++b; /* This implies a sequence of
           well-formed newlines only because already `delimitSegment` has tested for malformed ones. */
         return b; }
 
@@ -1799,10 +1826,10 @@ public class BrecciaCursor implements ReusableCursor {
     /** Scans through any sequence at buffer position `b` of plain space characters,
       * namely ‘S’ in the language definition.
       *
-      *     @return The end boundary of the sequence, or `b` if there is none.
+      *     @return The end boundary of the sequence, or `b` if none was found.
       */
     private int throughAnyS( int b ) {
-        while( b < segmentEnd  &&  buffer.get(b) == ' ' ) ++b;
+        while( b < segmentEnd && buffer.get(b) == ' ' ) ++b;
         return b; }
 
 
@@ -1816,7 +1843,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @throws MalformedMarkup If no such qualifier occurs at `b`.
       */
     private int throughBackslashedSpecialNQualifier( int b ) throws MalformedMarkup {
-        if( b < segmentEnd  &&  buffer.get(b) == '{' ) ++b;
+        if( b < segmentEnd && buffer.get(b) == '{' ) ++b;
         else throw new MalformedMarkup( errorPointer(b), "Curly bracket ‘{’ expected" );
         final int bContent = b; // Subsequent to the opening ‘{’ delimiter.
         boolean inNumeric = false; // Whether the content begins ‘U+’, denoting a numbered qualifier.
@@ -2110,7 +2137,7 @@ public class BrecciaCursor implements ReusableCursor {
           * through `b` is known to be well formed for the purpose.
           *
           *     @param bLine Buffer position of the start of the line wherein `b` lies.
-          *     @return The end boundary of the block, or `b` if there is none.
+          *     @return The end boundary of the block, or `b` if none was found.
           */
         abstract int appendIfDelimiter( int b, int bLine, List<Markup> markup );
 
@@ -2458,7 +2485,7 @@ public class BrecciaCursor implements ReusableCursor {
           * a divider drawing character.  If this is *not* known, then ensure the contrary is known
           * and use instead `{@linkplain #throughAny(int) throughAny}`.
           *
-          *     @return The end boundary of the term, or `b` if there is none.
+          *     @return The end boundary of the term, or `b` if none was found.
           */
         int throughAnyContiguous( int b ) {
             while( b < segmentEnd && isProper(buffer.get(b)) ) ++b; /* Whether the term comprises a
@@ -2683,7 +2710,7 @@ public class BrecciaCursor implements ReusableCursor {
         /** Parses any resource indicant at buffer position `a`,
           * adding its components to `iR.components`.
           *
-          *     @return The end boundary of the resource indicant, or `a` if there is none.
+          *     @return The end boundary of the resource indicant, or `a` if none was found.
           */
         private int appendAny( final int a, final ResourceIndicant_ iR ) throws MalformedMarkup {
             int d = termParser.throughAny( a ); // End bound of term.
@@ -2806,7 +2833,7 @@ public class BrecciaCursor implements ReusableCursor {
 
         /** Scans through any term at buffer position `b`.
           *
-          *     @return The end boundary of the term, or `b` if there is none.
+          *     @return The end boundary of the term, or `b` if none was found.
           */
         final int throughAny( int b ) {
             final int bOriginal;

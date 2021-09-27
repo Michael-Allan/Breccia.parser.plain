@@ -13,27 +13,24 @@ import static Java.CharBuffers.newDelimitableCharSequence;
 public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> implements CommandPoint {
 
 
-    /** Partly makes an instance for `initialize` to finish.
-      */
-    CommandPoint_( final C cursor ) { super( cursor ); }
+    CommandPoint_( final C cursor ) { this( cursor, newDelimitableCharSequence( cursor.buffer )); }
 
 
 
-    /** Initializes with a newly made keyword.
-      */
-    final void initialize() { initialize( newDelimitableCharSequence( cursor.buffer )); }
-
-
-
-    /** @see #keyword
-      */
-    final void initialize( final DelimitableCharSequence keyword ) {
+    CommandPoint_( final C cursor, final DelimitableCharSequence keyword ) {
+        super( cursor );
         this.keyword = keyword;
-        components = List.of( perfectIndent, bullet, descriptor() ); }
+        components = List.of( perfectIndent, bullet, descriptor ); }
 
 
 
    // ━━━  C o m m a n d   P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public final @Override AppendageClause appendageClause() throws MalformedMarkup {
+        ensureComposition();
+        return appendageClause; }
+
 
 
     public final @Override Set<Modifier> modifierSet() { return modifierSet; }
@@ -47,22 +44,35 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
+   // ━━━  P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public final @Override Descriptor descriptor() { return descriptor; }
+
+
+
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
 
 
-    /** Do not modify after `initialize`.
-      *
-      *     @see BrecciaCursor#commandPointKeywords
+    AppendageClause appendageClause;
+
+
+
+    final AppendageClause_ appendageClauseWhenPresent = new AppendageClause_();
+
+
+
+    private final List<Markup> components;;
+
+
+
+    final Descriptor descriptor = new Descriptor();
+
+
+
+    /** @see BrecciaCursor#commandPointKeywords
       */
-    private List<Markup> components;
-
-
-
-    /** Do not modify after `initialize`.
-      *
-      *     @see BrecciaCursor#commandPointKeywords
-      */
-    DelimitableCharSequence keyword;
+    final DelimitableCharSequence keyword;
 
 
 
@@ -76,6 +86,105 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
     protected @Override void commit() {
         super.commit();
         cursor.commandPoint( this ); }
+
+
+
+   // ━━━  P o i n t _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    /** Late composition.  Do not call this method directly.  It is called by `ensureComposition` alone,
+      * which in turn is called by the access methods of the parts of this command point that allow
+      * for late composition, namely `appendageClause`, `descriptor.components` and any others
+      * specified by subclasses, q.v.
+      *
+      *     @see #ensureComposition()
+      *     @see #appendageClause()
+      *     @see Descriptor#components()
+      */
+    abstract @Override void compose() throws MalformedMarkup;
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    final class Appendage extends Markup_ {
+
+
+        Appendage() { super( cursor.buffer ); }
+
+
+
+        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
+
+
+
+       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override final int column() { return cursor.bufferColumn( text.start() ); }
+
+
+
+        public @Override final List<Markup> components() { return components; }
+
+
+
+        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+
+
+
+        public @Override final String tagName() { return "Appendage"; }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    final class AppendageClause_ extends Markup_ implements AppendageClause {
+
+
+        AppendageClause_() {
+            super( cursor.buffer );
+            components = List.of( delimiter, appendage ); }
+
+
+
+        final Appendage appendage = new Appendage();
+
+
+
+        private final List<Markup> components;
+
+
+
+        final FlatMarkup delimiter = FlatMarkup.make( cursor, "Delimiter");
+
+
+
+       // ━━━  A p p e n d a g e   C l a u s e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override Markup appendage() { return appendage; }
+
+
+
+        public @Override Markup delimiter() { return delimiter; }
+
+
+
+       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override final int column() { return cursor.bufferColumn( text.start() ); }
+
+
+
+        public @Override final List<Markup> components() { return components; }
+
+
+
+        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
 
 
 

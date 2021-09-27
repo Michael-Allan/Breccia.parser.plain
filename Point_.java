@@ -2,6 +2,7 @@ package Breccia.parser.plain;
 
 import Breccia.parser.Markup;
 import Breccia.parser.Point;
+import java.util.List;
 
 
 /** @param <C> The type of cursor.
@@ -23,11 +24,48 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
+    /** Late composition.  Do not call this method directly.  It is called by `ensureComposition` alone,
+      * which in turn is called by the access methods of any parts of this point that allow for
+      * late composition, namely `descriptor.components` (if a descriptor is present)
+      * and any others specified by subclasses, q.v.
+      *
+      *     @see #ensureComposition()
+      *     @see Descriptor#components()
+      */
+    abstract void compose() throws MalformedMarkup;
+
+
+
+    /** Assurance of composition.  This method is called by the access methods of any parts of this point
+      * that allow for efficient parsing through late composition, viz. subsequent to `commit`.
+      * See `compose` for the specific access methods.
+      *
+      *     @see #commit()
+      *     @see #compose()
+      */
+    final void ensureComposition() throws MalformedMarkup {
+        if( !isComposed ) {
+            compose();
+            isComposed = true; }}
+
+
+
+    /** Control flag for late composition.  This flag is cleared by this point’s `commit` method,
+      * set by its `ensureComposition` method.
+      *
+      *     @see #commit()
+      *     @see #ensureComposition()
+      */
+    boolean isComposed;
+
+
+
    // ━━━  F r a c t u m _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     @Override void commit() {
         super.commit();
+        isComposed = false; // Pending demand.
         cursor.point( this ); }
 
 
@@ -46,10 +84,10 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    abstract class Descriptor extends Markup_ {
+    final class Descriptor extends Markup_ {
 
 
-        Descriptor() { super( Point_.this ); }
+        Descriptor() { super( cursor.buffer ); }
 
 
 
@@ -58,6 +96,13 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public final @Override List<Markup> components() throws MalformedMarkup {
+            ensureComposition();
+            assert components.isFlush();
+            return components; }
+
 
 
         public @Override final int column() {

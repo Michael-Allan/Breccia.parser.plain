@@ -7,14 +7,14 @@ import java.util.List;
 
 /** Non-composite markup; markup that has no parsed components.
   */
-abstract class FlatMarkup extends Markup_ {
+public abstract class FlatMarkup extends Markup_ {
 
 
-    FlatMarkup( CharBuffer b ) { super( b ); }
+    public FlatMarkup( CharBuffer b ) { super( b ); }
 
 
 
-    FlatMarkup( Fractum_<?> f ) { super( f ); }
+    public FlatMarkup( Fractum_<?> f ) { super( f ); }
 
 
 
@@ -22,7 +22,7 @@ abstract class FlatMarkup extends Markup_ {
       *
       *     @see #tagName()
       */
-    static FlatMarkup make( BrecciaCursor cursor ) { return make( cursor, "Markup" ); }
+    public static FlatMarkup make( BrecciaCursor cursor ) { return make( cursor, "Markup" ); }
       // Neither `Markup_` nor `FlatMarkup` could implement a default `tagName` (e.g. ‘Markup’) without
       // inadvertently overriding the default implementations of the `Breccia.parser` interfaces.
 
@@ -32,7 +32,7 @@ abstract class FlatMarkup extends Markup_ {
       *
       *     @see #tagName()
       */
-    static FlatMarkup make( final BrecciaCursor cursor, final String tagName ) {
+    public static FlatMarkup make( final BrecciaCursor cursor, final String tagName ) {
         return new FlatMarkup( cursor.buffer ) {
 
             public @Override int column() { return cursor.bufferColumn( text.start() ); }

@@ -33,15 +33,9 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-    /** Late composition control flag.  Cleared on committing a non-empty configuration of this fractum
-      * through its `commit` method.  Set on late composition as triggered by a call to `components`.
-      *
-      *     @see #commit()
-      *     @see #components()
+    /** Control flag for late composition, subsequent to `commit`, for sake of efficient parsing.
       */
-    boolean isComposed; /* Justification of late parsing and composition: Use cases exist which care
-      nothing for file fracta but their reification, and these may benefit from the time saved
-      by leaving the components unparsed, as they contribute nothing to that reification. */
+    boolean isComposed;
 
 
 

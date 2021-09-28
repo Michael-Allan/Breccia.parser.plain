@@ -366,8 +366,7 @@ public class BrecciaCursor implements ReusableCursor {
             cA.appendage.text.delimit( a + 1, b );
             cc.flush();
             cA.text.delimit( a, b );
-            markup.add( cA );
-            p.appendageClause = cA; }
+            markup.add( p.appendageClause = cA ); }
         else p.appendageClause = null;
         return b; }
 
@@ -852,10 +851,17 @@ public class BrecciaCursor implements ReusableCursor {
         final AssociativeReference_ rA = associativeReference;
         assert !rA.isComposed;
         final DelimitableCharSequence keyword = rA.keyword;
-        final CoalescentMarkupList cc = rA.descriptor.components;
-        cc.clear();
+        final CoalescentMarkupList dcc = rA.descriptor.components;
+        dcc.clear();
         int b;
-        cc.appendFlat( rA.bullet.text.end(), b = keyword.start() );
+        final int bKeyword;
+        dcc.appendFlat( rA.bullet.text.end(), b = bKeyword = keyword.start() );
+
+      // Command
+      // ───────
+        dcc.add( rA.command ); /* Added early because the postgap that follows it (if any)
+          might be added as a side effect of parsing the referent clause, q.v. below. */
+        final CoalescentMarkupList cc = rA.command.components;
         final int bReferentialCommand;
         final DelimitableCharSequence referentialCommandKeyword;
         if( equalInContent( "re", keyword )) {
@@ -865,11 +871,10 @@ public class BrecciaCursor implements ReusableCursor {
             final var cR = rA.referrerClauseWhenPresent;
             final CoalescentMarkupList cRcc = cR.components;
             cRcc.clear();
-            final int a = b;
             cRcc.appendFlat( b, b = keyword.end() );
             b = appendPostgap( b, cRcc );
             b = appendDelimited( b, cRcc, cR.pattern );
-            cR.text.delimit( a, b );
+            cR.text.delimit( bKeyword, b );
             cRcc.flush();
             cc.add( rA.referrerClause = cR );
             b = appendPostgap( b, cc );
@@ -930,16 +935,21 @@ public class BrecciaCursor implements ReusableCursor {
                 final int cTermEnd = cRIParser.cTermEnd;
                 final int cN = cRIcc.size();
                 if( cTermEnd < cN ) { /* Then components of a final postgap were inadvertently
-                      appended to `cRIcc`.  Move them to `cc`, where they belong: */
+                      appended to `cRIcc`.  Move them to `dcc`, where they belong: */
                     int c = cTermEnd;
-                    do { cc.add( cRIcc.get( c++ )); } while( c < cN );
+                    do { dcc.add( cRIcc.get( c++ )); } while( c < cN );
                     cRIcc.removeRange( cTermEnd, cN ); }} /* With this removal, `cRIcc` would be broken
                       by any further coalescence.  There will be none, however, as it is now complete. */
-            else b = appendAnyPostgap( b, cc ); }
+            else b = appendAnyPostgap( b, dcc ); }
         else rA.referentClause = null;
-        b = appendAnyAppendageClause( b, cc, rA );
+        rA.command.text.delimit( bKeyword, b );
+        cc.flush();
+
+      // Appendage clause
+      // ────────────────
+        b = appendAnyAppendageClause( b, dcc, rA );
         assert b == segmentEnd: parseEndsWithSegment(b);
-        cc.flush(); }
+        dcc.flush(); }
 
 
 
@@ -989,10 +999,18 @@ public class BrecciaCursor implements ReusableCursor {
         assert !p.isComposed;
         final CoalescentMarkupList cc = p.descriptor.components;
         cc.clear();
-        final FlatMarkup command = p.command;
-        cc.appendFlat( p.bullet.text.end(), command.text.start() );
-        cc.add( command );
-        int b = appendAnyPostgap( command.text.end(), cc );
+        final DelimitableCharSequence keyword = p.keyword;
+        cc.appendFlat( p.bullet.text.end(), keyword.start() );
+
+      // Command
+      // ───────
+        assert p.command.components.isEmpty(); // The command is simple, its text being identical to
+        assert p.command.text == keyword;     // the keyword already delimited by `reifyCommandPoint`.
+        cc.add( p.command );
+        int b = appendAnyPostgap( keyword.end(), cc );
+
+      // Appendage clause
+      // ────────────────
         b = appendAnyAppendageClause( b, cc, p );
         assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush(); }

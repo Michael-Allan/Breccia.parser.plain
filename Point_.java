@@ -105,7 +105,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-        public final @Override int column() {
+        public final @Override int column() { // The descriptor is collinear with the bullet.
           return bullet.column() + cursor.bufferColumnarSpan(bullet.text.start(),text.start()); }
 
 

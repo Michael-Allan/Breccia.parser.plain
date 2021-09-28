@@ -6,7 +6,7 @@ import Breccia.parser.Privatizer;
 final class Privatizer_ extends SimpleCommandPoint<BrecciaCursor> implements Privatizer {
 
 
-    Privatizer_( BrecciaCursor cursor ) { super( cursor, FlatMarkup.make( cursor, "Command" )); }
+    Privatizer_( BrecciaCursor cursor ) { super( cursor ); }
 
 
 

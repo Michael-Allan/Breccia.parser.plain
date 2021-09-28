@@ -13,14 +13,19 @@ import static Java.CharBuffers.newDelimitableCharSequence;
 public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> implements CommandPoint {
 
 
-    CommandPoint_( final C cursor ) { this( cursor, newDelimitableCharSequence( cursor.buffer )); }
+    /** Makes a command point with a compound command, one that may comprise more than the keyword.
+      */
+    CommandPoint_( final C cursor ) { this( cursor, false ); }
 
 
 
-    CommandPoint_( final C cursor, final DelimitableCharSequence keyword ) {
+    /** @param hasSimpleCommand Tells whether the command always comprises the keyword alone.
+      *   If true, then never add markup to its component list; rather leave it empty.
+      */
+    CommandPoint_( final C cursor, final boolean hasSimpleCommand ) {
         super( cursor );
-        this.keyword = keyword;
-        components = List.of( perfectIndent, bullet, descriptor ); }
+        components = List.of( perfectIndent, bullet, descriptor );
+        keyword = hasSimpleCommand? command.text : newDelimitableCharSequence(cursor.buffer); }
 
 
 
@@ -59,6 +64,10 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
     final AppendageClause_ appendageClauseWhenPresent = new AppendageClause_();
+
+
+
+    final Command command = new Command();
 
 
 
@@ -122,19 +131,21 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public final @Override int column() { return cursor.bufferColumn( text.start() ); }
+        public @Override int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
-        public final @Override List<Markup> components() { return components; }
+        public @Override List<Markup> components() {
+            assert components.isFlush();
+            return components; }
 
 
 
-        public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+        public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
 
 
 
-        public final @Override String tagName() { return "Appendage"; }}
+        public @Override String tagName() { return "Appendage"; }}
 
 
 
@@ -176,15 +187,52 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public final @Override int column() { return cursor.bufferColumn( text.start() ); }
+        public @Override int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
-        public final @Override List<Markup> components() { return components; }
+        public @Override List<Markup> components() { return components; }
 
 
 
-        public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
+        public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    final class Command extends Markup_ {
+
+
+        Command() { super( cursor.buffer ); }
+
+
+
+        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
+
+
+
+       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override int column() { // The command is collinear with the bullet.
+          return bullet.column() + cursor.bufferColumnarSpan(bullet.text.start(),text.start()); }
+
+
+
+        public @Override List<Markup> components() {
+            assert components.isFlush();
+            return components; }
+
+
+
+        public @Override int lineNumber() { return CommandPoint_.this.lineNumber(); }
+          // Always the command begins on the first line of the command point.
+
+
+
+        public @Override String tagName() { return "Command"; }}
 
 
 

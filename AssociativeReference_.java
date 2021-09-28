@@ -87,7 +87,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override final int column() { return cursor.bufferColumn( text.start() ); }
+        public final @Override int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -97,11 +97,11 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+        public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
 
 
 
-        public @Override final String tagName() { return "ContainmentClause"; }}
+        public final @Override String tagName() { return "ContainmentClause"; }}
 
 
 
@@ -177,7 +177,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override final int column() { return cursor.bufferColumn( text.start() ); }
+        public final @Override int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -187,7 +187,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
+        public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
 
 
 
@@ -248,7 +248,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override final int column() { return cursor.bufferColumn( text.start() ); }
+        public final @Override int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -256,7 +256,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
+        public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
 
 
 
@@ -288,7 +288,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override final int column() {
+        public final @Override int column() {
           return bullet.column() + cursor.bufferColumnarSpan(bullet.text.start(),keyword.start()); }
 
 

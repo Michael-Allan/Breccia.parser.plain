@@ -47,7 +47,7 @@ final class DividerSegment_ extends Markup_ implements DividerSegment {
 
 
 
-    public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+    public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
 
 
 

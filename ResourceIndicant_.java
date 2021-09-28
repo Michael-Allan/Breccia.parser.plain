@@ -45,7 +45,7 @@ final class ResourceIndicant_ extends Markup_ implements ResourceIndicant {
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override final int column() { return cursor.bufferColumn( text.start() ); }
+    public final @Override int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -55,7 +55,7 @@ final class ResourceIndicant_ extends Markup_ implements ResourceIndicant {
 
 
 
-    public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+    public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
 
 
 

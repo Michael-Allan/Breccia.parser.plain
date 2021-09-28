@@ -122,19 +122,19 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override final int column() { return cursor.bufferColumn( text.start() ); }
+        public final @Override int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
-        public @Override final List<Markup> components() { return components; }
+        public final @Override List<Markup> components() { return components; }
 
 
 
-        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+        public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
 
 
 
-        public @Override final String tagName() { return "Appendage"; }}
+        public final @Override String tagName() { return "Appendage"; }}
 
 
 
@@ -176,15 +176,15 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override final int column() { return cursor.bufferColumn( text.start() ); }
+        public final @Override int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
-        public @Override final List<Markup> components() { return components; }
+        public final @Override List<Markup> components() { return components; }
 
 
 
-        public @Override final int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
+        public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
 
 
 

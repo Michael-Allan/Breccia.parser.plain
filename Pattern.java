@@ -35,7 +35,7 @@ final class Pattern extends Markup_ {
 
 
 
-    public @Override final String tagName() { return "Pattern"; }
+    public final @Override String tagName() { return "Pattern"; }
 
 
 

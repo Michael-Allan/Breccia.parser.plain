@@ -105,17 +105,17 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-        public @Override final int column() {
+        public final @Override int column() {
           return bullet.column() + cursor.bufferColumnarSpan(bullet.text.start(),text.start()); }
 
 
 
-        public @Override final int lineNumber() { return Point_.this.lineNumber(); } /* The descriptor
+        public final @Override int lineNumber() { return Point_.this.lineNumber(); } /* The descriptor
           begins on the first line of the point, if only because it includes that line’s terminator. */
 
 
 
-        public @Override final String tagName() { return "Descriptor"; }}
+        public final @Override String tagName() { return "Descriptor"; }}
 
 
 

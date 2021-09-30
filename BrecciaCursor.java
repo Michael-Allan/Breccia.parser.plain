@@ -35,7 +35,18 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     public BrecciaCursor() {
-        final String[] commandPointKeywords = { // Those specific to Breccia, in lexicographic order.
+
+      // ══════════════════════════
+      // Late field initializations — each would fail if written in line with the field declarator
+      // ══════════════════════════
+
+      // `spooler` dependant
+      // ┈┈┈┈┈┈┈┈┈
+        _appendageParser = new AppendageParserC();
+
+      // `basicAssociativeReference` (etc.) dependants
+      // ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+        final String[] commandPointKeywords = { // Those known to Breccia, in lexicographic order.
             "N.B.",
             "NB",
             "cf.",
@@ -343,32 +354,19 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses any appendage clause the delimiter of which (‘:’) would begin at buffer position `b`,
-      * adding it to the given markup list and assigning it to `p.appendageClause`.
-      * Already the markup before `b` is known to be well formed for the purpose.
-      *
-      * <p>If no appendage clause is found, this method assigns null to `p.appendageClause`.</p>
-      *
-      *     @return The end boundary of the appendage clause, or `b` if none was found.
+    private final AppendageParser appendageParser = new AppendageParser();
+
+
+
+    private final AppendageParserC _appendageParser;
+
+
+
+    /** Resets and returns `_appendageParser`.
       */
-    private int appendAnyAppendageClause( int b, final List<Markup> markup, final CommandPoint_<?> p )
-          throws MalformedMarkup {
-        if( b < segmentEnd && buffer.get(b) == ':' ) {
-            final CommandPoint_<?>.AppendageClause_ cA = p.appendageClauseWhenPresent;
-            final int a = b;
-            cA.delimiter.text.delimit( a, ++b );
-            final CoalescentMarkupList cc = cA.appendage.components;
-            cc.clear();
-            b = appendPostgap( b, cc );
-            b = appendTerm( b, cc );
-            while( b /*moved*/!= (b = appendAnyPostgap( b, cc ))
-                && b /*moved*/!= (b = appendAnyTerm( b, cc )));
-            cA.appendage.text.delimit( a + 1, b );
-            cc.flush();
-            cA.text.delimit( a, b );
-            markup.add( p.appendageClause = cA ); }
-        else p.appendageClause = null;
-        return b; }
+    private AppendageParserC appendageParserReset() {
+        _appendageParser.reset();
+        return _appendageParser; }
 
 
 
@@ -812,7 +810,7 @@ public class BrecciaCursor implements ReusableCursor {
             return whiteEnd; }
         int b = whiteEnd; /* The scan begins at the end boundary of `c2_white`,
           which is the start of the leading term of `c3_commentary`. */
-        assert !( buffer.get(b) == ' ' || impliesNewline(buffer.get(b)) ); // Not in plain whitespace.
+        assert !isPlainWhitespace( buffer.get( b ));
         ++b; // Past the first character of the leading term.
         final int commentaryEnd;
         cc: for( ;; ) {
@@ -860,7 +858,7 @@ public class BrecciaCursor implements ReusableCursor {
       // Command
       // ───────
         dcc.add( rA.command ); /* Added early because the postgap that follows it (if any)
-          might be added as a side effect of parsing the referent clause, q.v. below. */
+          might be added to as a side effect of parsing the referent clause, q.v. below. */
         final CoalescentMarkupList cc = rA.command.components;
         final int bReferentialCommand;
         final DelimitableCharSequence referentialCommandKeyword;
@@ -909,45 +907,49 @@ public class BrecciaCursor implements ReusableCursor {
                 if( equalInContent( "e.g.", xSeq )) b = d; }}
         rA.referentialCommand.text.delimit( bReferentialCommand, b );
         cc.add( rA.referentialCommand );
-        b = appendAnyPostgap( b, cc );
-        if( b < segmentEnd ) {
+        final AppendageParserC appendageParser = appendageParserReset();
+        cR: {
+            if( b < segmentEnd ) {
+                b = appendageParser.appendPostgap_AnyClause( b, /*outer*/dcc, /*inner*/cc, rA );
+                if( !appendageParser.wasAppended ) {
 
-          // Referent clause
-          // ───────────────
-            final var cR = rA.referentClauseWhenPresent;
-            final var cRIParser = referentClauseIndicantParser;
-            final int bStart = b;
-            b = cRIParser.appendAny( b, cR.inferentialReferentIndicantWhenPresent );
-            if( b /*moved*/!= bStart ) {
-                cR.fractumIndicant = null; // Instead an inferential referent indicant is present:
-                cR.inferentialReferentIndicant = cR.inferentialReferentIndicantWhenPresent;
-                cR.components = cR.componentAsInferentialReferentIndicant; }
-            else {
-                cR.inferentialReferentIndicant = null; // Instead a fractum indicant is present:
-                b = cRIParser.append( b, cR.fractumIndicantWhenPresent,
-                  /*failureMessage*/null/*impossible as the foregoing guarantees at least a term*/ );
-                cR.fractumIndicant = cR.fractumIndicantWhenPresent;
-                cR.components = cR.componentAsFractumIndicant; }
-            cR.text.delimit( bStart, cRIParser.bEnd );
-            cc.add( rA.referentClause = cR );
-            if( cRIParser.wasAnyPostgapParsed ) {
-                final CoalescentArrayList cRIcc = cRIParser.components;
-                final int cTermEnd = cRIParser.cTermEnd;
-                final int cN = cRIcc.size();
-                if( cTermEnd < cN ) { /* Then components of a final postgap were inadvertently
-                      appended to `cRIcc`.  Move them to `dcc`, where they belong: */
-                    int c = cTermEnd;
-                    do { dcc.add( cRIcc.get( c++ )); } while( c < cN );
-                    cRIcc.removeRange( cTermEnd, cN ); }} /* With this removal, `cRIcc` would be broken
-                      by any further coalescence.  There will be none, however, as it is now complete. */
-            else b = appendAnyPostgap( b, dcc ); }
-        else rA.referentClause = null;
+                  // Referent clause
+                  // ───────────────
+                    final var cR = rA.referentClauseWhenPresent;
+                    final var cRIParser = referentClauseIndicantParser;
+                    final int bStart = b;
+                    b = cRIParser.appendAny( b, cR.inferentialReferentIndicantWhenPresent );
+                    if( b /*moved*/!= bStart ) {   // Then an inferential referent indicant is present
+                        cR.fractumIndicant = null; // instead of a fractum indicant.
+                        cR.inferentialReferentIndicant = cR.inferentialReferentIndicantWhenPresent;
+                        cR.components = cR.componentsAsInferentialReferentIndicant; }
+                    else { // A fractum indicant is present instead of an inferential referent indicant.
+                        cR.inferentialReferentIndicant = null;
+                        b = cRIParser.append( b, cR.fractumIndicantWhenPresent,
+                          /*failureMessage*/null/*none ∵ the foregoing guarantees at least a term*/ );
+                        cR.fractumIndicant = cR.fractumIndicantWhenPresent;
+                        cR.components = cR.componentsAsFractumIndicant; }
+                    cR.text.delimit( bStart, cRIParser.bEnd );
+                    cc.add( rA.referentClause = cR );
+                    if( cRIParser.wasAnyPostgapParsed ) {
+                        final CoalescentArrayList cRIcc = cRIParser.components;
+                        final int cTermEnd = cRIParser.cTermEnd;
+                        final int cN = cRIcc.size();
+                        if( cTermEnd < cN ) { /* Then components of a final postgap were inadvertently
+                              appended to `cRIcc`.  Move them to `dcc`, where they belong:  [AMP] */
+                            int c = cTermEnd;
+                            do { dcc.add( cRIcc.get( c++ )); } while( c < cN );
+                            cRIcc.removeRange( cTermEnd, cN ); }} /* With this, `cRIcc` would be broken
+                              by any further coalescence.  But none will occur ∵ it is now complete. */
+                    else b = appendAnyPostgap( b, dcc ); }
+                    break cR; }
+            rA.referentClause = null; }
         rA.command.text.delimit( bKeyword, b );
         cc.flush();
 
       // Appendage clause
       // ────────────────
-        b = appendAnyAppendageClause( b, dcc, rA );
+        b = appendageParser.appendAny( b, dcc, rA );
         assert b == segmentEnd: parseEndsWithSegment(b);
         dcc.flush(); }
 
@@ -1011,7 +1013,7 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Appendage clause
       // ────────────────
-        b = appendAnyAppendageClause( b, cc, p );
+        b = appendageParser.appendAny( b, cc, p );
         assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush(); }
 
@@ -2147,6 +2149,149 @@ public class BrecciaCursor implements ReusableCursor {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
+    /** A parser of appendage clauses in command points.
+      */
+    private class AppendageParser {
+
+
+        /**  @return The end boundary of the appendage clause.
+          */
+        protected int append( int b, final List<Markup> markup, final CommandPoint_<?> p )
+              throws MalformedMarkup {
+            final CommandPoint_<?>.AppendageClause_ cA = p.appendageClauseWhenPresent;
+            final int a = b;
+            cA.delimiter.text.delimit( a, ++b );
+            final CoalescentMarkupList cc = cA.appendage.components;
+            cc.clear();
+            b = appendPostgap( b, cc );
+            b = appendTerm( b, cc );
+            while( b /*moved*/!= (b = appendAnyPostgap( b, cc ))
+                && b /*moved*/!= (b = appendAnyTerm( b, cc )));
+            cA.appendage.text.delimit( a + 1, b );
+            cc.flush();
+            cA.text.delimit( a, b );
+            markup.add( p.appendageClause = cA );
+            return b; }
+
+
+
+        /** Parses any appendage clause the delimiter of which (‘:’) would begin at buffer position `b`,
+          * adding it to the given markup list and assigning it to `p.appendageClause`.
+          * Already the markup before `b` is known to be well formed for the purpose.
+          *
+          * <p>If no appendage clause is found, this method assigns null to `p.appendageClause`.</p>
+          *
+          *     @return The end boundary of the appendage clause, or `b` if none was found.
+          */
+        int appendAny( final int b, final List<Markup> markup, final CommandPoint_<?> p )
+              throws MalformedMarkup {
+            if( isDelimiterAt( b )) return append( b, markup, p );
+            p.appendageClause = null;
+            return b; }
+
+
+
+        protected final boolean isDelimiterAt( final int b ) {
+            final int c = b + 1;
+            return c < segmentEnd  &&  buffer.get(b) == ':'  &&  isPlainWhitespace(buffer.get(c)); }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    private final class AppendageParserC extends AppendageParser {
+
+
+        protected @Override int append( int b, final List<Markup> markup, final CommandPoint_<?> p )
+              throws MalformedMarkup {
+            assert !wasAppended;
+            b = super.append( b, markup, p );
+            wasAppended = true;
+            return b; }
+
+
+
+        /** {@inheritDoc} <p>This method simply returns `b` if already an appendage clause
+          *   `{@linkplain #wasAppended wasAppended}`.</p>
+          */
+        @Override int appendAny( final int b, final List<Markup> markup, final CommandPoint_<?> p )
+              throws MalformedMarkup {
+            if( wasAppended ) return b;
+            return super.appendAny( b, markup, p ); }
+
+
+
+        /** Parses any postgap at buffer position `b`, with or without a succeeding appendage clause,
+          * appending the result to one of two given markup lists.  Three normal cases are possible:
+          * <ol>
+          *     <li>Neither postgap nor appendage clause is present, in which case this method
+          *         simply returns `b`.</li>
+          *     <li>A postgap alone is present, in which case this method equates to
+          *         `appendAnyPostgap(b, innerMarkup)`.</li>
+          *     <li>Both postgap and appendage clause are present, in which case this method equates to
+          *         appendPostgap(b, outerMarkup); appendAny(b, outerMarkup, p)`.</li></ol>
+          *
+          *     @param outerMarkup The component list of the command-point descriptor.
+          *     @return The end boundary of the appended markup, or `b` if none was appended.
+          *     @throws IllegalStateException If already an appendage clause
+          *       `{@linkplain #wasAppended wasAppended}`.
+          */
+        int appendAnyPostgap_AnyClause( int b, final CoalescentMarkupList outerMarkup,
+              final CoalescentMarkupList innerMarkup, final CommandPoint_<?> p ) throws MalformedMarkup {
+            if( wasAppended ) throw new IllegalStateException( "Appendage clause already appended" );
+            cachedMarkup.clear();
+            if( b /*moved*/!= (b = appendAnyPostgap( b, cachedMarkup ))) {
+                cachedMarkup.flush();
+                if( isDelimiterAt( b )) { // Both a postgap and an appendage clause are present.
+                    outerMarkup.addAll( cachedMarkup );
+                    b = append( b, outerMarkup, p ); }
+                else innerMarkup.addAll( cachedMarkup ); } // A postgap alone is present.
+            return b; }
+
+
+
+        /** Parses a postgap at buffer position `b`, with or without a succeeding appendage clause,
+          * appending the result to one of two given markup lists.  Two normal cases are possible:
+          * <ol>
+          *     <li>A postgap alone is present, in which case this method equates to
+          *         `appendPostgap(b, innerMarkup)`.</li>
+          *     <li>Both postgap and appendage clause are present, in which case this method equates to
+          *         appendPostgap(b, outerMarkup); appendAny(b, outerMarkup, p)`.</li></ol>
+          *
+          *     @param outerMarkup The component list of the command-point descriptor.
+          *     @return The end boundary of the appended markup.
+          *     @throws IllegalStateException If already an appendage clause
+          *       `{@linkplain #wasAppended wasAppended}`.
+          *     @throws MalformedMarkup If no postgap occurs at `b`.
+          */
+        int appendPostgap_AnyClause( final int b, final CoalescentMarkupList outerMarkup,
+              final CoalescentMarkupList innerMarkup, final CommandPoint_<?> p ) throws MalformedMarkup {
+            final int c = appendAnyPostgap_AnyClause( b, outerMarkup, innerMarkup, p );
+            if( c /*unmoved*/== b ) throw new MalformedMarkup( errorPointer(b), "Postgap expected" );
+            return c; }
+
+
+
+        private final CoalescentMarkupList cachedMarkup = new CoalescentArrayList( spooler );
+
+
+
+        /** Clears the state variables of this parser to their default values.
+          */
+        void reset() { wasAppended = false; }
+
+
+
+        /** Whether an appendage clause has been appended since the last reset of this parser.
+          */
+        boolean wasAppended; }
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
     private static abstract class BlockParser {
 
 
@@ -2494,7 +2639,7 @@ public class BrecciaCursor implements ReusableCursor {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    /** A parser of terms of division labels.
+    /** A parser of the terms in division labels.
       */
     private final class LabelTermParser extends TermParser {
 
@@ -2762,8 +2907,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** Set when `wasAnyPostgapParsed` to the component list containing the final term
-          * of the indicant.
+        /** When `wasAnyPostgapParsed`, this component list contains the final term of the indicant.
           *
           *     @see #cTermEnd
           */
@@ -2776,7 +2920,7 @@ public class BrecciaCursor implements ReusableCursor {
           * whose components were appended (inadvertently and incorrectly).  The caller must remove
           * any such components to the component list of the point descriptor, where they belong.
           */
-        int cTermEnd;
+        int cTermEnd; // [AMP]
 
 
 
@@ -2786,13 +2930,12 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** When true, the caller must transfer from `components` any subsequent to `cTermEnd`,
-          * as there described.  When false, the caller must parse any postgap that (subsequent to
-          * the referent clause) terminates the associative reference.
+        /** When true, the caller must transfer from `components` any subsequent to `cTermEnd`, as there
+          * described.  When false, the caller must parse any postgap subsequent to the referent clause.
           *
           *     @see #cTermEnd
           */
-        boolean wasAnyPostgapParsed; }
+        boolean wasAnyPostgapParsed; } // [AMP]
 
 
 
@@ -2817,7 +2960,7 @@ public class BrecciaCursor implements ReusableCursor {
     private class TermParser {
 
 
-        /** Tells whether `ch` is proper to a term.
+        /** Whether `ch` is proper to a term.
           */
         protected boolean isProper( final char ch ) { return !isWhitespace( ch ); }
 
@@ -2877,6 +3020,10 @@ public class BrecciaCursor implements ReusableCursor {
 // ─────
 //   ABP  Adjustable buffer position.  This note serves as a reminder to adjust the value of the variable
 //        in `delimitSegment` after each call to `buffer.compact`.
+//
+//   AMP  Avoiding misplaced postgaps.  The code here requires clean-up of any misplaced postgap,
+//        repositioning it after the fact.  It would be better, however, to avoid misplacement
+//        in the first place.  See e.g. the solution of `AppendageParserC`.
 //
 //   BAO  Backing-array offset.  This is non-zero in case of an array-backed buffer formed as a slice
 //        of another buffer, but other cases may exist.  https://stackoverflow.com/a/24601336/2402790

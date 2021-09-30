@@ -199,8 +199,8 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
         ReferentClause_() {
             super( cursor.buffer );
-            componentAsFractumIndicant = List.of( fractumIndicantWhenPresent );
-            componentAsInferentialReferentIndicant = List.of( inferentialReferentIndicantWhenPresent ); }
+            componentsAsFractumIndicant = List.of( fractumIndicantWhenPresent );
+            componentsAsInferentialReferentIndicant = List.of( inferentialReferentIndicantWhenPresent ); }
 
 
 
@@ -208,11 +208,11 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        final List<Markup> componentAsFractumIndicant;
+        final List<Markup> componentsAsFractumIndicant;
 
 
 
-        final List<Markup> componentAsInferentialReferentIndicant;
+        final List<Markup> componentsAsInferentialReferentIndicant;
 
 
 

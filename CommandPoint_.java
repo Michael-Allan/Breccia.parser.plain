@@ -19,7 +19,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-    /** @param hasSimpleCommand Tells whether the command always comprises the keyword alone.
+    /** @param hasSimpleCommand Whether the command always comprises the keyword alone.
       *   If true, then never add markup to its component list; rather leave it empty.
       */
     CommandPoint_( final C cursor, final boolean hasSimpleCommand ) {

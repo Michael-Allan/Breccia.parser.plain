@@ -64,7 +64,7 @@ final class Language {
       *          &amp;  {@linkplain #yetIsGenerallyWhitespace(char) yetIsGenerallyWhitespace}`.
       */
     static boolean isForbiddenWhitespace( final char ch ) {
-        return ch != ' ' && !impliesNewline(ch) && yetIsGenerallyWhitespace(ch); }
+        return !isPlainWhitespace(ch) && yetIsGenerallyWhitespace(ch); }
 
 
     /** Whether code point `ch` is a whitespace character other than those allowed.  This method is
@@ -73,7 +73,18 @@ final class Language {
       *          &amp;  {@linkplain #yetIsGenerallyWhitespace(int)  yetIsGenerallyWhitespace}`.
       */
     static boolean isForbiddenWhitespace( final  int ch ) {
-        return ch != ' ' && !impliesNewline(ch) && yetIsGenerallyWhitespace(ch); }
+        return !isPlainWhitespace(ch) && yetIsGenerallyWhitespace(ch); }
+
+
+
+    /** Whether character  `ch` is a plain space (20) or newline constituent (A or D).
+      */
+    static boolean isPlainWhitespace( final char ch ) { return ch == ' ' || impliesNewline(ch); }
+
+
+    /** Whether character  `ch` is a plain space (20) or newline constituent (A or D).
+      */
+    static boolean isPlainWhitespace( final  int ch ) { return ch == ' ' || impliesNewline(ch); }
 
 
 
@@ -91,15 +102,13 @@ final class Language {
     /** Whether character `ch` is a plain space (20), no-break space (A0)
       * or newline constituent (A or D).
       */
-    static boolean isWhitespace( final char ch ) {
-        return ch == ' ' || impliesNewline(ch) || ch == '\u00A0'; }
+    static boolean isWhitespace( final char ch ) { return isPlainWhitespace(ch) || ch == '\u00A0'; }
 
 
     /** Whether character `ch` is a plain space (20), no-break space (A0)
       * or newline constituent (A or D).
       */
-    static boolean isWhitespace( final  int ch ) {
-        return ch == ' ' || impliesNewline(ch) || ch == '\u00A0'; }
+    static boolean isWhitespace( final  int ch ) { return isPlainWhitespace(ch) || ch == '\u00A0'; }
 
 
 
@@ -126,7 +135,7 @@ final class Language {
       *     @see Java.Characters.isJavaOrUnicodeWhitespace(int)
       */
     static boolean yetIsGenerallyWhitespace( final  int nonSpaceNewline ) {
-        assert !( nonSpaceNewline == ' ' || impliesNewline(nonSpaceNewline) );
+        assert !isPlainWhitespace( nonSpaceNewline );
         return Character.isWhitespace/*[TL]*/( nonSpaceNewline ) /* Which test excludes the allowed
             no-break space (A0), plus some forbidden no-break spaces.  Wherefore include the latter: */
           || nonSpaceNewline == '\u2007' || nonSpaceNewline == '\u202F'; }}

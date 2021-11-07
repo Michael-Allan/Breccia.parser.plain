@@ -56,6 +56,7 @@ public class BrecciaCursor implements ReusableCursor {
             "join",
             "pace",
             "private",
+            "q.v.",
             "re",
             "sc.",
             "see",
@@ -70,6 +71,7 @@ public class BrecciaCursor implements ReusableCursor {
             basicAssociativeReference,   // ‘join’
             basicAssociativeReference,   // ‘pace’
             basicPrivatizer,             // ‘private’
+            basicAssociativeReference,   // ‘q.v.’
             basicAssociativeReference,   // ‘re’
             basicAssociativeReference,   // ‘sc.’
             basicAssociativeReference,   // ‘see’

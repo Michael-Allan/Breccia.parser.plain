@@ -388,23 +388,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses at buffer position `b` any regular-expression pattern complete with its delimiters,
-      * adding each to the given markup list, and adding the pattern to the given pattern list.
-      * Alone any delimiter ‘`’ at `b` will commit this method to parsing a delimited pattern in full,
-      * failing which it will throw a malformed-markup exception.
-      *
-      *     @return The end boundary of the delimited pattern, or `b` if none was found.
-      */
-    private int appendAnyDelimited( int b, final List<Markup> markup, final List<Pattern> patterns )
-          throws MalformedMarkup {
-        if( b < segmentEnd && buffer.get(b) == '`' ) {
-            final Pattern pattern = spooler.pattern.unwind();
-            b = appendDelimitedAt( b, markup, pattern );
-            patterns.add( pattern ); }
-        return b; }
-
-
-
     /** Parses any sequence of divider drawing characters at buffer position `b`,
       * adding it to the given markup list.
       *
@@ -494,6 +477,23 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Parses at buffer position `b` any regular-expression pattern matcher,
+      * adding it to the given markup list, and adding its pattern to the given pattern list.
+      * Alone any delimiter ‘`’ at `b` will commit this method to parsing a matcher in full,
+      * failing which it will throw a malformed-markup exception.
+      *
+      *     @return The end boundary of the pattern matcher, or `b` if none was found.
+      */
+    private int appendAnyPatternMatcher( int b, final List<Markup> markup, final List<Pattern> patterns )
+          throws MalformedMarkup {
+        if( b < segmentEnd && buffer.get(b) == '`' ) {
+            final Pattern pattern = spooler.pattern.unwind();
+            b = appendPatternMatcherAt( b, markup, pattern );
+            patterns.add( pattern ); }
+        return b; }
+
+
+
     /** Parses any postgap at buffer position `b`,
       * adding each of its components to the given markup list.
       *
@@ -531,28 +531,28 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses at buffer position `b` a regular-expression pattern complete with its delimiters,
-      * adding each to the given markup list.
+    /** Parses at buffer position `b` a regular-expression pattern matcher,
+      * adding it to the given markup list.
       *
       *     @param pattern The pattern instance to use for the purpose.
-      *     @return The end boundary of the delimited pattern.
-      *     @throws MalformedMarkup If no such pattern occurs at `b`.
+      *     @return The end boundary of the pattern matcher.
+      *     @throws MalformedMarkup If no pattern matcher occurs at `b`.
       */
-    private int appendDelimited( int b, final List<Markup> markup, final Pattern pattern )
+    private int appendPatternMatcher( int b, final List<Markup> markup, final Pattern pattern )
           throws MalformedMarkup {
-        if( b < segmentEnd && buffer.get(b) == '`' ) return appendDelimitedAt( b, markup, pattern );
+        if( b < segmentEnd && buffer.get(b) == '`' ) return appendPatternMatcherAt( b, markup, pattern );
         throw new MalformedMarkup( errorPointer(b), "Pattern delimiter expected" ); }
 
 
 
-    /** Parses at buffer position `b` a regular-expression pattern complete with its delimiters,
-      * adding each to the given markup list.  Already `b` is known to hold the lead delimiter ‘`’.
+    /** Parses at buffer position `b` a regular-expression pattern matcher,
+      * adding it to the given markup list.  Already `b` is known to hold the lead delimiter ‘`’.
       *
       *     @param pattern The pattern instance to use for the purpose.
-      *     @return The end boundary of the delimited pattern.
-      *     @throws MalformedMarkup If no such pattern occurs at `b`.
+      *     @return The end boundary of the pattern matcher.
+      *     @throws MalformedMarkup If no pattern matcher occurs at `b`.
       */
-    private int appendDelimitedAt( int b, final List<Markup> markup, final Pattern pattern )
+    private int appendPatternMatcherAt( int b, final List<Markup> markup, final Pattern pattern )
           throws MalformedMarkup {
         assert b < segmentEnd && buffer.get(b) == '`'; {
             final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
@@ -873,7 +873,7 @@ public class BrecciaCursor implements ReusableCursor {
             cRcc.clear();
             cRcc.appendFlat( b, b = keyword.end() );
             b = appendPostgap( b, cRcc );
-            b = appendDelimited( b, cRcc, cR.pattern );
+            b = appendPatternMatcher( b, cRcc, cR.pattern );
             cR.text.delimit( bKeyword, b );
             cRcc.flush();
             cc.add( rA.referrerClause = cR );
@@ -2750,7 +2750,7 @@ public class BrecciaCursor implements ReusableCursor {
               // ──────────────
                 final List<Pattern> patterns = iF.patternsWhenPresent;
                 patterns.clear();
-                while( b /*moved*/!= (b = appendAnyDelimited( b, cc, patterns ))) {
+                while( b /*moved*/!= (b = appendAnyPatternMatcher( b, cc, patterns ))) {
                     cTermEnd = cc.size();
                     b = appendAnyPostgap( bEnd = b, cc );
                     if( b /*unmoved*/== bEnd || b >= segmentEnd || buffer.get(b) != '@' ) {
@@ -3037,4 +3037,4 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-                                                   // Copyright © 2020-2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2020-2022  Michael Allan.  Licence MIT.

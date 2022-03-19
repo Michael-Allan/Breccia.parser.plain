@@ -274,14 +274,14 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        final Pattern pattern = new Pattern( cursor );
+        final PatternMatcher_ patternMatcher = new PatternMatcher_( cursor );
 
 
 
        // ━━━  R e f e r r e r   C l a u s e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override Markup pattern() { return pattern; }
+        public @Override PatternMatcher patternMatcher() { return patternMatcher; }
 
 
 
@@ -304,4 +304,4 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

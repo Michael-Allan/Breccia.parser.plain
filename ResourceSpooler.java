@@ -25,14 +25,14 @@ final class ResourceSpooler {
         ss.add( commentBlockLine   = new Spool<>( () -> new CommentBlock_.Line_( c )));
         ss.add( indentBlind        = new Spool<>( () -> new IndentBlind_       ( c )));
         ss.add( indentBlindLine    = new Spool<>( () -> new IndentBlind_.Line_ ( c )));
-        ss.add( pattern            = new Spool<>( () -> new Pattern            ( c )));
+        ss.add( patternMatcher     = new Spool<>( () -> new PatternMatcher_    ( c )));
         spools = ss.toArray( spoolTypeArray ); } /* Bypassing the list interface
           in favour of a bare array, because speed of iteration matters here. */
 
 
 
     /** Spool of flat-markup instances, each reflective of a ‘backslash sequence’,
-      * a sequence commencing with a backslash that has special meaning in a pattern.
+      * a sequence commencing with a backslash that has special meaning in a regular-expression pattern.
       *
       *     @see <a href='https://perldoc.perl.org/perlrebackslash#The-backslash'>The backslash</a>
       *     @see #literalizer
@@ -73,8 +73,8 @@ final class ResourceSpooler {
 
 
 
-    /** Spool of flat-markup instances, each reflective of a group delimiter within a pattern,
-      * one of ‘(’, ‘(?:’ or ‘)’.
+    /** Spool of flat-markup instances, each reflective of a group delimiter within
+      * a regular-expression pattern, one of ‘(’, ‘(?:’ or ‘)’.
       */
     final Spool<@TagName("GroupDelimiter") FlatMarkup> groupDelimiter;
 
@@ -92,8 +92,9 @@ final class ResourceSpooler {
 
 
 
-    /** Spool of flat-markup instances, each reflective of a literalizing backslash within a pattern,
-      * one that ‘takes away [any] special meaning of the character following it’.
+    /** Spool of flat-markup instances, each reflective of a literalizing backslash within
+      * a regular-expression pattern, one that ‘takes away [any] special meaning
+      * of the character following it’.
       *
       *     @see <a href='https://perldoc.perl.org/perlrebackslash#The-backslash'>The backslash</a>
       *     @see #backslashedSpecial
@@ -102,7 +103,8 @@ final class ResourceSpooler {
 
 
 
-    /** Spool of flat-markup instances, each reflective of a metacharacter within a pattern.
+    /** Spool of flat-markup instances, each reflective of a metacharacter within
+      * a regular-expression pattern.
       *
       *     @see <a href='https://perldoc.perl.org/perlre#Metacharacters'>Metacharacters</a>
       */
@@ -110,19 +112,20 @@ final class ResourceSpooler {
 
 
 
-    /** Spool of patterns.
+    /** Spool of pattern matchers.
       */
-    final Spool<Pattern> pattern;
+    final Spool<PatternMatcher_> patternMatcher;
 
 
 
-    /** Spool of flat-markup instances, each reflective of a pattern delimiter ‘`’.
+    /** Spool of flat-markup instances, each reflective of a regular-expression pattern delimiter ‘`’.
       */
     final Spool<@TagName("PatternDelimiter") FlatMarkup> patternDelimiter;
 
 
 
-    /** Spool of flat-markup instances, each reflective of a perfect indent ‘^^’ within a pattern.
+    /** Spool of flat-markup instances, each reflective of a perfect indent ‘^^’ within
+      * a regular-expression pattern.
       */
     final Spool<@TagName("PerfectIndent") FlatMarkup> perfectIndent;
 
@@ -196,4 +199,4 @@ final class ResourceSpooler {
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

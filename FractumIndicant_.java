@@ -1,8 +1,6 @@
 package Breccia.parser.plain;
 
-import Breccia.parser.FractumIndicant;
-import Breccia.parser.Markup;
-import Breccia.parser.ResourceIndicant;
+import Breccia.parser.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,11 +20,11 @@ final class FractumIndicant_ extends Markup_ implements FractumIndicant {
 
 
 
-    List<? extends Markup> patterns;
+    List<PatternMatcher_> patternMatchers;
 
 
 
-    final List<Pattern> patternsWhenPresent = new ArrayList<>();
+    final List<PatternMatcher_> patternMatchersWhenPresent = new ArrayList<>();
 
 
 
@@ -41,7 +39,7 @@ final class FractumIndicant_ extends Markup_ implements FractumIndicant {
    // ━━━  F r a c t u m   I n d i c a n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override List<? extends Markup> patterns() { return patterns; }
+    public @Override List<? extends PatternMatcher> patternMatchers() { return patternMatchers; }
 
 
 
@@ -73,4 +71,4 @@ final class FractumIndicant_ extends Markup_ implements FractumIndicant {
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

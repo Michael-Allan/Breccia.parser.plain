@@ -477,19 +477,18 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Parses at buffer position `b` any regular-expression pattern matcher,
-      * adding it to the given markup list, and adding its pattern to the given pattern list.
-      * Alone any delimiter ‘`’ at `b` will commit this method to parsing a matcher in full,
-      * failing which it will throw a malformed-markup exception.
+    /** Parses at buffer position `b` any regular-expression pattern matcher, adding it to the given
+      * markup and pattern-matcher lists.  Alone any delimiter ‘`’ at `b` will commit this method
+      * to parsing a matcher in full, failing which it will throw a malformed-markup exception.
       *
       *     @return The end boundary of the pattern matcher, or `b` if none was found.
       */
-    private int appendAnyPatternMatcher( int b, final List<Markup> markup, final List<Pattern> patterns )
-          throws MalformedMarkup {
+    private int appendAnyPatternMatcher( int b, final List<Markup> markup,
+          final List<PatternMatcher_> matchers ) throws MalformedMarkup {
         if( b < segmentEnd && buffer.get(b) == '`' ) {
-            final Pattern pattern = spooler.pattern.unwind();
-            b = appendPatternMatcherAt( b, markup, pattern );
-            patterns.add( pattern ); }
+            final PatternMatcher_ matcher = spooler.patternMatcher.unwind();
+            b = appendPatternMatcherAt( b, markup, matcher );
+            matchers.add( matcher ); }
         return b; }
 
 
@@ -534,13 +533,13 @@ public class BrecciaCursor implements ReusableCursor {
     /** Parses at buffer position `b` a regular-expression pattern matcher,
       * adding it to the given markup list.
       *
-      *     @param pattern The pattern instance to use for the purpose.
+      *     @param matcher The matcher instance to use for the purpose.
       *     @return The end boundary of the pattern matcher.
       *     @throws MalformedMarkup If no pattern matcher occurs at `b`.
       */
-    private int appendPatternMatcher( int b, final List<Markup> markup, final Pattern pattern )
+    private int appendPatternMatcher( int b, final List<Markup> markup, final PatternMatcher_ matcher )
           throws MalformedMarkup {
-        if( b < segmentEnd && buffer.get(b) == '`' ) return appendPatternMatcherAt( b, markup, pattern );
+        if( b < segmentEnd && buffer.get(b) == '`' ) return appendPatternMatcherAt( b, markup, matcher );
         throw new MalformedMarkup( errorPointer(b), "Pattern delimiter expected" ); }
 
 
@@ -548,16 +547,20 @@ public class BrecciaCursor implements ReusableCursor {
     /** Parses at buffer position `b` a regular-expression pattern matcher,
       * adding it to the given markup list.  Already `b` is known to hold the lead delimiter ‘`’.
       *
-      *     @param pattern The pattern instance to use for the purpose.
+      *     @param matcher The matcher instance to use for the purpose.
       *     @return The end boundary of the pattern matcher.
       *     @throws MalformedMarkup If no pattern matcher occurs at `b`.
       */
-    private int appendPatternMatcherAt( int b, final List<Markup> markup, final Pattern pattern )
+    private int appendPatternMatcherAt( int b, final List<Markup> markup, final PatternMatcher_ matcher )
           throws MalformedMarkup {
+        final List<Markup> ccMatcher = matcher.components;
+        ccMatcher.clear();
+        final int bMatcher = b;
         assert b < segmentEnd && buffer.get(b) == '`'; {
             final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
             delimiter.text.delimit( b, ++b );
-            markup.add( delimiter ); }
+            ccMatcher.add( delimiter ); }
+        final Pattern pattern = matcher.pattern;
         final CoalescentMarkupList cc = pattern.components;
         cc.clear();
         boolean inEscape = false; // Whether the last character was a backslash ‘\’.
@@ -632,10 +635,12 @@ public class BrecciaCursor implements ReusableCursor {
                 if( b == bPattern ) throw new MalformedMarkup( errorPointer(b), "Empty pattern" );
                 pattern.text.delimit( bPattern, b );
                 cc.flush();
-                markup.add( pattern );
+                ccMatcher.add( pattern );
                 final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
                 delimiter.text.delimit( b, ++b );
-                markup.add( delimiter );
+                ccMatcher.add( delimiter );
+                matcher.text.delimit( bMatcher, b );
+                markup.add( matcher );
                 return b; }
 
           // Literal characters
@@ -873,7 +878,7 @@ public class BrecciaCursor implements ReusableCursor {
             cRcc.clear();
             cRcc.appendFlat( b, b = keyword.end() );
             b = appendPostgap( b, cRcc );
-            b = appendPatternMatcher( b, cRcc, cR.pattern );
+            b = appendPatternMatcher( b, cRcc, cR.patternMatcher );
             cR.text.delimit( bKeyword, b );
             cRcc.flush();
             cc.add( rA.referrerClause = cR );
@@ -2746,27 +2751,27 @@ public class BrecciaCursor implements ReusableCursor {
             cc.clear();
             composition: {
 
-              // Pattern series
-              // ──────────────
-                final List<Pattern> patterns = iF.patternsWhenPresent;
-                patterns.clear();
-                while( b /*moved*/!= (b = appendAnyPatternMatcher( b, cc, patterns ))) {
+              // Pattern-matcher series
+              // ──────────────────────
+                final List<PatternMatcher_> matchers = iF.patternMatchersWhenPresent;
+                matchers.clear();
+                while( b /*moved*/!= (b = appendAnyPatternMatcher( b, cc, matchers ))) {
                     cTermEnd = cc.size();
                     b = appendAnyPostgap( bEnd = b, cc );
                     if( b /*unmoved*/== bEnd || b >= segmentEnd || buffer.get(b) != '@' ) {
-                        iF.resourceIndicant = null; // No resource indicant is present,
-                        iF.patterns = patterns;     // only a pattern series.
+                        iF.resourceIndicant = null;    // No resource indicant is present,
+                        iF.patternMatchers = matchers; // only a pattern-matcher series.
                         break composition; }
                     cc.appendFlat( b, ++b );      // The ‘@’ of the containment separator,
                     b = appendPostgap( b, cc ); } // and its trailing postgap.
-                final int pN = patterns.size();
-                iF.patterns = pN == 0? null : patterns;
+                final int nPM = matchers.size();
+                iF.patternMatchers = nPM == 0? null : matchers;
 
               // Resource indicant
               // ─────────────────
                 final var iR = iF.resourceIndicantWhenPresent;
                 if( b /*unmoved*/== (b = appendAny( b, iR ))) {
-                    if( pN > 0 ) { // Then that pattern series ended with a containment separator.
+                    if( nPM > 0 ) { // Then a containment separator (with postgap) was just parsed.
                         throw new MalformedMarkup( errorPointer(b), "Resource indicant expected" ); }
                     // No fractum indicant is present, at all.
                     if( failureMessage == null ) throw new IllegalStateException();

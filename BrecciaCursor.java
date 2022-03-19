@@ -2776,7 +2776,7 @@ public class BrecciaCursor implements ReusableCursor {
                         iF.resourceIndicant = null;    // No resource indicant is present,
                         iF.patternMatchers = matchers; // only a pattern-matcher series.
                         break composition; }
-                    cc.appendFlat( b, ++b );      // The ‘@’ of the containment separator,
+                    cc.appendFlat( b, ++b );      // The containment operator ‘@’,
                     b = appendPostgap( b, cc ); } // and its trailing postgap.
                 final int nPM = matchers.size();
                 iF.patternMatchers = nPM == 0? null : matchers;
@@ -2785,7 +2785,7 @@ public class BrecciaCursor implements ReusableCursor {
               // ─────────────────
                 final var iR = iF.resourceIndicantWhenPresent;
                 if( b /*unmoved*/== (b = appendAny( b, iR ))) {
-                    if( nPM > 0 ) { // Then a containment separator (with postgap) was just parsed.
+                    if( nPM > 0 ) { // Then a containment separator was just parsed.
                         throw new MalformedMarkup( errorPointer(b), "Resource indicant expected" ); }
                     // No fractum indicant is present, at all.
                     if( failureMessage == null ) throw new IllegalStateException();

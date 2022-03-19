@@ -27,7 +27,6 @@ final class ResourceIndicant_ extends Markup_ implements ResourceIndicant {
 
     final List<String> qualifiers = new ArrayList<>(
       BrecciaCursor.resourceIndicantQualifiers_initialCapacity );
-        // Better would be `resourceIndicantQualifiers.size` were it fixed.
 
 
 

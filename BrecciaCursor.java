@@ -556,97 +556,111 @@ public class BrecciaCursor implements ReusableCursor {
         final List<Markup> ccMatcher = matcher.components;
         ccMatcher.clear();
         final int bMatcher = b;
+
+      // Opening pattern delimiter
+      // ─────────────────────────
         assert b < segmentEnd && buffer.get(b) == '`'; {
             final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
             delimiter.text.delimit( b, ++b );
             ccMatcher.add( delimiter ); }
-        final Pattern pattern = matcher.pattern;
-        final CoalescentMarkupList cc = pattern.components;
-        cc.clear();
-        boolean inEscape = false; // Whether the last character was a backslash ‘\’.
-        for( final int bPattern = b; b < segmentEnd; ) {
-            final char ch = buffer.get( b );
-            if( impliesNewline( ch )) break;
 
-          // Backslashed sequences
-          // ─────────────────────
-            if( inEscape ) {
-                if( ch == 'b' || ch == 'd' || ch == 'R' || ch == 't' ) {
-                    final FlatMarkup special = spooler.backslashedSpecial.unwind();
-                    special.text.delimit( b - 1, ++b ); // Including the prior backslash.
-                    cc.add( special ); }
-                else if( ch == 'N' ) {
-                    final int bStart = b - 1; // The prior backslash.
-                    b = throughBackslashedSpecialNQualifier( ++b );
-                    final FlatMarkup special = spooler.backslashedSpecial.unwind();
-                    special.text.delimit( bStart, b );
-                    cc.add( special ); }
-                else {
-                    final FlatMarkup literalizer = spooler.literalizer.unwind();
-                    literalizer.text.delimit( b - 1, b );
-                    cc.add( literalizer );
-                    cc.appendFlat( b, ++b ); }
-                inEscape = false;
-                continue; }
-            if( ch == '\\' ) {
-                inEscape = true;
-                ++b;
-                continue; }
+      // Pattern
+      // ───────
+        pattern: {
+            final Pattern pattern = matcher.pattern;
+            final CoalescentMarkupList cc = pattern.components;
+            cc.clear();
+            final int bPattern = b;
+            boolean inEscape = false; // Whether the last character was a backslash ‘\’.
+            while( b < segmentEnd ) {
+                final char ch = buffer.get( b );
+                if( impliesNewline( ch )) break;
 
-          // Metacharacters
-          // ──────────────
-            if( ch == '^' ) {
-                final int bStart = b++;
-                if( b < segmentEnd && buffer.get(b) == '^' ) { // A second ‘^’, so making ‘^^’.
-                    final FlatMarkup indent = spooler.perfectIndent.unwind();
-                    indent.text.delimit( bStart, ++b );
-                    cc.add( indent ); }
-                else {
+              // Backslashed sequences
+              // ─────────────────────
+                if( inEscape ) {
+                    if( ch == 'b' || ch == 'd' || ch == 'R' || ch == 't' ) {
+                        final FlatMarkup special = spooler.backslashedSpecial.unwind();
+                        special.text.delimit( b - 1, ++b ); // Including the prior backslash.
+                        cc.add( special ); }
+                    else if( ch == 'N' ) {
+                        final int bStart = b - 1; // The prior backslash.
+                        b = throughBackslashedSpecialNQualifier( ++b );
+                        final FlatMarkup special = spooler.backslashedSpecial.unwind();
+                        special.text.delimit( bStart, b );
+                        cc.add( special ); }
+                    else {
+                        final FlatMarkup literalizer = spooler.literalizer.unwind();
+                        literalizer.text.delimit( b - 1, b );
+                        cc.add( literalizer );
+                        cc.appendFlat( b, ++b ); }
+                    inEscape = false;
+                    continue; }
+                if( ch == '\\' ) {
+                    inEscape = true;
+                    ++b;
+                    continue; }
+
+              // Metacharacters
+              // ──────────────
+                if( ch == '^' ) {
+                    final int bStart = b++;
+                    if( b < segmentEnd && buffer.get(b) == '^' ) { // A second ‘^’, so making ‘^^’.
+                        final FlatMarkup indent = spooler.perfectIndent.unwind();
+                        indent.text.delimit( bStart, ++b );
+                        cc.add( indent ); }
+                    else {
+                        final FlatMarkup metacharacter = spooler.metacharacter.unwind();
+                        metacharacter.text.delimit( bStart, b );
+                        cc.add( metacharacter ); }
+                    continue; }
+                if( ch == '.' || ch == '$' || ch == '|' || ch == '*' || ch == '+' || ch == '?' ) {
                     final FlatMarkup metacharacter = spooler.metacharacter.unwind();
-                    metacharacter.text.delimit( bStart, b );
-                    cc.add( metacharacter ); }
-                continue; }
-            if( ch == '.' || ch == '$' || ch == '|' || ch == '*' || ch == '+' || ch == '?' ) {
-                final FlatMarkup metacharacter = spooler.metacharacter.unwind();
-                metacharacter.text.delimit( b, ++b );
-                cc.add( metacharacter );
-                continue; }
+                    metacharacter.text.delimit( b, ++b );
+                    cc.add( metacharacter );
+                    continue; }
 
-          // Group delimiters
-          // ────────────────
-            if( ch == '(' ) {
-                final int bStart = b++;
-                if( b < segmentEnd && buffer.get(b) == '?' ) {
-                    final int c = b + 1;
-                    if( c < segmentEnd && buffer.get(c) == ':' ) b = c + 1;}
-                final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
-                delimiter.text.delimit( bStart, b );
-                cc.add( delimiter );
-                continue; }
-            if( ch == ')' ) {
-                final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
-                delimiter.text.delimit( b, ++b );
-                cc.add( delimiter );
-                continue; }
+              // Terminus
+              // ────────
+                if( ch == '`' ) {
+                    if( b == bPattern ) throw new MalformedMarkup( errorPointer(b), "Empty pattern" );
+                    pattern.text.delimit( bPattern, b );
+                    cc.flush();
+                    ccMatcher.add( pattern );
+                    break pattern; }
 
-          // Closing pattern delimiter
-          // ─────────────────────────
-            if( ch == '`' ) {
-                if( b == bPattern ) throw new MalformedMarkup( errorPointer(b), "Empty pattern" );
-                pattern.text.delimit( bPattern, b );
-                cc.flush();
-                ccMatcher.add( pattern );
-                final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
-                delimiter.text.delimit( b, ++b );
-                ccMatcher.add( delimiter );
-                matcher.text.delimit( bMatcher, b );
-                markup.add( matcher );
-                return b; }
+              // Group delimiters
+              // ────────────────
+                if( ch == '(' ) {
+                    final int bStart = b++;
+                    if( b < segmentEnd && buffer.get(b) == '?' ) {
+                        final int c = b + 1;
+                        if( c < segmentEnd && buffer.get(c) == ':' ) b = c + 1;}
+                    final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
+                    delimiter.text.delimit( bStart, b );
+                    cc.add( delimiter );
+                    continue; }
+                if( ch == ')' ) {
+                    final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
+                    delimiter.text.delimit( b, ++b );
+                    cc.add( delimiter );
+                    continue; }
 
-          // Literal characters
-          // ──────────────────
-            cc.appendFlat( b, ++b ); }
-        throw truncatedPattern( errorPointer( b )); }
+              // Literal characters
+              // ──────────────────
+                cc.appendFlat( b, ++b ); }
+            throw truncatedPattern( errorPointer( b )); }
+
+      // Closing pattern delimiter
+      // ─────────────────────────
+        assert buffer.get(b) == '`';
+        final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
+        delimiter.text.delimit( b, ++b );
+        ccMatcher.add( delimiter );
+
+        matcher.text.delimit( bMatcher, b );
+        markup.add( matcher );
+        return b; }
 
 
 

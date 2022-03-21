@@ -658,6 +658,17 @@ public class BrecciaCursor implements ReusableCursor {
         delimiter.text.delimit( b, ++b );
         ccMatcher.add( delimiter );
 
+      // Match modifiers
+      // ───────────────
+        if( atMatchModifier( b )) {
+            final int a = b;
+            do ++b; while( atMatchModifier( b )); // Cf. the various `throughAny` methods.
+            final FlatMarkup mm = matcher.matchModifiersWhenPresent;
+            mm.text.delimit( a, b );
+            ccMatcher.add( mm );
+            matcher.matchModifiers = mm; }
+        else matcher.matchModifiers = null;
+
         matcher.text.delimit( bMatcher, b );
         markup.add( matcher );
         return b; }
@@ -695,6 +706,13 @@ public class BrecciaCursor implements ReusableCursor {
     private int appendTerm( int b, final CoalescentMarkupList markup ) throws MalformedMarkup {
         markup.appendFlat( b, b = termParser.through(b) );
         return b; }
+
+
+
+    /** @param b A buffer position.
+      */
+    private boolean atMatchModifier( final int b ) {
+        return b < segmentEnd && matchModifiers.indexOf(buffer.get(b)) >= 0; }
 
 
 
@@ -1463,6 +1481,13 @@ public class BrecciaCursor implements ReusableCursor {
         readyFileFractum();
  /**/   basicFileFractum.commit();
         hierarchy.clear(); }
+
+
+
+    /** The recognized modifiers for regular-expression pattern matching.  Parser extensions may modify
+      * this list at any time prior to parsing.
+      */
+    protected String matchModifiers = "ms";
 
 
 

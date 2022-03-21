@@ -12,11 +12,20 @@ final class PatternMatcher_ extends Markup_ implements PatternMatcher {
     PatternMatcher_( final BrecciaCursor cursor ) {
         super( cursor.buffer );
         this.cursor = cursor;
+        matchModifiersWhenPresent = FlatMarkup.make( cursor, "MatchModifiers" );
         pattern = new Pattern( cursor ); }
 
 
 
     List<Markup> components = new ArrayList<>();
+
+
+
+    FlatMarkup matchModifiers;
+
+
+
+    final FlatMarkup matchModifiersWhenPresent;
 
 
 
@@ -40,6 +49,10 @@ final class PatternMatcher_ extends Markup_ implements PatternMatcher {
 
 
    // ━━━  P a t t e r n   M a t c h e r ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public @Override Markup matchModifiers() { return matchModifiers; }
+
 
 
     public @Override Markup pattern() { return pattern; }

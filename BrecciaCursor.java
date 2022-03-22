@@ -948,11 +948,12 @@ public class BrecciaCursor implements ReusableCursor {
         cc.add( rA.referentialCommand );
 
         rA.referentClause = null; // Till proven otherwise.
+        boolean isReferentClausePostgapped = false; // Till proven otherwise.
         final AppendageParserC appendageParser = appendageParserReset();
         cR: if( b < segmentEnd ) {
             b = appendageParser.appendPostgap_AnyClause( b, /*outer*/dcc, /*inner*/cc, rA );
 
-          // Appendage clause without a referent clause
+          // Appendage clause (no referent clause)
           // ────────────────
             if( appendageParser.wasAppended ) break cR;
 
@@ -982,15 +983,17 @@ public class BrecciaCursor implements ReusableCursor {
                       appended to `cRIcc`.  Move them to `dcc`, where they belong:  [AMP] */
                     int c = cTermEnd;
                     do { dcc.add( cRIcc.get( c++ )); } while( c < cN );
-                    cRIcc.removeRange( cTermEnd, cN ); }} /* With this, `cRIcc` would be broken
+                    cRIcc.removeRange( cTermEnd, cN ); /* With this, `cRIcc` would be broken
                       by any further coalescence.  But none will occur ∵ it is now complete. */
-            else b = appendAnyPostgap( b, dcc ); }
+                    isReferentClausePostgapped = true; }}
+            else if( b /*moved*/!= (b = appendAnyPostgap( b, dcc ))) {
+                isReferentClausePostgapped = true; }}
         rA.command.text.delimit( bKeyword, b );
         cc.flush();
 
       // Appendage clause subsequent to a referent clause
       // ────────────────
-        b = appendageParser.appendAny( b, dcc, rA );
+        if( isReferentClausePostgapped ) b = appendageParser.appendAny( b, dcc, rA );
         assert b == segmentEnd: parseEndsWithSegment(b);
         dcc.flush(); }
 

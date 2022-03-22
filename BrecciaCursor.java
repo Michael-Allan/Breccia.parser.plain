@@ -896,8 +896,8 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Command
       // ───────
-        dcc.add( rA.command ); /* Added early because the postgap that follows it (if any)
-          might be added to as a side effect of parsing the referent clause, q.v. below. */
+        dcc.add( rA.command ); /* Added early (before parsing) because any postgap that follows it
+          could be added as a side effect of parsing the referent clause, q.v. below. */
         final CoalescentMarkupList cc = rA.command.components;
         final int bReferentialCommand;
         final DelimitableCharSequence referentialCommandKeyword;
@@ -946,47 +946,49 @@ public class BrecciaCursor implements ReusableCursor {
                 if( equalInContent( "e.g.", xSeq )) b = d; }}
         rA.referentialCommand.text.delimit( bReferentialCommand, b );
         cc.add( rA.referentialCommand );
-        final AppendageParserC appendageParser = appendageParserReset();
-        cR: {
-            if( b < segmentEnd ) {
-                b = appendageParser.appendPostgap_AnyClause( b, /*outer*/dcc, /*inner*/cc, rA );
-                if( !appendageParser.wasAppended ) {
 
-                  // Referent clause
-                  // ───────────────
-                    final var cR = rA.referentClauseWhenPresent;
-                    final var cRIParser = referentClauseIndicantParser;
-                    final int bStart = b;
-                    b = cRIParser.appendAny( b, cR.inferentialReferentIndicantWhenPresent );
-                    if( b /*moved*/!= bStart ) {   // Then an inferential referent indicant is present
-                        cR.fractumIndicant = null; // instead of a fractum indicant.
-                        cR.inferentialReferentIndicant = cR.inferentialReferentIndicantWhenPresent;
-                        cR.components = cR.componentsAsInferentialReferentIndicant; }
-                    else { // A fractum indicant is present instead of an inferential referent indicant.
-                        cR.inferentialReferentIndicant = null;
-                        b = cRIParser.append( b, cR.fractumIndicantWhenPresent,
-                          /*failureMessage*/null/*none ∵ the foregoing guarantees at least a term*/ );
-                        cR.fractumIndicant = cR.fractumIndicantWhenPresent;
-                        cR.components = cR.componentsAsFractumIndicant; }
-                    cR.text.delimit( bStart, cRIParser.bEnd );
-                    cc.add( rA.referentClause = cR );
-                    if( cRIParser.wasAnyPostgapParsed ) {
-                        final CoalescentArrayList cRIcc = cRIParser.components;
-                        final int cTermEnd = cRIParser.cTermEnd;
-                        final int cN = cRIcc.size();
-                        if( cTermEnd < cN ) { /* Then components of a final postgap were inadvertently
-                              appended to `cRIcc`.  Move them to `dcc`, where they belong:  [AMP] */
-                            int c = cTermEnd;
-                            do { dcc.add( cRIcc.get( c++ )); } while( c < cN );
-                            cRIcc.removeRange( cTermEnd, cN ); }} /* With this, `cRIcc` would be broken
-                              by any further coalescence.  But none will occur ∵ it is now complete. */
-                    else b = appendAnyPostgap( b, dcc ); }
-                    break cR; }
-            rA.referentClause = null; }
+        rA.referentClause = null; // Till proven otherwise.
+        final AppendageParserC appendageParser = appendageParserReset();
+        cR: if( b < segmentEnd ) {
+            b = appendageParser.appendPostgap_AnyClause( b, /*outer*/dcc, /*inner*/cc, rA );
+
+          // Appendage clause without a referent clause
+          // ────────────────
+            if( appendageParser.wasAppended ) break cR;
+
+          // Referent clause
+          // ───────────────
+            final var cR = rA.referentClauseWhenPresent;
+            final var cRIParser = referentClauseIndicantParser;
+            final int bStart = b;
+            b = cRIParser.appendAny( b, cR.inferentialReferentIndicantWhenPresent );
+            if( b /*moved*/!= bStart ) {   // Then an inferential referent indicant is present
+                cR.fractumIndicant = null; // instead of a fractum indicant.
+                cR.inferentialReferentIndicant = cR.inferentialReferentIndicantWhenPresent;
+                cR.components = cR.componentsAsInferentialReferentIndicant; }
+            else { // A fractum indicant is present instead of an inferential referent indicant.
+                cR.inferentialReferentIndicant = null;
+                b = cRIParser.append( b, cR.fractumIndicantWhenPresent,
+                  /*failureMessage*/null/*none ∵ the foregoing guarantees at least a term*/ );
+                cR.fractumIndicant = cR.fractumIndicantWhenPresent;
+                cR.components = cR.componentsAsFractumIndicant; }
+            cR.text.delimit( bStart, cRIParser.bEnd );
+            cc.add( rA.referentClause = cR );
+            if( cRIParser.wasAnyPostgapParsed ) {
+                final CoalescentArrayList cRIcc = cRIParser.components;
+                final int cTermEnd = cRIParser.cTermEnd;
+                final int cN = cRIcc.size();
+                if( cTermEnd < cN ) { /* Then components of a final postgap were inadvertently
+                      appended to `cRIcc`.  Move them to `dcc`, where they belong:  [AMP] */
+                    int c = cTermEnd;
+                    do { dcc.add( cRIcc.get( c++ )); } while( c < cN );
+                    cRIcc.removeRange( cTermEnd, cN ); }} /* With this, `cRIcc` would be broken
+                      by any further coalescence.  But none will occur ∵ it is now complete. */
+            else b = appendAnyPostgap( b, dcc ); }
         rA.command.text.delimit( bKeyword, b );
         cc.flush();
 
-      // Appendage clause
+      // Appendage clause subsequent to a referent clause
       // ────────────────
         b = appendageParser.appendAny( b, dcc, rA );
         assert b == segmentEnd: parseEndsWithSegment(b);

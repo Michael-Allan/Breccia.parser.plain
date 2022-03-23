@@ -308,7 +308,8 @@ public class BrecciaCursor implements ReusableCursor {
       * @param aPoints The corresponding command points,
       *   each at the same index as its keyword in `aKeywords`.
       */
-    protected final void addCommandPoints( final String[] aKeywords, final CommandPoint_<?>[] aPoints ) {
+    protected final void addCommandPointKeywords( final String[] aKeywords,
+          final CommandPoint_<?>[] aPoints ) {
         final String[] bKeywords = commandPointKeywords;
         final CommandPoint_<?>[] bPoints = commandPoints;
         final int aN = aKeywords.length;
@@ -797,10 +798,9 @@ public class BrecciaCursor implements ReusableCursor {
       * A keyword is any term that may appear first in the command.
       *
       *     @see CharSequence#compare(CharSequence,CharSequence)
-      *     @see #addCommandPoints(String[],CommandPoint_[])
+      *     @see #addCommandPointKeywords(String[],CommandPoint_[])
       */
     protected String[] commandPointKeywords;
-
 
 
 

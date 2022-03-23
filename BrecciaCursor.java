@@ -944,6 +944,14 @@ public class BrecciaCursor implements ReusableCursor {
              && d /*moved*/!= (d = termParser.throughAny( d ))) {
                 xSeq.delimit( c, d );
                 if( equalInContent( "e.g.", xSeq )) b = d; }}
+        else trap: {
+            if( !equalInContent( "re", referentialCommandKeyword )) {
+                final int k = binarySearch( commandPointKeywords, referentialCommandKeyword,
+                  CharSequence::compare );
+                if( k >= 0 && commandPoints[k] == basicAssociativeReference ) {
+                    break trap; }}
+            throw new MalformedMarkup( errorPointer(bReferentialCommand),
+              "Unrecognized referential command" ); }
         rA.referentialCommand.text.delimit( bReferentialCommand, b );
         cc.add( rA.referentialCommand );
 

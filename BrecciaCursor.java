@@ -711,9 +711,15 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     /** @param b A buffer position.
+      * @throws MalformedMarkup If neither a matcher modifier nor term boundary occurs at `b`.
       */
-    private boolean atMatchModifier( final int b ) {
-        return b < segmentEnd && matchModifiers.indexOf(buffer.get(b)) >= 0; }
+    private boolean atMatchModifier( final int b ) throws MalformedMarkup {
+        if( b < segmentEnd ) {
+            final char ch = buffer.get( b );
+            if( termParser.isProper( ch )) {
+                if( matchModifiers.indexOf(ch) >= 0 ) return true;
+                throw new MalformedMarkup( errorPointer(b), "Unexpected character" ); }}
+        return false; }
 
 
 
@@ -853,7 +859,7 @@ public class BrecciaCursor implements ReusableCursor {
         ++b; // Past the first character of the leading term.
         final int commentaryEnd;
         cc: for( ;; ) {
-            term: for(;; ++b ) {
+            term: for(;; ++b ) { // [TEB]
                 if( b >= segmentEnd ) {
                     commentaryEnd = b;
                     cc.end( 4 ); // The holder ends without `c4_white`.
@@ -3021,7 +3027,7 @@ public class BrecciaCursor implements ReusableCursor {
 
         /** Whether `ch` is proper to a term.
           */
-        protected boolean isProper( final char ch ) { return !isWhitespace( ch ); }
+        protected boolean isProper( final char ch ) { return !isWhitespace( ch ); } // [TEB]
 
 
 
@@ -3091,6 +3097,8 @@ public class BrecciaCursor implements ReusableCursor {
 //        e.g. `basicFoo`, basic meaning unextended.  It could instead be held in `foo`, except then
 //        it might be overwritten with an instance of a `Foo` subclass defined by a parser extension,
 //        leaving the basic instance unavailable for future reuse.
+//
+//   TEB  Term-end bounding.  Marking an instance of code that tests for the end boundary of a term.
 
 
 

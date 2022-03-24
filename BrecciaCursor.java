@@ -392,7 +392,7 @@ public class BrecciaCursor implements ReusableCursor {
     /** Parses any sequence of divider drawing characters at buffer position `b`,
       * adding it to the given markup list.
       *
-      *     @return The end boundary of the term, or `b` if none was found.
+      *     @return The end boundary of the sequence, or `b` if none was found.
       */
     private int appendAnyDrawing( final int b, final CoalescentMarkupList markup ) {
         final int c = throughAnyDrawing( b );

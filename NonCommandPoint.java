@@ -13,7 +13,7 @@ abstract class NonCommandPoint extends Point_<BrecciaCursor> {
 
 
 
-    /** A component list of 2 to 3 elements, depending on whether a descriptor is present.
+    /** A component list of 2 or 3 elements, depending on whether a descriptor is present.
       */
     final DelimitableMarkupList components;
 

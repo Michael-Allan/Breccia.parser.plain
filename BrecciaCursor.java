@@ -902,6 +902,7 @@ public class BrecciaCursor implements ReusableCursor {
         dcc.add( rA.command ); /* Added early (before parsing) because any postgap that follows it
           could be added as a side effect of parsing the referent clause, q.v. below. */
         final CoalescentMarkupList cc = rA.command.components;
+        cc.clear();
         final int bReferentialCommand;
         final DelimitableCharSequence referentialCommandKeyword;
         if( equalInContent( "re", keyword )) {

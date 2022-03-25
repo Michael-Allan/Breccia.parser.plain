@@ -18,7 +18,6 @@ final class ResourceSpooler {
         ss.add( groupDelimiter     = new Spool<>( () -> FlatMarkup.make( c, "GroupDelimiter" )));
         ss.add( literalizer        = new Spool<>( () -> FlatMarkup.make( c, "Literalizer" )));
         ss.add( metacharacter      = new Spool<>( () -> FlatMarkup.make( c, "Metacharacter" )));
-        ss.add( patternDelimiter   = new Spool<>( () -> FlatMarkup.make( c, "PatternDelimiter" )));
         ss.add( perfectIndent      = new Spool<>( () -> FlatMarkup.make( c, "PerfectIndent" )));
         ss.add( commentAppender    = new Spool<>( () -> new CommentAppender_   ( c )));
         ss.add( commentBlock       = new Spool<>( () -> new CommentBlock_      ( c )));
@@ -115,12 +114,6 @@ final class ResourceSpooler {
     /** Spool of pattern matchers.
       */
     final Spool<PatternMatcher_> patternMatcher;
-
-
-
-    /** Spool of flat-markup instances, each reflective of a regular-expression pattern delimiter ‘`’.
-      */
-    final Spool<@TagName("PatternDelimiter") FlatMarkup> patternDelimiter;
 
 
 

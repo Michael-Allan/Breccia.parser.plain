@@ -2,7 +2,6 @@ package Breccia.parser.plain;
 
 import Breccia.parser.PatternMatcher;
 import Breccia.parser.Markup;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -12,12 +11,17 @@ final class PatternMatcher_ extends Markup_ implements PatternMatcher {
     PatternMatcher_( final BrecciaCursor cursor ) {
         super( cursor.buffer );
         this.cursor = cursor;
-        matchModifiersWhenPresent = FlatMarkup.make( cursor, "MatchModifiers" );
-        pattern = new Pattern( cursor ); }
+        components = new DelimitableMarkupList(
+          patternDelimiterLeft = FlatMarkup.make( cursor, "PatternDelimiter"),
+          pattern = new Pattern( cursor ),
+          patternDelimiterRight = FlatMarkup.make( cursor, "PatternDelimiter"),
+          matchModifiersWhenPresent = FlatMarkup.make( cursor, "MatchModifiers" )); }
 
 
 
-    List<Markup> components = new ArrayList<>();
+    /** A component list of 3 or 4 elements, depending on whether a match-modifier series is present.
+      */
+    final DelimitableMarkupList components;
 
 
 
@@ -30,6 +34,14 @@ final class PatternMatcher_ extends Markup_ implements PatternMatcher {
 
 
     final Pattern pattern;
+
+
+
+    final FlatMarkup patternDelimiterLeft;
+
+
+
+    final FlatMarkup patternDelimiterRight;
 
 
 

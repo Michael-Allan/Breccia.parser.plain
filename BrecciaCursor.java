@@ -554,16 +554,12 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private int appendPatternMatcherAt( int b, final List<Markup> markup, final PatternMatcher_ matcher )
           throws MalformedMarkup {
-        final List<Markup> ccMatcher = matcher.components;
-        ccMatcher.clear();
         final int bMatcher = b;
 
-      // Opening pattern delimiter
-      // ─────────────────────────
-        assert b < segmentEnd && buffer.get(b) == '`'; {
-            final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
-            delimiter.text.delimit( b, ++b );
-            ccMatcher.add( delimiter ); }
+      // Left pattern delimiter
+      // ──────────────────────
+        assert b < segmentEnd && buffer.get(b) == '`';
+        matcher.patternDelimiterLeft.text.delimit( b, ++b );
 
       // Pattern
       // ───────
@@ -627,7 +623,6 @@ public class BrecciaCursor implements ReusableCursor {
                     if( b == bPattern ) throw new MalformedMarkup( errorPointer(b), "Empty pattern" );
                     pattern.text.delimit( bPattern, b );
                     cc.flush();
-                    ccMatcher.add( pattern );
                     break pattern; }
 
               // Group delimiters
@@ -652,12 +647,12 @@ public class BrecciaCursor implements ReusableCursor {
                 cc.appendFlat( b, ++b ); }
             throw truncatedPattern( errorPointer( b )); }
 
-      // Closing pattern delimiter
-      // ─────────────────────────
-        assert buffer.get(b) == '`';
-        final FlatMarkup delimiter = spooler.patternDelimiter.unwind();
-        delimiter.text.delimit( b, ++b );
-        ccMatcher.add( delimiter );
+      // Right pattern delimiter
+      // ───────────────────────
+        assert buffer.get(b) == '`'; // As per § Terminus, above.
+        matcher.patternDelimiterRight.text.delimit( b, ++b );
+        final DelimitableMarkupList cc = matcher.components;
+        assert cc.sizeLimit() == 4; // Accordingly, numeric literals are used below.
 
       // Match modifiers
       // ───────────────
@@ -666,9 +661,11 @@ public class BrecciaCursor implements ReusableCursor {
             do ++b; while( atMatchModifier( b )); // Cf. the various `throughAny` methods.
             final FlatMarkup mm = matcher.matchModifiersWhenPresent;
             mm.text.delimit( a, b );
-            ccMatcher.add( mm );
-            matcher.matchModifiers = mm; }
-        else matcher.matchModifiers = null;
+            matcher.matchModifiers = mm;
+            cc.end( 4 ); } // Extended to include the modifier series.
+        else {
+            matcher.matchModifiers = null;
+            cc.end( 3 ); } // Retracted to exclude the modifier series.
 
         matcher.text.delimit( bMatcher, b );
         markup.add( matcher );
@@ -832,7 +829,7 @@ public class BrecciaCursor implements ReusableCursor {
     private int compose( final CommentaryHolder_ holder ) {
         final CommentaryHoldDetector detector = commentaryHoldDetector;
         final DelimitableMarkupList cc = holder.components;
-        assert cc.sizeLimit() == 5; // Literals 2 through 5 are written herein.
+        assert cc.sizeLimit() == 5; // Accordingly, numeric literals are used below.
 
       // `c1_delimiter`
       // ──────────────
@@ -1690,6 +1687,7 @@ public class BrecciaCursor implements ReusableCursor {
       // Therein delimit the components proper to all types of non-command point, and already parsed
       // ──────────────────────────────
         final DelimitableMarkupList cc = p.components;
+        assert cc.sizeLimit() == 3; // Accordingly, numeric literals are used below.
         p              .text.delimit(      fractumStart,      segmentEnd ); // Proper to fracta.
         p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );    // Proper to body fracta.
         p.bullet       .text.delimit( /*1*/bullet,       /*2*/bulletEnd );

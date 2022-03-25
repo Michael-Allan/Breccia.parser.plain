@@ -1082,7 +1082,7 @@ public class BrecciaCursor implements ReusableCursor {
     final void composeDividerSegments() {
         final Division_ div = basicDivision;
         assert !div.areSegmentsComposed;
-        final var segments = div.components;
+        final Division_.DividerSegmentList segments = div.components;
         final int sN = segments.size();
         int s = 0;
         final int segmentEndWas = segmentEnd; // End of present fractal segment.
@@ -1587,7 +1587,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @see Division_.DividerSegment_#indentWidth
       */
     private void readyDividerSegment( final int indentWidth ) {
-        final var segment = basicDivision.components.add();
+        final DividerSegment_ segment = basicDivision.components.add();
         segment.text.delimit( segmentStart, segmentEnd ); /* Position nothing else in advance,
           because `delimitSegment`, in the event of a buffer shift, will *shift* nothing else. */
         segment.indentWidth = indentWidth; }
@@ -1689,7 +1689,7 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Therein delimit the components proper to all types of non-command point, and already parsed
       // ──────────────────────────────
-        final var cc = p.components;
+        final DelimitableMarkupList cc = p.components;
         p              .text.delimit(      fractumStart,      segmentEnd ); // Proper to fracta.
         p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );    // Proper to body fracta.
         p.bullet       .text.delimit( /*1*/bullet,       /*2*/bulletEnd );

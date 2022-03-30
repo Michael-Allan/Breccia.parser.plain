@@ -85,22 +85,22 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     public final @Override @NarrowNot AlarmPoint asAlarmPoint() {
-        return state == alarmPoint? alarmPoint : null; }
+        return state == alarmPoint ? alarmPoint : null; }
 
 
 
     public final @Override @NarrowNot AlarmPoint.End asAlarmPointEnd() {
-        return state == alarmPointEnd? alarmPointEnd : null; }
+        return state == alarmPointEnd ? alarmPointEnd : null; }
 
 
 
     public final @Override @NarrowNot AsidePoint asAsidePoint() {
-        return state == asidePoint? asidePoint : null; }
+        return state == asidePoint ? asidePoint : null; }
 
 
 
     public final @Override @NarrowNot AsidePoint.End asAsidePointEnd() {
-        return state == asidePointEnd? asidePointEnd : null; }
+        return state == asidePointEnd ? asidePointEnd : null; }
 
 
 
@@ -113,115 +113,115 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     public final @Override @NarrowNot AssociativeReference.End asAssociativeReferenceEnd() {
-        return state == associativeReferenceEnd? associativeReferenceEnd : null; }
+        return state == associativeReferenceEnd ? associativeReferenceEnd : null; }
 
 
 
     public final @Override @NarrowNot BodyFractum asBodyFractum() {
-        return state == bodyFractum? bodyFractum : null; }
+        return state == bodyFractum ? bodyFractum : null; }
 
 
 
     public final @Override @NarrowNot BodyFractum.End asBodyFractumEnd() {
-        return state == bodyFractumEnd? bodyFractumEnd : null; }
+        return state == bodyFractumEnd ? bodyFractumEnd : null; }
 
 
 
     public final @Override @NarrowNot CommandPoint asCommandPoint() {
-        return state == commandPoint? commandPoint : null; }
+        return state == commandPoint ? commandPoint : null; }
 
 
 
     public final @Override @NarrowNot CommandPoint.End asCommandPointEnd() {
-        return state == commandPointEnd? commandPointEnd : null; }
+        return state == commandPointEnd ? commandPointEnd : null; }
 
 
 
     public final @Override @NarrowNot Division asDivision() {
-        return state == division? division : null; }
+        return state == division ? division : null; }
 
 
 
     public final @Override @NarrowNot Division.End asDivisionEnd() {
-        return state == divisionEnd? divisionEnd : null; }
+        return state == divisionEnd ? divisionEnd : null; }
 
 
 
     /** Returns the present parse state as `Empty`, or null if the markup source is not empty.
       */
-    public final @Override @NarrowNot Empty asEmpty() { return state == empty? empty : null; }
+    public final @Override @NarrowNot Empty asEmpty() { return state == empty ? empty : null; }
 
 
 
     public final @Override @NarrowNot FileFractum asFileFractum() {
-        return state == fileFractum? fileFractum : null; }
+        return state == fileFractum ? fileFractum : null; }
 
 
 
     public final @Override @NarrowNot FileFractum.End asFileFractumEnd() {
-        return state == fileFractumEnd? fileFractumEnd : null; }
+        return state == fileFractumEnd ? fileFractumEnd : null; }
 
 
 
-    public final @Override @NarrowNot Fractum asFractum() { return state == fractum? fractum : null; }
+    public final @Override @NarrowNot Fractum asFractum() { return state == fractum ? fractum : null; }
 
 
 
     public final @Override @NarrowNot Fractum.End asFractumEnd() {
-        return state == fractumEnd? fractumEnd : null; }
+        return state == fractumEnd ? fractumEnd : null; }
 
 
 
-    public final @Override @NarrowNot Halt asHalt() { return state == halt? halt : null; }
+    public final @Override @NarrowNot Halt asHalt() { return state == halt ? halt : null; }
 
 
 
     public final @Override @NarrowNot PlainCommandPoint asPlainCommandPoint() {
-        return state == plainCommandPoint? plainCommandPoint : null; }
+        return state == plainCommandPoint ? plainCommandPoint : null; }
 
 
 
     public final @Override @NarrowNot PlainCommandPoint.End asPlainCommandPointEnd() {
-        return state == plainCommandPointEnd? plainCommandPointEnd : null; }
+        return state == plainCommandPointEnd ? plainCommandPointEnd : null; }
 
 
 
     public final @Override @NarrowNot PlainPoint asPlainPoint() {
-        return state == plainPoint? plainPoint : null; }
+        return state == plainPoint ? plainPoint : null; }
 
 
 
     public final @Override @NarrowNot PlainPoint.End asPlainPointEnd() {
-        return state == plainPointEnd? plainPointEnd : null; }
+        return state == plainPointEnd ? plainPointEnd : null; }
 
 
 
-    public final @Override @NarrowNot Point asPoint() { return state == point? point : null; }
+    public final @Override @NarrowNot Point asPoint() { return state == point ? point : null; }
 
 
 
     public final @Override @NarrowNot Point.End asPointEnd() {
-        return state == pointEnd? pointEnd : null; }
+        return state == pointEnd ? pointEnd : null; }
 
 
 
     public final @Override @NarrowNot Privatizer asPrivatizer() {
-        return state == privatizer? privatizer : null; }
+        return state == privatizer ? privatizer : null; }
 
 
 
     public final @Override @NarrowNot Privatizer.End asPrivatizerEnd() {
-        return state == privatizerEnd? privatizerEnd : null; }
+        return state == privatizerEnd ? privatizerEnd : null; }
 
 
 
     public final @Override @NarrowNot TaskPoint asTaskPoint() {
-        return state == taskPoint? taskPoint : null; }
+        return state == taskPoint ? taskPoint : null; }
 
 
 
     public final @Override @NarrowNot TaskPoint.End asTaskPointEnd() {
-        return state == taskPointEnd? taskPointEnd : null; }
+        return state == taskPointEnd ? taskPointEnd : null; }
 
 
 
@@ -1218,7 +1218,7 @@ public class BrecciaCursor implements ReusableCursor {
     private void delimitSegment() throws ParseError {
         assert segmentStart != fractumStart || fractumLineEnds.isEmpty();
         final boolean isFileHead = fractumIndentWidth < 0;
-        assert buffer.position() == (isFileHead? 0 : segmentEndIndicant);
+        assert buffer.position() == (isFileHead ? 0 : segmentEndIndicant);
         int lineStart = segmentStart; // [ABP]
         assert lineStart == 0 || completesNewline(buffer.get(lineStart-1)); /* Either the preceding text
           is unreachable (does not exist, or lies outside the buffer) or it comprises a newline. */
@@ -1644,7 +1644,7 @@ public class BrecciaCursor implements ReusableCursor {
       // Resolve the concrete parse state
       // ────────────────────────────────
         b = binarySearch( commandPointKeywords, keyword, CharSequence::compare );
-        final CommandPoint_<?> p = b >= 0? commandPoints[b] : basicPlainCommandPoint;
+        final CommandPoint_<?> p = b >= 0 ? commandPoints[b] : basicPlainCommandPoint;
 
       // Delimit therein the components already parsed, for they are proper to all types of command point
       // ──────────────────────────────
@@ -2598,7 +2598,7 @@ public class BrecciaCursor implements ReusableCursor {
                     line.text.delimit( bLine, b = compose( line ));
                     if( detector.hasDetectedCommentary ) {
                         line.c3_commentaryTagName(
-                          detector.delimiterLength() == 1? "Commentary" : "Label" ); }
+                          detector.delimiterLength() == 1 ? "Commentary" : "Label" ); }
                     blockMarkup.add( line );
 
                   // Toward the next line, if any
@@ -2731,7 +2731,7 @@ public class BrecciaCursor implements ReusableCursor {
 
         protected @Override int resultOnBackslashes( final int bOriginal, final int bEnd,
               final char chEnd ) {
-            return isDividerDrawing(chEnd)? bEnd: bOriginal; }
+            return isDividerDrawing(chEnd) ? bEnd : bOriginal; }
 
 
 
@@ -2822,7 +2822,7 @@ public class BrecciaCursor implements ReusableCursor {
                     cc.appendFlat( b, ++b );      // The containment operator ‘@’,
                     b = appendPostgap( b, cc ); } // and its trailing postgap.
                 final int nPM = matchers.size();
-                iF.patternMatchers = nPM == 0? null : matchers;
+                iF.patternMatchers = nPM == 0 ? null : matchers;
 
               // Resource indicant
               // ─────────────────

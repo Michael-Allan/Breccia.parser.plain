@@ -1,20 +1,23 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.*;
+import Java.*;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.annotation.*;
 import java.nio.CharBuffer;
 import java.nio.file.Path;
-import Java.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 
+import static Breccia.parser.plain.Language.*;
+import static Breccia.parser.plain.MalformedMarkup.*;
+import static Breccia.parser.plain.Project.newSourceReader;
 import static Java.CharBuffers.newDelimitableCharSequence;
 import static Java.CharBuffers.transferDirectly;
 import static Java.CharSequences.equalInContent;
@@ -24,9 +27,6 @@ import static java.lang.Character.codePointAt;
 import static java.lang.Character.isAlphabetic;
 import static java.lang.Character.isDigit;
 import static java.util.Arrays.binarySearch;
-import static Breccia.parser.plain.Language.*;
-import static Breccia.parser.plain.MalformedMarkup.*;
-import static Breccia.parser.plain.Project.newSourceReader;
 
 
 /** A reusable, pull parser of plain Breccia as reflected through a cursor.

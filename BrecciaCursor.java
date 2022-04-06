@@ -728,6 +728,7 @@ public class BrecciaCursor implements ReusableCursor {
  //   .slice( 1, bufferCapacity );                                     // `arrayOffset`. [BAO]
 
 
+
     /** The capacity of the read buffer in 16-bit code units.  Parsing markup with a fractal head large
       * enough to overflow the buffer will cause an `{@linkplain OverlargeHead OverlargeHead}` exception.
       */

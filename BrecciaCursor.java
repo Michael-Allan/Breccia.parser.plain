@@ -1624,7 +1624,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @param bullet The buffer position of the bullet.
       *     @param bulletEnd The buffer position just after the bullet, viz. its end boundary.
-      *       Already it is known (and asserted) to hold a plain space character. *//*
+      *       Already it is known (and asserted) to hold a plain space character.
       */
     private CommandPoint_<?> reifyCommandPoint( final int bullet, final int bulletEnd )
           throws MalformedMarkup {
@@ -1713,7 +1713,7 @@ public class BrecciaCursor implements ReusableCursor {
       * Ensure before calling this method that all other cursor fields are initialized save `hierarchy`.
       *
       *     @throws MalformedMarkup For any misplaced no-break space occuring on the same line.  Note
-      *       that elsewhere `{@linkplain #delimitSegment() delimitSegment}` polices this offence. *//*
+      *       that elsewhere `{@linkplain #delimitSegment() delimitSegment}` polices this offence.
       */
     private Point_<?> reifyPoint() throws MalformedMarkup {
         final int bullet = fractumStart + fractumIndentWidth;
@@ -2289,8 +2289,8 @@ public class BrecciaCursor implements ReusableCursor {
 
         /** Parses any postgap at buffer position `b`, with or without a succeeding appendage clause,
           * appending the result to one of two given markup lists.  Three normal cases are possible:
-          * <ol>
-          *     <li>Neither postgap nor appendage clause is present, in which case this method
+          *
+          * <ol><li>Neither postgap nor appendage clause is present, in which case this method
           *         simply returns `b`.</li>
           *     <li>A postgap alone is present, in which case this method equates to
           *         `appendAnyPostgap(b, innerMarkup)`.</li>
@@ -2318,8 +2318,8 @@ public class BrecciaCursor implements ReusableCursor {
 
         /** Parses a postgap at buffer position `b`, with or without a succeeding appendage clause,
           * appending the result to one of two given markup lists.  Two normal cases are possible:
-          * <ol>
-          *     <li>A postgap alone is present, in which case this method equates to
+          *
+          * <ol><li>A postgap alone is present, in which case this method equates to
           *         `appendPostgap(b, innerMarkup)`.</li>
           *     <li>Both postgap and appendage clause are present, in which case this method equates to
           *         appendPostgap(b, outerMarkup); appendAny(b, outerMarkup, p)`.</li></ol>

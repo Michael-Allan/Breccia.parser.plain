@@ -59,7 +59,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
         if( !isComposed ) {
             cursor.composeFileFractum();
             isComposed = true; }
-        assert components == componentsWhenPresent? componentsWhenPresent.isFlush() : true;
+        assert components == componentsWhenPresent ? componentsWhenPresent.isFlush() : true;
         return components; }
 
 

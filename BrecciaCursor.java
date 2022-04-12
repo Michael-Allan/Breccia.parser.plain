@@ -963,12 +963,8 @@ public class BrecciaCursor implements ReusableCursor {
         rA.referentClause = null; // Till proven otherwise.
         boolean isReferentClausePostgapped = false; // Till proven otherwise.
         final AppendageParserC appendageParser = appendageParserReset();
-        cR: if( b < segmentEnd ) {
-            b = appendageParser.appendPostgap_AnyClause( b, /*outer*/dcc, /*inner*/cc, rA );
-
-          // Appendage clause (no referent clause)
-          // ────────────────
-            if( appendageParser.wasAppended ) break cR;
+        b = appendageParser.appendPostgap_AnyClause( b, /*outer*/dcc, /*inner*/cc, rA );
+        cR: if( !appendageParser.wasAppended  &&  b < segmentEnd ) {
 
           // Referent clause
           // ───────────────
@@ -2298,6 +2294,7 @@ public class BrecciaCursor implements ReusableCursor {
           *         appendPostgap(b, outerMarkup); appendAny(b, outerMarkup, p)`.</li></ol>
           *
           *     @param outerMarkup The component list of the command-point descriptor.
+          *     @param innerMarkup The component list of the command in the command-point descriptor.
           *     @return The end boundary of the appended markup, or `b` if none was appended.
           *     @throws IllegalStateException If already an appendage clause
           *       `{@linkplain #wasAppended wasAppended}`.
@@ -2325,6 +2322,7 @@ public class BrecciaCursor implements ReusableCursor {
           *         appendPostgap(b, outerMarkup); appendAny(b, outerMarkup, p)`.</li></ol>
           *
           *     @param outerMarkup The component list of the command-point descriptor.
+          *     @param innerMarkup The component list of the command in the command-point descriptor.
           *     @return The end boundary of the appended markup.
           *     @throws IllegalStateException If already an appendage clause
           *       `{@linkplain #wasAppended wasAppended}`.

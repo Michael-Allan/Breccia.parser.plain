@@ -426,7 +426,8 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Loop through the foregap form
       // ─────────────────────────────
-        for( ;; ) { /* Loop invariant.  Character `ch` at `b` lies within the fractal segment and is not
+        boolean endsAtTerm = false; // Set true if a bounding term is discovered.
+        for( ;; ) { /* Loop invariant: character `ch` at `b` lies within the fractal segment and is not
               a plain space.  Rather it is a newline constituent or the first character either of the
               lead delimiter of a block construct in the foregap, or of a term just after the foregap. */
             assert b < segmentEnd && ch != ' ';
@@ -443,14 +444,19 @@ public class BrecciaCursor implements ReusableCursor {
                 ch = buffer.get( ++b ); // Toward its completion.
                 assert impliesNewline( ch ); // Already `delimitSegment` has tested for this.
                 continue; } // Already the invariant is re-established.
-            else { // Expect a comment block or indent blind, or a term that bounds the foregap.
-                if( bFlat < b ) markup.appendFlat( bFlat, b ); // Flat markup that came before.
+            else { // Expect either a block (comment block or indent blind) or a bounding term.
+                if( bFlat < bLine ) {
+                    markup.appendFlat( bFlat, bLine ); // Flat markup that came before the line.
+                    bFlat = bLine; }
                 final BlockParser parser;
                 if( ch == '\\' ) parser = commentBlockParser;
                 else if( ch == /*no-break space*/'\u00A0' ) parser = indentBlindParser;
-                else break; // The foregap ends at a non-backslashed term.
+                else {
+                    endsAtTerm = true; // Namely a non-backslashed term.
+                    break; }
                 if( b /*unmoved*/== (b = parser.appendIfDelimiter( b, bLine, markup ))) {
-                    break; } // The foregap ends at a backslashed term.
+                    endsAtTerm = true; // Namely a backslashed term.
+                    break; }
                 if( b >= segmentEnd ) break; // This block ends both the foregap and fractal segment.
                 bLine = b; // This block has ended with a line break.
                 bFlat = b; // Potentially the next run of flat markup begins here.
@@ -463,6 +469,7 @@ public class BrecciaCursor implements ReusableCursor {
                 markup.appendFlat( bFlat, b );
                 break; }
             ch = buffer.get( b ); }
+        if( endsAtTerm && bFlat < b ) markup.appendFlat( bFlat, b ); // Flat markup that came before.
         return b; }
 
 

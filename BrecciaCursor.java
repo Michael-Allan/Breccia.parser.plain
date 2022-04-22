@@ -1010,6 +1010,7 @@ public class BrecciaCursor implements ReusableCursor {
       // Appendage clause subsequent to a referent clause
       // ────────────────
         if( isReferentClausePostgapped ) b = appendageParser.appendAny( b, dcc, rA );
+        if( b < segmentEnd ) throw unexpectedTerm( errorPointer( b ));
         assert b == segmentEnd: parseEndsWithSegment(b);
         dcc.flush(); }
 

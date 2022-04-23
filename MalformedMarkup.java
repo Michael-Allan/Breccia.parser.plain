@@ -46,7 +46,7 @@ public class MalformedMarkup extends ParseError {
       * @param ch The character that implies the newline that never gets completed.
       */
     static MalformedMarkup truncatedNewline( final ErrorPointer pointer, final char ch ) {
-        assert ch == '\r'; // For sake of an intelligible error message; see `Breccia.impliesNewline`.
+        assert ch == '\r'; // For sake of an intelligible error message; see `Language.impliesNewline`.
         return new MalformedMarkup( pointer,
           "Truncated newline: Carriage return (Unicode 000D) without line feed successor (000A)" ); }
 

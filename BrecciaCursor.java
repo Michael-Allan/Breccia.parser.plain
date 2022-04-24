@@ -638,7 +638,7 @@ public class BrecciaCursor implements ReusableCursor {
                     final int bStart = b++;
                     if( b < segmentEnd && buffer.get(b) == '?' ) {
                         final int c = b + 1;
-                        if( c < segmentEnd && buffer.get(c) == ':' ) b = c + 1;}
+                        if( c < segmentEnd && buffer.get(c) == ':' ) b = c + 1; }
                     final FlatMarkup delimiter = spooler.groupDelimiter.unwind();
                     delimiter.text.delimit( bStart, b );
                     cc.add( delimiter );

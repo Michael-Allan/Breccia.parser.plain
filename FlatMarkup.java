@@ -39,7 +39,7 @@ public abstract class FlatMarkup extends Markup_ {
 
             public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
 
-            public @Override String tagName() { return tagName; }};}
+            public @Override String tagName() { return tagName; }}; }
 
 
 

@@ -41,7 +41,7 @@ final class CommentBlock_ extends Markup_ implements CommentBlock {
             initialize( /*c3_commentaryWhenPresent*/new FlatMarkup( cursor.buffer ) {
                 public @Override int column() { return cursor.bufferColumn( text.start() ); }
                 public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
-                public @Override String tagName() { return c3_commentaryTagName; }});}
+                public @Override String tagName() { return c3_commentaryTagName; }}); }
 
 
 

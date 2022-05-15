@@ -9,13 +9,13 @@ import static java.lang.Character.charCount;
 public final class ErrorPointer {
 
 
-    /** @see MalformedMarkup#lineNumber
-      * @see #line
+    /** @see #line
+      * @see MalformedMarkup#lineNumber
       * @see #column
       */
-    ErrorPointer( int lineNumber, String line, int column ) {
-        this.lineNumber = lineNumber;
+    ErrorPointer( String line, int lineNumber, int column ) {
         this.line = line;
+        this.lineNumber = lineNumber;
         this.column = column; }
 
 

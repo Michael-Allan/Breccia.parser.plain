@@ -1148,8 +1148,7 @@ public class BrecciaCursor implements ReusableCursor {
                   // ────────────────────────
                     if( b /*moved*/!= (b = appendAnyDrawing( b, cc ))) lastWasDrawing = true; }
                 assert b == segmentEnd: parseEndsWithSegment(b);
-                cc.flush(); }
-            while( ++s < sN );
+                cc.flush(); } while( ++s < sN );
             assert segmentEnd == segmentEndWas; } // The segments end with the present fractal segment.
         finally { segmentEnd = segmentEndWas; }} // Restore the original value regardless.
 
@@ -1395,7 +1394,7 @@ public class BrecciaCursor implements ReusableCursor {
                 lineLength = p - lineStart; }}
         final String line = buffer.slice( lineStart, lineLength ).toString();
         final int column = bufferColumnarSpan( lineStart, position );
-        return new ErrorPointer( lineResolver.number, line, column ); }
+        return new ErrorPointer( line, lineResolver.number, column ); }
 
 
 

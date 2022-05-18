@@ -1,5 +1,7 @@
 package Breccia.parser.plain;
 
+import Java.CharacterPointer;
+
 
 public class IllegalParseState extends IllegalStateException {
 
@@ -7,7 +9,7 @@ public class IllegalParseState extends IllegalStateException {
     /** @see #pointer
       * @see #getMessage()
       */
-    IllegalParseState( final ErrorPointer pointer, final String message ) {
+    IllegalParseState( final CharacterPointer pointer, final String message ) {
         super( message + '\n' + pointer.markedLine() );
         lineNumber = pointer.lineNumber;
         this.pointer = pointer; }
@@ -23,8 +25,8 @@ public class IllegalParseState extends IllegalStateException {
 
     /** Indicant of where precisely the illegal parse state occured.
       */
-    public final ErrorPointer pointer; }
+    public final CharacterPointer pointer; }
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

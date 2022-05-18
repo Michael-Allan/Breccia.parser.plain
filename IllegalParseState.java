@@ -11,15 +11,7 @@ public class IllegalParseState extends IllegalStateException {
       */
     IllegalParseState( final CharacterPointer pointer, final String message ) {
         super( message + '\n' + pointer.markedLine() );
-        lineNumber = pointer.lineNumber;
         this.pointer = pointer; }
-
-
-
-    /** Ordinal number of the line in which the illegal parse state occured.
-      * Lines are numbered beginning at one.
-      */
-    public final int lineNumber;
 
 
 

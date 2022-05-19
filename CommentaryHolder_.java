@@ -13,7 +13,7 @@ abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
       *     @see #c0_white
       */
     CommentaryHolder_( final Markup_ c0_white, final BrecciaCursor cursor ) {
-        super( cursor.buffer );
+        super( cursor );
         this.cursor = cursor;
         final Markup[] cc = new Markup_[5];
         cc[0] = this.c0_white = c0_white;

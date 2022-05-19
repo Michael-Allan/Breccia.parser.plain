@@ -11,7 +11,7 @@ abstract class BodyFractum_<C extends BrecciaCursor> extends Fractum_<C> impleme
 
     BodyFractum_( C cursor ) {
         super( cursor );
-        perfectIndent = new PerfectIndent( cursor.buffer, /*container*/this ); }
+        perfectIndent = new PerfectIndent( cursor, /*container*/this ); }
 
 
 

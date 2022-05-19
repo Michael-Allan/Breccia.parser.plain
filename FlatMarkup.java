@@ -1,7 +1,6 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.Markup;
-import java.nio.CharBuffer;
 import java.util.List;
 
 
@@ -10,11 +9,11 @@ import java.util.List;
 public abstract class FlatMarkup extends Markup_ {
 
 
-    public FlatMarkup( CharBuffer b ) { super( b ); }
+    public FlatMarkup( BrecciaCursor cursor ) { super( cursor ); }
 
 
 
-    public FlatMarkup( Fractum_<?> f ) { super( f ); }
+    public FlatMarkup( Fractum_<?> f ) { super( f.cursor ); }
 
 
 
@@ -33,7 +32,7 @@ public abstract class FlatMarkup extends Markup_ {
       *     @see #tagName()
       */
     public static FlatMarkup make( final BrecciaCursor cursor, final String tagName ) {
-        return new FlatMarkup( cursor.buffer ) {
+        return new FlatMarkup( cursor ) {
 
             public @Override int column() { return cursor.bufferColumn( text.start() ); }
 

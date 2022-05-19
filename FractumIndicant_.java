@@ -9,7 +9,7 @@ final class FractumIndicant_ extends Markup_ implements FractumIndicant {
 
 
     FractumIndicant_( final BrecciaCursor cursor ) {
-        super( cursor.buffer );
+        super( cursor );
         this.cursor = cursor;
         components = new CoalescentArrayList( cursor.spooler );
         resourceIndicantWhenPresent = new ResourceIndicant_( cursor ); }

@@ -11,7 +11,7 @@ abstract class Fractum_<C extends BrecciaCursor> extends Markup_ implements Frac
 
 
     Fractum_( final C cursor ) {
-        super( cursor.buffer );
+        super( cursor );
         this.cursor = cursor; }
 
 
@@ -29,6 +29,18 @@ abstract class Fractum_<C extends BrecciaCursor> extends Markup_ implements Frac
     /** The corresponding end state of this fractum.
       */
     protected End_ end;
+
+
+
+   // ━━━  F r a c t u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public final @Override int lineCount() { return cursor.fractumLineEnds.length; }
+
+
+
+    public final @Override int xuncLineEnd( final int i ) {
+        return cursor.xunc + cursor.fractumLineEnds.array[i]; }
 
 
 
@@ -55,4 +67,4 @@ abstract class Fractum_<C extends BrecciaCursor> extends Markup_ implements Frac
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

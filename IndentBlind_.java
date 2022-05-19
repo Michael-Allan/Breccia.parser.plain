@@ -10,7 +10,7 @@ final class IndentBlind_ extends Markup_ implements IndentBlind {
 
 
     IndentBlind_( final BrecciaCursor cursor ) {
-        super( cursor.buffer );
+        super( cursor );
         this.cursor = cursor; }
 
 
@@ -37,7 +37,7 @@ final class IndentBlind_ extends Markup_ implements IndentBlind {
 
 
         Line_( final BrecciaCursor cursor ) {
-            super( cursor.buffer );
+            super( cursor );
             this.cursor = cursor;
             indentWhenPresent    = FlatMarkup.make( cursor );
             delimiter            = FlatMarkup.make( cursor, "Delimiter" );

@@ -7,8 +7,8 @@ import java.nio.CharBuffer;
 final class PerfectIndent extends FlatMarkup {
 
 
-    PerfectIndent( final CharBuffer buffer, final Markup_ container ) {
-        super( buffer );
+    PerfectIndent( BrecciaCursor cursor, Markup_ container ) {
+        super( cursor );
         this.container = container; }
 
 

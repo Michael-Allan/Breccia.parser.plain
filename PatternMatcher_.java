@@ -9,7 +9,7 @@ final class PatternMatcher_ extends Markup_ implements PatternMatcher {
 
 
     PatternMatcher_( final BrecciaCursor cursor ) {
-        super( cursor.buffer );
+        super( cursor );
         this.cursor = cursor;
         components = new DelimitableMarkupList(
           patternDelimiterLeft = FlatMarkup.make( cursor, "PatternDelimiter"),

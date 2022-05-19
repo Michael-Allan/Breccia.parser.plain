@@ -76,7 +76,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
     final class ContainmentClause extends Markup_ {
 
 
-        ContainmentClause() { super( cursor.buffer ); }
+        ContainmentClause() { super( cursor ); }
 
 
 
@@ -123,7 +123,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
     final class InferentialReferentIndicant_ extends Markup_ implements InferentialReferentIndicant {
 
 
-        InferentialReferentIndicant_() { super( cursor.buffer ); }
+        InferentialReferentIndicant_() { super( cursor ); }
 
 
 
@@ -198,7 +198,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
         ReferentClause_() {
-            super( cursor.buffer );
+            super( cursor );
             componentsAsFractumIndicant = List.of( fractumIndicantWhenPresent );
             componentsAsInferentialReferentIndicant = List.of( inferentialReferentIndicantWhenPresent ); }
 
@@ -266,7 +266,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
     final class ReferrerClause_ extends Markup_ implements ReferrerClause {
 
 
-        ReferrerClause_() { super( cursor.buffer ); }
+        ReferrerClause_() { super( cursor ); }
 
 
 

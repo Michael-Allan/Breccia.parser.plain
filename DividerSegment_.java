@@ -9,10 +9,10 @@ final class DividerSegment_ extends Markup_ implements DividerSegment {
 
 
     DividerSegment_( final BrecciaCursor cursor ) {
-        super( cursor.buffer );
+        super( cursor );
         this.cursor = cursor;
         components = new CoalescentArrayList( cursor.spooler );
-        perfectIndent = new PerfectIndent( cursor.buffer, /*container*/this ); }
+        perfectIndent = new PerfectIndent( cursor, /*container*/this ); }
 
 
 

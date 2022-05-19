@@ -10,7 +10,7 @@ final class CommentBlock_ extends Markup_ implements CommentBlock {
 
 
     CommentBlock_( final BrecciaCursor cursor ) {
-        super( cursor.buffer );
+        super( cursor );
         this.cursor = cursor; }
 
 
@@ -38,7 +38,7 @@ final class CommentBlock_ extends Markup_ implements CommentBlock {
 
         Line_( final BrecciaCursor cursor ) {
             super( /*c0_white*/FlatMarkup.make(cursor), cursor );
-            initialize( /*c3_commentaryWhenPresent*/new FlatMarkup( cursor.buffer ) {
+            initialize( /*c3_commentaryWhenPresent*/new FlatMarkup( cursor ) {
                 public @Override int column() { return cursor.bufferColumn( text.start() ); }
                 public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
                 public @Override String tagName() { return c3_commentaryTagName; }}); }

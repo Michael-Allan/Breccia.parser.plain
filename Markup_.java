@@ -2,7 +2,6 @@ package Breccia.parser.plain;
 
 import Breccia.parser.Markup;
 import Java.DelimitableCharSequence;
-import java.nio.CharBuffer;
 
 import static Breccia.parser.plain.Language.impliesNewline;
 import static Java.CharBuffers.newDelimitableCharSequence;
@@ -19,11 +18,13 @@ import static Java.CharBuffers.newDelimitableCharSequence;
 abstract class Markup_ implements Markup {
 
 
-    Markup_( final CharBuffer buffer ) { text = newDelimitableCharSequence( buffer ); }
+    Markup_( final BrecciaCursor cursor ) {
+        this.cursor = cursor;
+        text = newDelimitableCharSequence( cursor.buffer ); }
 
 
 
-    Markup_( final Fractum_<?> f ) { this( f.cursor.buffer ); }
+    Markup_( final Fractum_<?> f ) { this( f.cursor ); }
 
 
 
@@ -35,6 +36,10 @@ abstract class Markup_ implements Markup {
 
 
     public final @Override CharSequence text() { return text; }
+
+
+
+    public final @Override int xunc() { return cursor.xunc + text.start(); }
 
 
 
@@ -62,8 +67,15 @@ abstract class Markup_ implements Markup {
                 if( cBreak != 0 ) b.insert( cBreak, '\\' ); // One backslash for the whole sequence.
                 break; }}
         b.append( '}' );
-        return b.toString(); }}
+        return b.toString(); }
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
+
+
+    private final BrecciaCursor cursor; }
+
+
+
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

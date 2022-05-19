@@ -10,7 +10,7 @@ final class ResourceIndicant_ extends Markup_ implements ResourceIndicant {
 
 
     ResourceIndicant_( final BrecciaCursor cursor ) {
-        super( cursor.buffer );
+        super( cursor );
         this.cursor = cursor;
         components = new CoalescentArrayList( cursor.spooler );
         reference = FlatMarkup.make( cursor, "Reference" ); }

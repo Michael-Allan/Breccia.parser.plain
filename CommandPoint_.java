@@ -120,7 +120,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
     final class Appendage extends Markup_ {
 
 
-        Appendage() { super( cursor.buffer ); }
+        Appendage() { super( cursor ); }
 
 
 
@@ -156,7 +156,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
         AppendageClause_() {
-            super( cursor.buffer );
+            super( cursor );
             components = List.of( delimiter, appendage ); }
 
 
@@ -205,7 +205,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
     final class Command extends Markup_ {
 
 
-        Command() { super( cursor.buffer ); }
+        Command() { super( cursor ); }
 
 
 

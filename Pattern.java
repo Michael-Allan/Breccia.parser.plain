@@ -8,7 +8,7 @@ final class Pattern extends Markup_ {
 
 
     Pattern( final BrecciaCursor cursor ) {
-        super( cursor.buffer );
+        super( cursor );
         this.cursor = cursor;
         components = new CoalescentArrayList( cursor.spooler ); }
 

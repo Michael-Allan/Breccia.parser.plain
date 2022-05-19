@@ -737,7 +737,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** The capacity of the read buffer in 16-bit code units.  Parsing markup with a fractal head large
+    /** The capacity of the read buffer in UTF-16 code units.  Parsing markup with a fractal head large
       * enough to overflow the buffer will cause an `{@linkplain OverlargeHead OverlargeHead}` exception.
       */
     private static final int bufferCapacity;
@@ -776,7 +776,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** The threshold in 16-bit code units of free space required to initiate refill of the buffer
+    /** The threshold in UTF-16 code units of free space required to initiate refill of the buffer
       * without zero-shifting the already-read part of the present segment.  The main purpose is to avoid
       * pointless shifting before the final, empty transfer that signals exhaustion of the markup source.
       */
@@ -1232,8 +1232,12 @@ public class BrecciaCursor implements ReusableCursor {
       *     <li>`{@linkplain #segmentEndIndicant     segmentEndIndicant}`</li>
       *     <li>`{@linkplain #segmentEndIndicantChar segmentEndIndicantChar}`</li></ul>
       *
-      * <p>And in case of a buffer shift while delimiting a divider segment, for each segment `s`
-      *  of `{@linkplain #basicDivision basicDivision}.components`, this method updates:,</p>
+      * <p>And, in case of a buffer shift:</p>
+      *
+      * <ul><li>`{@linkplain #xunc} xunc`</li></ul>
+      *
+      * <p>Moreover if the shift happens while delimiting a divider segment, then for each segment `s`
+      *  of `{@linkplain #basicDivision basicDivision}.components`, this method updates:</p>
       *
       * <ul><li>`{@linkplain DividerSegment s}.text.start`</li>
       *     <li>`{@linkplain DividerSegment s}.text.end`</li></ul>
@@ -1286,6 +1290,7 @@ public class BrecciaCursor implements ReusableCursor {
                 else { // Shift out predecessor markup, freeing buffer space:
                     final int shift = fractumStart; // To put the (partly read) present fractum at zero.
                     buffer.position( shift ).compact(); // Shifted and limit extended, ready to refill.
+                    xunc += shift;
                     fractumStart = 0; // Or `fractumStart -= shift`, so adjust the other variables:
                     segmentStart -= shift;
                     if( isDividerDrawing( segmentEndIndicantChar )) { // Then in a division.
@@ -1419,9 +1424,11 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** The end boundaries of the lines of the present fractum.  Each is recorded as a buffer position,
       * which is either the position of the first character of the succeeding line, or `buffer.limit`
-      * in the case of the final line of the markup source.  Invariably each is preceded by a newline.
+      * in the case of the final line of the markup source.  Each end boundary is preceded by a newline
+      * except that of the final line, which may or may not be.  If it *is* preceded by a newline,
+      * then the final line is empty and has the same end boundary as the preceding line.
       */
-    private @Subst final IntArrayExtensor fractumLineEnds = new IntArrayExtensor( new int[0x100] );
+    @Subst final IntArrayExtensor fractumLineEnds = new IntArrayExtensor( new int[0x100] );
       // Each an adjustable buffer position. [ABP]
 
 
@@ -1480,6 +1487,7 @@ public class BrecciaCursor implements ReusableCursor {
 
     private void _markupSource( final Reader r ) throws ParseError {
         sourceReader = r;
+        xunc = 0;
         final int count; {
             try { count = transferDirectly( sourceReader, buffer.clear() ); }
             catch( IOException x ) { throw new Unhandled( x ); }}
@@ -1974,6 +1982,15 @@ public class BrecciaCursor implements ReusableCursor {
 
     private final DelimitableCharSequence xSeq = newDelimitableCharSequence( buffer );
       // Shared reusable instance
+
+
+
+    /** The offset of the read buffer from the start of the markup source, in UTF-16 code units.
+      * This tells how far the buffer has been shifted by `delimitSegment`.
+      *
+      *     @see #buffer
+      */
+    int xunc;
 
 
 

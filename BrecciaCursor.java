@@ -745,11 +745,11 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     /** Returns the columnar offset at the given buffer position, resolving its line
-      * within the parsed region of the present fractum.  If the position lies outside
+      * within the parsed region of the present fractal head.  If the position lies outside
       * of the parsed region, then the fallbacks of `resolveLine` apply.
       *
       *     @see Markup#column()
-      *     @param position A buffer position within the parsed region of the present fractum.
+      *     @param position A buffer position within the parsed region of the present fractal head.
       *     @see LineResolver#resolveLine(int)
       */
     final @Subst int bufferColumn( final int position ) {
@@ -760,8 +760,8 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** Returns the number of grapheme clusters between buffer positions `start` and `end`.
       *
-      *     @see <a href='https://unicode.org/reports/tr29/'>
-      *       Grapheme clusters in Unicode text segmentation</a>
+      *     @see <a href='https://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries'>
+      *       Grapheme cluster boundaries in Unicode text segmentation</a>
       */
     final int bufferColumnarSpan( final int start, final int end ) {
         bufferColumnarSpanSeq.delimit( start, end );
@@ -791,9 +791,9 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     /** Resolves the line number at `position`.  If `position` lies outside of the parsed region
-      * of the present fractum, then the fallbacks of `resolveLine` apply.
+      * of the present fractal head, then the fallbacks of `resolveLine` apply.
       *
-      *     @param position A buffer position within the parsed region of the present fractum.
+      *     @param position A buffer position within the parsed region of the present fractal head.
       *     @see LineResolver#resolveLine(int)
       */
     final @Subst int bufferLineNumber( final int position ) {
@@ -811,10 +811,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     /** Makes a character pointer to the given buffer position, resolving its line within
-      * the parsed region of the present fractum.  If the position lies outside
+      * the parsed region of the present fractal head.  If the position lies outside
       * of the parsed region, then the fallbacks of `resolveLine` apply.
       *
-      *     @param position A buffer position within the parsed region of the present fractum.
+      *     @param position A buffer position within the parsed region of the present fractal head.
       *     @see LineResolver#resolveLine(int)
       */
     private @Subst CharacterPointer characterPointer( final int position ) {
@@ -1422,13 +1422,13 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** The end boundaries of the lines of the present fractum.  Each is recorded as a buffer position,
+    /** The end boundaries of the lines of the present fractal head.  Each boundary is a buffer position,
       * which is either the position of the first character of the succeeding line, or `buffer.limit`
-      * in the case of the final line of the markup source.  Each end boundary is preceded by a newline
-      * except that of the final line, which may or may not be.  If it *is* preceded by a newline,
-      * then the final line is empty and has the same end boundary as the preceding line.
+      * in the case of the final line of the markup source.  Each boundary is preceded by a newline
+      * except that of the final line, which might not be.  If the final line is preceded by a newline,
+      * then it is an empty line with the same end boundary as the preceding line.
       */
-    @Subst final IntArrayExtensor fractumLineEnds = new IntArrayExtensor( new int[0x100] );
+    @Subst final IntArrayExtensor fractumLineEnds = new IntArrayExtensor( new int[0x100] ); // = 256
       // Each an adjustable buffer position. [ABP]
 
 
@@ -1447,6 +1447,9 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** @see <a href='https://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries'>
+      *   Grapheme cluster boundaries in Unicode text segmentation</a>
+      */
     private final Matcher graphemeClusterMatcher
       = java.util.regex.Pattern.compile( "\\X" ).matcher( "" );
       // The alternative for cluster discovery (within the JDK) is `java.txt.BreakIterator`, but
@@ -1551,7 +1554,7 @@ public class BrecciaCursor implements ReusableCursor {
         fractumStart = segmentEnd; // It starts at the end boundary of the present segment.
         fractumIndentWidth = nextIndentWidth;
         fractumLineCounter += fractumLineEnds.length; /* Its line number is the line number
-          of the present fractum plus the *line count* of the present fractum. */
+          of the present fractum plus the *line count* of the present fractal head. */
         fractumLineEnds.clear();
         if( isDividerDrawing( segmentEndIndicantChar )) { /* Then next is a divider segment,
               starting a division whose head comprises all contiguous divider segments. */
@@ -2788,7 +2791,7 @@ public class BrecciaCursor implements ReusableCursor {
           * if `position` lies after the region already parsed by `delimitSegment`,
           * then instead it uses the last parsed position.
           *
-          *     @param position A buffer position within the parsed region of the present fractum.
+          *     @param position A buffer position within the parsed region of the present fractal head.
           */
         @Subst void resolveLine( final int position ) {
             final int[] endsArray = fractumLineEnds.array;

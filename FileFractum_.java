@@ -44,6 +44,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
     @Override void commit() {
         super.commit();
+        assert lineNumber() == 1; // As per contract.
         if( cursor.segmentEnd == 0 ) {
             components = FileFractum_.componentsWhenAbsent;
             isComposed = true; }

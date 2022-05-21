@@ -21,6 +21,7 @@ import static Breccia.parser.plain.Project.newSourceReader;
 import static Java.CharBuffers.newDelimitableCharSequence;
 import static Java.CharBuffers.transferDirectly;
 import static Java.CharSequences.equalInContent;
+import static Java.Unicode.graphemeClusterPattern;
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static java.lang.Character.codePointAt;
@@ -746,15 +747,15 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** Returns the columnar offset at the given buffer position, resolving its line
       * within the parsed region of the present fractal head.  If the position lies outside
-      * of the parsed region, then the fallbacks of `resolveLine` apply.
+      * of the parsed region, then the fallbacks of `locateLine` apply.
       *
       *     @see Markup#column()
       *     @param position A buffer position within the parsed region of the present fractal head.
-      *     @see LineResolver#resolveLine(int)
+      *     @see LineLocator#locateLine(int)
       */
     final @Subst int bufferColumn( final int position ) {
-        lineResolver.resolveLine( position );
-        return bufferColumnarSpan( lineResolver.start, position ); }
+        lineLocator.locateLine( position );
+        return bufferColumnarSpan( lineLocator.start(), position ); }
 
 
 
@@ -791,14 +792,14 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     /** Resolves the line number at `position`.  If `position` lies outside of the parsed region
-      * of the present fractal head, then the fallbacks of `resolveLine` apply.
+      * of the present fractal head, then the fallbacks of `locateLine` apply.
       *
       *     @param position A buffer position within the parsed region of the present fractal head.
-      *     @see LineResolver#resolveLine(int)
+      *     @see LineLocator#locateLine(int)
       */
     final @Subst int bufferLineNumber( final int position ) {
-        lineResolver.resolveLine( position );
-        return lineResolver.number; }
+        lineLocator.locateLine( position );
+        return lineLocator.number(); }
 
 
 
@@ -810,18 +811,24 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Makes a character pointer to the given buffer position, resolving its line within
+    /** Makes a character pointer to the given buffer position, locating its line within
       * the parsed region of the present fractal head.  If the position lies outside
-      * of the parsed region, then the fallbacks of `resolveLine` apply.
+      * of the parsed region, then the fallbacks of `locateLine` apply.
       *
       *     @param position A buffer position within the parsed region of the present fractal head.
-      *     @see LineResolver#resolveLine(int)
+      *     @see LineLocator#locateLine(int)
       */
     private @Subst CharacterPointer characterPointer( final int position ) {
-        lineResolver.resolveLine( position );
-        final int lineStart = lineResolver.start;
+
+      // Locate the line
+      // ───────────────
+        lineLocator.locateLine( position );
+        final int lineStart = lineLocator.start();
+
+      // Resolve its content
+      // ───────────────────
         final int lineLength; { // Or partial length, if the whole line has yet to enter the buffer.
-            final int lineIndex = lineResolver.index;
+            final int lineIndex = lineLocator.index();
             if( lineIndex < fractumLineEnds.length ) { // Then measure the easy way:
                 lineLength = fractumLineEnds.array[lineIndex] - lineStart; }
             else { // The line has yet to be parsed to its end.  Measure it the hard way:
@@ -830,8 +837,11 @@ public class BrecciaCursor implements ReusableCursor {
                 while( p < pN && !completesNewline(buffer.get(p++)) );
                 lineLength = p - lineStart; }}
         final String line = buffer.slice( lineStart, lineLength ).toString();
+
+      // Form the pointer
+      // ────────────────
         final int column = bufferColumnarSpan( lineStart, position );
-        return new CharacterPointer( line, lineResolver.number, column ); }
+        return new CharacterPointer( line, lineLocator.number(), column ); }
 
 
 
@@ -1422,11 +1432,9 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** The end boundaries of the lines of the present fractal head.  Each boundary is a buffer position,
-      * which is either the position of the first character of the succeeding line, or `buffer.limit`
-      * in the case of the final line of the markup source.  Each boundary is preceded by a newline
-      * except that of the final line, which might not be.  If the final line is preceded by a newline,
-      * then it is an empty line with the same end boundary as the preceding line.
+    /** The end boundaries of the lines of the present fractal head, each a buffer position.
+      *
+      *     @see Java.TextLineLocator#endsRegional
       */
     @Subst final IntArrayExtensor fractumLineEnds = new IntArrayExtensor( new int[0x100] ); // = 256
       // Each an adjustable buffer position. [ABP]
@@ -1447,15 +1455,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** @see <a href='https://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries'>
-      *   Grapheme cluster boundaries in Unicode text segmentation</a>
-      */
-    private final Matcher graphemeClusterMatcher
-      = java.util.regex.Pattern.compile( "\\X" ).matcher( "" );
-      // The alternative for cluster discovery (within the JDK) is `java.txt.BreakIterator`, but
-      // apparently it is outdated in this regard, wheras `java.util.regex` was updated for JDK 15.
-      // https://bugs.openjdk.java.net/browse/JDK-8174266
-      // https://bugs.openjdk.java.net/browse/JDK-8243579
+    private final Matcher graphemeClusterMatcher = graphemeClusterPattern.matcher( "" );
 
 
 
@@ -1484,7 +1484,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private final LineResolver lineResolver = new LineResolver();
+    private final LineLocator lineLocator = new LineLocator();
 
 
 
@@ -2771,43 +2771,22 @@ public class BrecciaCursor implements ReusableCursor {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    private final class LineResolver {
+    private final class LineLocator extends TextLineLocator {
 
 
-        /** The index of the resolved line in {@linkplain #fractumLineEnds fractumLineEnds}.
-          */
-        int index;
-
-
-
-        /** The resolved line number.  Lines are numbered beginning at one.
-          */
-        int number;
+        LineLocator() { super( fractumLineEnds ); }
 
 
 
-        /** Resolves the line at `position`, recording the result in the fields of this resolver.
-          * If `position` lies before `fractumStart`, then instead this method uses `fractumStart`;
-          * if `position` lies after the region already parsed by `delimitSegment`,
-          * then instead it uses the last parsed position.
+        /** Locates the line of markup source in which the given buffer position falls.
           *
-          *     @param position A buffer position within the parsed region of the present fractal head.
+          *     @param position A buffer position.  Normally it lies in a region of the present fractal
+          *       head already parsed by `delimitSegment`.  If rather it lies before `fractumStart`,
+          *       then instead this method uses `fractumStart`; or if it lies after the parsed region,
+          *       then instead this method uses the last parsed position.
           */
-        @Subst void resolveLine( final int position ) {
-            final int[] endsArray = fractumLineEnds.array;
-            int e = 0, n = fractumLineNumber(), s = fractumStart;
-            for( int end, eN = fractumLineEnds.length;     // For each line, if its end boundary
-              e < eN && (end = endsArray[e]) <= position; // sits at or before the position,
-              ++e, ++n, s = end );                       // then advance to the next line.
-            index = e;
-            number = n;
-            start = s; } // The end boundary of its predecessor, if any, else `fractumStart`.
-
-
-
-        /** The start position of the resolved line in the buffer.
-          */
-        int start; }
+        @Subst void locateLine( int position ) {
+          super.locateLine( position, fractumStart, fractumLineNumber() ); }}
 
 
 

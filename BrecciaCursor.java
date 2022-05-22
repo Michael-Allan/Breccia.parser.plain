@@ -21,7 +21,7 @@ import static Breccia.parser.plain.Project.newSourceReader;
 import static Java.CharBuffers.newDelimitableCharSequence;
 import static Java.CharBuffers.transferDirectly;
 import static Java.CharSequences.equalInContent;
-import static Java.Unicode.graphemeClusterPattern;
+import static Java.Unicode.graphemePattern;
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static java.lang.Character.codePointAt;
@@ -765,15 +765,14 @@ public class BrecciaCursor implements ReusableCursor {
       *       Grapheme cluster boundaries in Unicode text segmentation</a>
       */
     final int bufferColumnarSpan( final int start, final int end ) {
-        bufferColumnarSpanSeq.delimit( start, end );
-        graphemeClusterMatcher.reset( /*input sequence*/bufferColumnarSpanSeq );
+        bufferGraphemeMatcher.region( start, end );
         int count = 0;
-        while( graphemeClusterMatcher.find() ) ++count;
+        while( bufferGraphemeMatcher.find() ) ++count;
         return count; }
 
 
 
-    private final DelimitableCharSequence bufferColumnarSpanSeq = newDelimitableCharSequence( buffer );
+    private final Matcher bufferGraphemeMatcher = graphemePattern.matcher( buffer );
 
 
 
@@ -1455,10 +1454,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private final Matcher graphemeClusterMatcher = graphemeClusterPattern.matcher( "" );
-
-
-
     /** A record of the present parse state’s indent and fractal ancestry in list form.  It records
       * indent in perfect units by its adjusted size: ``fractumIndentWidth / 4 == hierarchy.size - 1`.
       * It records fractal ancestry by ancestral parse states each at an index equal to its indent in
@@ -1743,8 +1738,7 @@ public class BrecciaCursor implements ReusableCursor {
               // Invariant: always `chLast` holds a non-whitespace character internal to the bullet.
               // Reading by full code point in order accurately to test for alphanumeric characters.
               // Advancing by full cluster in order to apply that test to base characters alone.
-            final Matcher mCluster = graphemeClusterMatcher.reset( /*input sequence*/buffer )
-              .region( b, buffer.limit() );
+            final Matcher mCluster = bufferGraphemeMatcher.region( b, buffer.limit() );
             for( ;; ) {
                 mCluster.find(); // Succeeds, else the following throws `IllegalStateException`.
                 b = mCluster.end(); // The cluster-aware equivalent of `b += charCount(chLast)`.

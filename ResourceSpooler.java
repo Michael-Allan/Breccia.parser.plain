@@ -25,7 +25,7 @@ final class ResourceSpooler {
         ss.add( indentBlind        = new Spool<>( () -> new IndentBlind_       ( c )));
         ss.add( indentBlindLine    = new Spool<>( () -> new IndentBlind_.Line_ ( c )));
         ss.add( patternMatcher     = new Spool<>( () -> new PatternMatcher_    ( c )));
-        spools = ss.toArray( spoolTypeArray ); } /* Bypassing the list interface
+        spools = ss.toArray( spoolArrayType ); } /* Bypassing the list interface
           in favour of a bare array, because speed of iteration matters here. */
 
 
@@ -184,11 +184,11 @@ final class ResourceSpooler {
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
 
 
-    private final Spool<?>[] spools;
+    private static final Spool<?>[] spoolArrayType = new Spool<?>[0];
 
 
 
-    private final Spool<?>[] spoolTypeArray = new Spool<?>[0]; }
+    private final Spool<?>[] spools; }
 
 
 

@@ -1042,7 +1042,7 @@ public class BrecciaCursor implements ReusableCursor {
                 if( cTermEnd < cN ) { /* Then components of a final postgap were inadvertently
                       appended to `cRIcc`.  Move them to `dcc`, where they belong:  [AMP] */
                     int c = cTermEnd;
-                    do { dcc.add( cRIcc.get( c++ )); } while( c < cN );
+                    do dcc.add( cRIcc.get( c++ )); while( c < cN );
                     cRIcc.removeRange( cTermEnd, cN ); /* With this, `cRIcc` would be broken
                       by any further coalescence.  But none will occur ∵ it is now complete. */
                     isReferentClausePostgapped = true; }}

@@ -1454,13 +1454,13 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** A record of the present parse state’s indent and fractal ancestry in list form.  It records
-      * indent in perfect units by its adjusted size: ``fractumIndentWidth / 4 == hierarchy.size - 1`.
-      * It records fractal ancestry by ancestral parse states each at an index equal to its indent in
-      * perfect units, beginning with the parse state of the top-level body fractum and ending with
-      * that of the present body fractum itself at index `hierarchy.size - 1`.  It records unoccupied
-      * indents by padding their corresponding indeces with null parse states.  For parse states other
-      * than body fracta, the hierarchy list is always empty.
+    /** A record in list form of the present parse state’s indent and fractal ancestry.
+      * The indent (as measured in spatial tetrads) it records by way of list size:
+      * `hierarchy.size - 1 == fractumIndentWidth / 4`.  Fractal ancestry it records by ancestral parse
+      * states each at an index equal to its indent in spatial tetrads, beginning with the parse state
+      * of the top-level body fractum and ending with that of the present body fractum itself at index
+      * `hierarchy.size - 1`.  Unoccupied indents it records by padding their corresponding indeces with
+      * null parse states.  For parse states other than body fracta, the hierarchy list is always empty.
       *
       * <p>Be careful with the ancestral parse states — all but the final element of the list —
       * as their content is no longer valid at the present cursor position.</p>.
@@ -1570,7 +1570,7 @@ public class BrecciaCursor implements ReusableCursor {
             nextSegment(); // Scan through to the end boundary of its head.
             buffer.rewind(); // Concordant with `buffer` contract.
  /**/       reifyPoint().commit(); }
-        final int i = fractumIndentWidth / 4; // Indent in perfect units, that is.
+        final int i = fractumIndentWidth / 4; // Indent in spatial tetrads, that is.
         while( hierarchy.size() < i ) hierarchy.add( null ); // Padding for unoccupied ancestral indents.
         assert state == bodyFractum;
         hierarchy.add( bodyFractum ); }

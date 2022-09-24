@@ -611,7 +611,7 @@ public class BrecciaCursor implements ReusableCursor {
                 if( ch == '^' ) {
                     final int bStart = b++;
                     if( b < segmentEnd && buffer.get(b) == '^' ) { // A second ‘^’, so making ‘^^’.
-                        final FlatMarkup indent = spooler.perfectIndent.unwind();
+                        final FlatMarkup indent = spooler.perfectIndentMarker.unwind();
                         indent.text.delimit( bStart, ++b );
                         cc.add( indent ); }
                     else {

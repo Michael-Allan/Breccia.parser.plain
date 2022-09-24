@@ -58,4 +58,4 @@ final class DividerSegment_ extends Markup_ implements DividerSegment {
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

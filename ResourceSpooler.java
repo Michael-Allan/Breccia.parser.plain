@@ -12,19 +12,19 @@ final class ResourceSpooler {
 
     ResourceSpooler( final BrecciaCursor c ) {
         final ArrayList<Spool<?>> ss = new ArrayList<>();
-        ss.add( flatMarkup         = new Spool<>( () -> FlatMarkup.make( c )));
-        ss.add( backslashedSpecial = new Spool<>( () -> FlatMarkup.make( c, "BackslashedSpecial" )));
-        ss.add( divisionLabel      = new Spool<>( () -> FlatMarkup.make( c, "DivisionLabel" )));
-        ss.add( groupDelimiter     = new Spool<>( () -> FlatMarkup.make( c, "GroupDelimiter" )));
-        ss.add( literalizer        = new Spool<>( () -> FlatMarkup.make( c, "Literalizer" )));
-        ss.add( metacharacter      = new Spool<>( () -> FlatMarkup.make( c, "Metacharacter" )));
-        ss.add( perfectIndent      = new Spool<>( () -> FlatMarkup.make( c, "PerfectIndent" )));
-        ss.add( commentAppender    = new Spool<>( () -> new CommentAppender_   ( c )));
-        ss.add( commentBlock       = new Spool<>( () -> new CommentBlock_      ( c )));
-        ss.add( commentBlockLine   = new Spool<>( () -> new CommentBlock_.Line_( c )));
-        ss.add( indentBlind        = new Spool<>( () -> new IndentBlind_       ( c )));
-        ss.add( indentBlindLine    = new Spool<>( () -> new IndentBlind_.Line_ ( c )));
-        ss.add( patternMatcher     = new Spool<>( () -> new PatternMatcher_    ( c )));
+        ss.add( flatMarkup          = new Spool<>( () -> FlatMarkup.make( c )));
+        ss.add( backslashedSpecial  = new Spool<>( () -> FlatMarkup.make( c, "BackslashedSpecial" )));
+        ss.add( divisionLabel       = new Spool<>( () -> FlatMarkup.make( c, "DivisionLabel" )));
+        ss.add( groupDelimiter      = new Spool<>( () -> FlatMarkup.make( c, "GroupDelimiter" )));
+        ss.add( literalizer         = new Spool<>( () -> FlatMarkup.make( c, "Literalizer" )));
+        ss.add( metacharacter       = new Spool<>( () -> FlatMarkup.make( c, "Metacharacter" )));
+        ss.add( perfectIndentMarker = new Spool<>( () -> FlatMarkup.make( c, "PerfectIndentMarker" )));
+        ss.add( commentAppender     = new Spool<>( () -> new CommentAppender_   ( c )));
+        ss.add( commentBlock        = new Spool<>( () -> new CommentBlock_      ( c )));
+        ss.add( commentBlockLine    = new Spool<>( () -> new CommentBlock_.Line_( c )));
+        ss.add( indentBlind         = new Spool<>( () -> new IndentBlind_       ( c )));
+        ss.add( indentBlindLine     = new Spool<>( () -> new IndentBlind_.Line_ ( c )));
+        ss.add( patternMatcher      = new Spool<>( () -> new PatternMatcher_    ( c )));
         spools = ss.toArray( spoolArrayType ); } /* Bypassing the list interface
           in favour of a bare array, because speed of iteration matters here. */
 
@@ -120,7 +120,7 @@ final class ResourceSpooler {
     /** Spool of flat-markup instances, each reflective of a perfect indent ‘^^’ within
       * a regular-expression pattern.
       */
-    final Spool<@TagName("PerfectIndent") FlatMarkup> perfectIndent;
+    final Spool<@TagName("PerfectIndentMarker") FlatMarkup> perfectIndentMarker;
 
 
 

@@ -24,7 +24,7 @@ final class PerfectIndent extends FlatMarkup {
 
 
 
-    public @Override String tagName() { return "Markup"; }
+    public @Override String tagName() { return "PerfectIndent"; }
 
 
 
@@ -35,4 +35,4 @@ final class PerfectIndent extends FlatMarkup {
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

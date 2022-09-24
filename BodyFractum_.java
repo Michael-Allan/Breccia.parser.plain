@@ -9,20 +9,7 @@ import Breccia.parser.Markup;
 abstract class BodyFractum_<C extends BrecciaCursor> extends Fractum_<C> implements BodyFractum {
 
 
-    BodyFractum_( C cursor ) {
-        super( cursor );
-        perfectIndent = new PerfectIndent( cursor, /*container*/this ); }
-
-
-
-    final PerfectIndent perfectIndent;
-
-
-
-   // ━━━  B o d y   F r a c t u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-    public @Override Markup perfectIndent() { return perfectIndent; }
+    BodyFractum_( C cursor ) { super( cursor ); }
 
 
 
@@ -47,4 +34,4 @@ abstract class BodyFractum_<C extends BrecciaCursor> extends Fractum_<C> impleme
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

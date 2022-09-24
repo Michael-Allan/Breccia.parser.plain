@@ -1533,7 +1533,8 @@ public class BrecciaCursor implements ReusableCursor {
             return; }
         final int nextIndentWidth = segmentEndIndicant - segmentEnd; /* The offset from the start of
           the next fractum (`segmentEnd`) to its first non-space character (`segmentEndIndicant`). */
-        assert nextIndentWidth >= 0 && nextIndentWidth % 4 == 0; // A body fractum, perfectly indented.
+        assert nextIndentWidth >= 0 && nextIndentWidth % 4 == 0; /* The start of a body fractum —
+          more specifically of a point head or divider segment — indicated by a perfect indent. */
         if( !state.isInitial() ) { // Then unwind any past siblings from `hierarchy`, ending each.
             while( fractumIndentWidth >= nextIndentWidth ) { /* For its own purposes, this loop maintains
                   the records of `fractumIndentWidth` and `hierarchy` even through the ending states
@@ -1607,9 +1608,7 @@ public class BrecciaCursor implements ReusableCursor {
       * Ensure before calling this method that all other cursor fields are initialized save `hierarchy`.
       */
     private void readyDivision() {
-        basicDivision.text.delimit( fractumStart, segmentEnd ); // Proper to fracta.
-        basicDivision.perfectIndent.text.delimit( // Proper to body fracta.
-          fractumStart, fractumStart + fractumIndentWidth ); }
+        basicDivision.text.delimit( fractumStart, segmentEnd ); } // Proper to fracta.
 
 
 

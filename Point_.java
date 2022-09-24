@@ -10,7 +10,9 @@ import java.util.List;
 abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implements Point {
 
 
-    Point_( C cursor ) { super( cursor ); }
+    Point_( final C cursor ) {
+        super( cursor );
+        perfectIndent = new PerfectIndent( cursor, /*container*/this ); }
 
 
 
@@ -60,6 +62,10 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
+    final PerfectIndent perfectIndent;
+
+
+
    // ━━━  F r a c t u m _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
@@ -78,6 +84,10 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
     public abstract @Override Descriptor descriptor();
+
+
+
+    public final @Override Markup perfectIndent() { return perfectIndent; }
 
 
 
@@ -131,4 +141,4 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

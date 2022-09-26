@@ -2819,7 +2819,9 @@ public class BrecciaCursor implements ReusableCursor {
                         iF.resourceIndicant = null;    // No resource indicant is present,
                         iF.patternMatchers = matchers; // only a pattern-matcher series.
                         break composition; }
-                    cc.appendFlat( b, ++b );      // The containment operator ‘@’,
+                    final FlatMarkup opC = spooler.containmentOperator.unwind();
+                    opC.text.delimit( b, ++b );
+                    cc.add( opC );                // The containment operator ‘@’,
                     b = appendPostgap( b, cc ); } // and its trailing postgap.
                 final int nPM = matchers.size();
                 iF.patternMatchers = nPM == 0 ? null : matchers;
@@ -2905,8 +2907,10 @@ public class BrecciaCursor implements ReusableCursor {
                     final var cC = iIR.containmentClauseWhenPresent;
                     final CoalescentMarkupList cCcc = cC.components;
                     cCcc.clear();
-                    cCcc.appendFlat( b, ++b ); // The ‘@’.
-                    b = appendPostgap( b, cCcc );
+                    final FlatMarkup opC = spooler.containmentOperator.unwind();
+                    opC.text.delimit( b, ++b );
+                    cCcc.add( opC );              // The containment operator ‘@’,
+                    b = appendPostgap( b, cCcc ); // and its trailing postgap.
                     final var iF = iIR.fractumIndicantWhenPresent;
                     b = append( b, iF, "Fractum indicant expected" ); // Which sets the parser fields.
                     cCcc.add( iIR.fractumIndicant = iF );

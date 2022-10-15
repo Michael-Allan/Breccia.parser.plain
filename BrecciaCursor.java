@@ -764,7 +764,11 @@ public class BrecciaCursor implements ReusableCursor {
       *     @see <a href='https://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries'>
       *       Grapheme cluster boundaries in Unicode text segmentation</a>
       */
-    final int bufferColumnarSpan( final int start, final int end ) {
+    final int bufferColumnarSpan( final int start, final int end ) { /* This method will overcount the
+          number of clusters (reporting one too many) in the event `end` bisects the final cluster;
+          an edge case that probably never occurs in the present code.  Cf. `BreccianFileTranslator.
+          columnarSpan`, which correctly handles this edge case.
+          http://reluk.ca/project/Breccia/Web/imager/BreccianFileTranslator.java */
         bufferGraphemeMatcher.region( start, end );
         int count = 0;
         while( bufferGraphemeMatcher.find() ) ++count;

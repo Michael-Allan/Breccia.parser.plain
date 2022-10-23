@@ -21,12 +21,12 @@ import static Breccia.parser.plain.Project.newSourceReader;
 import static Java.CharBuffers.newDelimitableCharSequence;
 import static Java.CharBuffers.transferDirectly;
 import static Java.CharSequences.equalInContent;
-import static Java.Unicode.graphemePattern;
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static java.lang.Character.codePointAt;
 import static java.lang.Character.isAlphabetic;
 import static java.lang.Character.isDigit;
+import static Java.Unicode.graphemeClusterPattern;
 import static java.util.Arrays.binarySearch;
 
 
@@ -745,6 +745,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    private final Matcher bufferClusterMatcher = graphemeClusterPattern.matcher( buffer );
+
+
+
     /** Returns the columnar offset at the given buffer position, resolving its line
       * within the parsed region of the present fractal head.  If the position lies outside
       * of the parsed region, then the fallbacks of `locateLine` apply.
@@ -755,28 +759,23 @@ public class BrecciaCursor implements ReusableCursor {
       */
     final @Subst int bufferColumn( final int position ) {
         lineLocator.locateLine( position );
-        return bufferColumnarSpan( lineLocator.start(), position ); }
+        return bufferClusterCount( lineLocator.start(), position ); }
 
 
 
     /** Returns the number of grapheme clusters between buffer positions `start` and `end`.
+      * Omits any partial cluster at the end of the span.
       *
       *     @see <a href='https://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries'>
       *       Grapheme cluster boundaries in Unicode text segmentation</a>
       */
-    final int bufferColumnarSpan( final int start, final int end ) { /* This method will overcount the
-          number of clusters (reporting one too many) in the event `end` bisects the final cluster;
-          an edge case that probably never occurs in the present code.  Cf. `BreccianFileTranslator.
-          columnarSpan`, which correctly handles this edge case.
-          http://reluk.ca/project/Breccia/Web/imager/BreccianFileTranslator.java */
-        bufferGraphemeMatcher.region( start, end );
-        int count = 0;
-        while( bufferGraphemeMatcher.find() ) ++count;
-        return count; }
+    final int bufferClusterCount( final int start, final int end ) {
+      return bufferGCC.clusterCount( start, end ); }
 
 
 
-    private final Matcher bufferGraphemeMatcher = graphemePattern.matcher( buffer );
+    private final GraphemeClusterCounter bufferGCC =  new GraphemeClusterCounter(
+      buffer, bufferClusterMatcher );
 
 
 
@@ -821,7 +820,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @param position A buffer position within the parsed region of the present fractal head.
       *     @see LineLocator#locateLine(int)
       */
-    private @Subst CharacterPointer characterPointer( final int position ) {
+    @Subst CharacterPointer characterPointer( final int position ) {
 
       // Locate the line
       // ───────────────
@@ -843,7 +842,7 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Form the pointer
       // ────────────────
-        final int column = bufferColumnarSpan( lineStart, position );
+        final int column = bufferClusterCount( lineStart, position );
         return new CharacterPointer( line, lineLocator.number(), column ); }
 
 
@@ -1741,7 +1740,7 @@ public class BrecciaCursor implements ReusableCursor {
               // Invariant: always `chLast` holds a non-whitespace character internal to the bullet.
               // Reading by full code point in order accurately to test for alphanumeric characters.
               // Advancing by full cluster in order to apply that test to base characters alone.
-            final Matcher mCluster = bufferGraphemeMatcher.region( b, buffer.limit() );
+            final Matcher mCluster = bufferClusterMatcher.region( b, buffer.limit() );
             for( ;; ) {
                 mCluster.find(); // Succeeds, else the following throws `IllegalStateException`.
                 b = mCluster.end(); // The cluster-aware equivalent of `b += charCount(chLast)`.

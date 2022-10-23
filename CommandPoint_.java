@@ -217,7 +217,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
         public @Override int column() { // The command is collinear with the bullet.
-          return bullet.column() + cursor.bufferColumnarSpan(bullet.text.start(),text.start()); }
+          return bullet.column() + cursor.bufferClusterCount(bullet.text.start(),text.start()); }
 
 
 
@@ -248,4 +248,4 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

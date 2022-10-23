@@ -1,6 +1,7 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.Markup;
+import Java.CharacterPointer;
 import Java.DelimitableCharSequence;
 
 import static Breccia.parser.plain.Language.impliesNewline;
@@ -33,6 +34,11 @@ abstract class Markup_ implements Markup {
 
 
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public final @Override CharacterPointer characterPointer( final int c ) {
+        return cursor.characterPointer( text.start() + c ); }
+
 
 
     public final @Override CharSequence text() { return text; }

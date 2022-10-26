@@ -1987,6 +1987,7 @@ public class BrecciaCursor implements ReusableCursor {
     /** The offset of the read buffer from the start of the markup source, in UTF-16 code units.
       * This tells how far the buffer has been shifted by `delimitSegment`.
       *
+      *     @see Markup#xunc()
       *     @see #buffer
       */
     int xunc;

@@ -8,7 +8,7 @@ import Java.RangedArrayList;
 final class CoalescentArrayList extends RangedArrayList<Markup> implements CoalescentMarkupList {
 
 
-    CoalescentArrayList( ResourceSpooler spooler ) { this.spooler = spooler; }
+    CoalescentArrayList( FractalSpooler spooler ) { this.spooler = spooler; }
 
 
 
@@ -83,7 +83,7 @@ final class CoalescentArrayList extends RangedArrayList<Markup> implements Coale
 
 
 
-    private final ResourceSpooler spooler; }
+    private final FractalSpooler spooler; }
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

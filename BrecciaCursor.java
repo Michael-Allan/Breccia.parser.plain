@@ -1457,20 +1457,18 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** A record in list form of the present parse state’s indent and fractal ancestry.
+    /** A record in list form of the present body fractum’s indent and fractal ancestry.
       * The indent (as measured in spatial tetrads) it records by way of list size:
-      * `hierarchy.size - 1 == fractumIndentWidth / 4`.  Fractal ancestry it records by ancestral parse
-      * states each at an index equal to its indent in spatial tetrads, beginning with the parse state
-      * of the top-level body fractum and ending with that of the present body fractum itself at index
-      * `hierarchy.size - 1`.  Unoccupied indents it records by padding their corresponding indeces with
-      * null parse states.  For parse states other than body fracta, the hierarchy list is always empty.
+      * `hierarchy.size - 1 == fractumIndentWidth / 4`.  Fractal ancestry it records
+      * by list entries each at an index equal to the ancestor’s indent in spatial tetrads,
+      * beginning with the top body fractum and ending with the present body fractum
+      * at index `hierarchy.size - 1`.  Unoccupied indents it records as null entries.
       *
-      * <p>Be careful with the ancestral parse states — all but the final element of the list —
-      * as their content is no longer valid at the present cursor position.</p>.
+      * <p>For parse states other than body fracta, the hierarchy list is empty.</p>
       *
       *     @see #fractumIndentWidth
       */
-    private final @Subst ArrayList<BodyFractum_<?>> hierarchy = new ArrayList<>();
+    private final @Subst ArrayList<Hierarch> hierarchy = new ArrayList<>();
 
 
 
@@ -1488,6 +1486,7 @@ public class BrecciaCursor implements ReusableCursor {
 
     private void _markupSource( final Reader r ) throws ParseError {
         sourceReader = r;
+        sourceSpooler.rewind();
         xunc = 0;
         final int count; {
             try { count = transferDirectly( sourceReader, buffer.clear() ); }
@@ -1526,11 +1525,12 @@ public class BrecciaCursor implements ReusableCursor {
           an empty comment marks each point of commitment to a new parse state. */
         assert !state.isFinal();
         if( segmentEnd == buffer.limit() ) { // Then no fracta remain.
-            while( fractumIndentWidth >= 0 ) { // Unwind any past body fracta, ending each.
+            while( fractumIndentWidth >= 0 ) { // Unwind and recursively end any final body fractum.
                 fractumIndentWidth -= 4;
-                final BodyFractum_<?> past = hierarchy.remove( hierarchy.size() - 1 );
+                final Hierarch past = hierarchy.remove( hierarchy.size() - 1 );
                 if( past != null ) {
- /**/               past.end.commit();
+ /**/               past.pendingEnd.commit();
+                    sourceSpooler.hierarch.rewind( past );
                     return; }}
  /**/       basicFileFractum.end.commit();
             return; }
@@ -1538,14 +1538,15 @@ public class BrecciaCursor implements ReusableCursor {
           the next fractum (`segmentEnd`) to its first non-space character (`segmentEndIndicant`). */
         assert nextIndentWidth >= 0 && nextIndentWidth % 4 == 0; /* The start of a body fractum —
           more specifically of a point head or divider segment — indicated by a perfect indent. */
-        if( !state.isInitial() ) { // Then unwind any past siblings from `hierarchy`, ending each.
+        if( !state.isInitial() ) { // Then unwind and recursively end any previous sibling.
             while( fractumIndentWidth >= nextIndentWidth ) { /* For its own purposes, this loop maintains
-                  the records of `fractumIndentWidth` and `hierarchy` even through the ending states
-                  of past siblings, during which they are meaningless for their intended purposes. */
+                  the records of `fractumIndentWidth` and `hierarchy` even through the ending states of
+                  a previous sibling, during which they are meaningless for their intended purposes. */
                 fractumIndentWidth -= 4;
-                final BodyFractum_<?> pastSibling = hierarchy.remove( hierarchy.size() - 1 );
-                if( pastSibling != null ) {
- /**/               pastSibling.end.commit();
+                final Hierarch past = hierarchy.remove( hierarchy.size() - 1 );
+                if( past != null ) {
+ /**/               past.pendingEnd.commit();
+                    sourceSpooler.hierarch.rewind( past );
                     return; }}}
 
         // Changing what follows?  Sync → `markupSource`.
@@ -1575,8 +1576,7 @@ public class BrecciaCursor implements ReusableCursor {
  /**/       reifyPoint().commit(); }
         final int i = fractumIndentWidth / 4; // Indent in spatial tetrads, that is.
         while( hierarchy.size() < i ) hierarchy.add( null ); // Padding for unoccupied ancestral indents.
-        assert state == bodyFractum;
-        hierarchy.add( bodyFractum ); }
+        hierarchy.add( sourceSpooler.hierarch.unwind().set() ); }
 
 
 
@@ -1871,7 +1871,11 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    final ResourceSpooler spooler = new ResourceSpooler( this );
+    private final SourceSpooler sourceSpooler = new SourceSpooler( this );
+
+
+
+    final FractalSpooler spooler = new FractalSpooler( this );
 
 
 
@@ -2638,6 +2642,34 @@ public class BrecciaCursor implements ReusableCursor {
                 block.text.delimit( bBlock, b );
                 parentMarkup.add( block ); }
             return b; }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    /** An entry in the hierarchy list representing a single body fractum.
+      *
+      *     @see #hierarchy
+      */
+    final class Hierarch {
+
+
+        /** The state to commit when this hierarch is unwound from the hierarchy,
+          * so ending the body fractum that it represents.
+          */
+        private BodyFractum_<?>.End_ pendingEnd;
+
+
+        /** Sets the fields of this hierarch from the present body fractum and returns the hierarch.
+          * This is a convenience method.
+          *
+          *     @throws IllegalStateException If `state` is not `bodyFractum`.
+          */
+        private Hierarch set() {
+            if( state != bodyFractum ) throw new IllegalStateException();
+            pendingEnd = (BodyFractum_<?>.End_)bodyFractum.end;
+            return this; }}
 
 
 

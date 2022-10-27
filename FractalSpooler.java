@@ -2,15 +2,16 @@ package Breccia.parser.plain;
 
 import Breccia.parser.TagName;
 import java.util.ArrayList;
-import java.util.function.Supplier;
 
 
-/** A dispensary of reusable resources of various types.
+/** A spooler of per-fractum resources.  Use them in one fractum, then rewind them for the next.
+  *
+  *     @see Fractum_
   */
-final class ResourceSpooler {
+final class FractalSpooler extends Spooler {
 
 
-    ResourceSpooler( final BrecciaCursor c ) {
+    FractalSpooler( final BrecciaCursor c ) {
         final ArrayList<Spool<?>> ss = new ArrayList<>();
         ss.add( flatMarkup          = new Spool<>( () -> FlatMarkup.make( c )));
         ss.add( backslashedSpecial  = new Spool<>( () -> FlatMarkup.make( c, "BackslashedSpecial" )));
@@ -26,8 +27,7 @@ final class ResourceSpooler {
         ss.add( indentBlind         = new Spool<>( () -> new IndentBlind_       ( c )));
         ss.add( indentBlindLine     = new Spool<>( () -> new IndentBlind_.Line_ ( c )));
         ss.add( patternMatcher      = new Spool<>( () -> new PatternMatcher_    ( c )));
-        spools = ss.toArray( spoolArrayType ); } /* Bypassing the list interface
-          in favour of a bare array, because speed of iteration matters here. */
+        initialize( ss ); }
 
 
 
@@ -127,75 +127,7 @@ final class ResourceSpooler {
     /** Spool of flat-markup instances, each reflective of a perfect indent ‘^^’ within
       * a regular-expression pattern.
       */
-    final Spool<@TagName("PerfectIndentMarker") FlatMarkup> perfectIndentMarker;
-
-
-
-    /** Rewinds all spools, making all resources ready for reuse.
-      * Do not call this method if a previously dispensed resource remains in use.
-      *
-      *     @see Spool#rewind()
-      */
-    void rewind() { for( Spool<?> s: spools ) s.rewind(); }
-
-
-
-   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-
-
-    /** A dispenser of reusable resources of type `R`.
-      */
-    static final class Spool<R> {
-
-
-        /** @see #source
-          */
-        Spool( Supplier<R> source ) { this.source = source; }
-
-
-
-        private int r = 0; // Next to unwind.
-
-
-
-        private ArrayList<R> resources = new ArrayList<>();
-
-
-
-        /** Effectively winds all previously dispensed resources back onto this spool,
-          * ready for redispensing and reuse.
-          *
-          *     @see ResourceSpooler#rewind()
-          */
-        void rewind() { r = 0; }
-
-
-
-        /** Where to get new instances of the resource.
-          */
-        private final Supplier<R> source;
-
-
-
-        /** Dispenses a single instance of the resource.
-          */
-        R unwind() {
-            final R res;
-            if( r < resources.size() ) res = resources.get( r );
-            else resources.add( res = source.get() );
-            ++r;
-            return res; }}
-
-
-
-////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
-
-
-    private static final Spool<?>[] spoolArrayType = new Spool<?>[0];
-
-
-
-    private final Spool<?>[] spools; }
+    final Spool<@TagName("PerfectIndentMarker") FlatMarkup> perfectIndentMarker; }
 
 
 

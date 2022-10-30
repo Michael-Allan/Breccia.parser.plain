@@ -50,7 +50,7 @@ final class FractumIndicant_ extends Markup_ implements FractumIndicant {
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override int column() { return cursor.bufferColumn( text.start() ); }
+    public final @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -60,7 +60,8 @@ final class FractumIndicant_ extends Markup_ implements FractumIndicant {
 
 
 
-    public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+    public final @Override @AdjunctSlow int lineNumber() {
+        return cursor.bufferLineNumber( text.start() ); }
 
 
 

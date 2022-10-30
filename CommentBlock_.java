@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.CommentaryHolder;
 import Breccia.parser.CommentBlock;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ final class CommentBlock_ extends Markup_ implements CommentBlock {
 
 
 
-    public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+    public @Override @AdjunctSlow int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
 
 
 
@@ -39,8 +40,10 @@ final class CommentBlock_ extends Markup_ implements CommentBlock {
         Line_( final BrecciaCursor cursor ) {
             super( /*c0_white*/FlatMarkup.make(cursor), cursor );
             initialize( /*c3_commentaryWhenPresent*/new FlatMarkup( cursor ) {
-                public @Override int column() { return cursor.bufferColumn( text.start() ); }
-                public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+                public @Override @AdjunctSlow int column() {
+                    return cursor.bufferColumn( text.start() ); }
+                public @Override @AdjunctSlow int lineNumber() {
+                    return cursor.bufferLineNumber( text.start() ); }
                 public @Override String tagName() { return c3_commentaryTagName; }}); }
 
 
@@ -51,14 +54,7 @@ final class CommentBlock_ extends Markup_ implements CommentBlock {
 
         /** Sets the tag name for any commentary that occurs in this line.
           */
-        void c3_commentaryTagName( String name ) { c3_commentaryTagName = name; }
-
-
-
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        public @Override int column() { return 0; }}
+        void c3_commentaryTagName( String name ) { c3_commentaryTagName = name; }}
 
 
 
@@ -69,4 +65,4 @@ final class CommentBlock_ extends Markup_ implements CommentBlock {
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

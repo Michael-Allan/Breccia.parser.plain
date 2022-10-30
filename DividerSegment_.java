@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.DividerSegment;
 import Breccia.parser.Markup;
 import java.util.List;
@@ -47,7 +48,8 @@ final class DividerSegment_ extends Markup_ implements DividerSegment {
 
 
 
-    public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+    public final @Override @AdjunctSlow int lineNumber() {
+        return cursor.bufferLineNumber( text.start() ); }
 
 
 

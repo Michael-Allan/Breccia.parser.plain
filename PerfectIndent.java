@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.Markup;
 import java.nio.CharBuffer;
 
@@ -16,11 +17,13 @@ final class PerfectIndent extends FlatMarkup {
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
+    /** Returns zero, always the indent leads the line.
+      */
     public @Override int column() { return 0; }
 
 
 
-    public @Override int lineNumber() { return container.lineNumber(); }
+    public @Override @AdjunctSlow int lineNumber() { return container.lineNumber(); }
 
 
 

@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.IndentBlind;
 import Breccia.parser.Markup;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ final class IndentBlind_ extends Markup_ implements IndentBlind {
 
 
 
-    public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+    public @Override @AdjunctSlow int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
 
 
 
@@ -94,7 +95,8 @@ final class IndentBlind_ extends Markup_ implements IndentBlind {
 
 
 
-        public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
+        public final @Override @AdjunctSlow int lineNumber() {
+            return cursor.bufferLineNumber( text.start() ); }}
 
 
 
@@ -105,4 +107,4 @@ final class IndentBlind_ extends Markup_ implements IndentBlind {
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

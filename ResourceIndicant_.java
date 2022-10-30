@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.ResourceIndicant;
 import Breccia.parser.Markup;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ final class ResourceIndicant_ extends Markup_ implements ResourceIndicant {
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override int column() { return cursor.bufferColumn( text.start() ); }
+    public final @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -54,7 +55,8 @@ final class ResourceIndicant_ extends Markup_ implements ResourceIndicant {
 
 
 
-    public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+    public final @Override @AdjunctSlow int lineNumber() {
+        return cursor.bufferLineNumber( text.start() ); }
 
 
 
@@ -65,4 +67,4 @@ final class ResourceIndicant_ extends Markup_ implements ResourceIndicant {
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

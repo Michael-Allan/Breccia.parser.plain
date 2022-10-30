@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.CommandPoint;
 import Breccia.parser.Markup;
 import Java.DelimitableCharSequence;
@@ -131,7 +132,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override int column() { return cursor.bufferColumn( text.start() ); }
+        public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -141,7 +142,8 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-        public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+        public @Override @AdjunctSlow int lineNumber() {
+            return cursor.bufferLineNumber( text.start() ); }
 
 
 
@@ -187,7 +189,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override int column() { return cursor.bufferColumn( text.start() ); }
+        public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -195,7 +197,8 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-        public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
+        public @Override @AdjunctSlow int lineNumber() {
+            return cursor.bufferLineNumber( text.start() ); }}
 
 
 
@@ -216,7 +219,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override int column() { // The command is collinear with the bullet.
+        public @Override @AdjunctSlow int column() { // The command is collinear with the bullet.
           return bullet.column() + cursor.bufferClusterCount(bullet.text.start(),text.start()); }
 
 
@@ -227,7 +230,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-        public @Override int lineNumber() { return CommandPoint_.this.lineNumber(); }
+        public @Override @AdjunctSlow int lineNumber() { return CommandPoint_.this.lineNumber(); }
           // Always the command begins on the first line of the command point.
 
 

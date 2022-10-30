@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.Fractum;
 
 import static Java.Classes.nameWithoutPackageLeader;
@@ -47,7 +48,7 @@ abstract class Fractum_<C extends BrecciaCursor> extends Markup_ implements Frac
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override int lineNumber() { return cursor.fractumLineNumber(); }
+    public final @Override @AdjunctSlow int lineNumber() { return cursor.fractumLineNumber(); }
 
 
 

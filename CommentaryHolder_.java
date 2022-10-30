@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.CommentaryHolder;
 import Breccia.parser.Markup;
 import java.util.List;
@@ -90,8 +91,9 @@ abstract class CommentaryHolder_ extends Markup_ implements CommentaryHolder {
 
 
 
-    public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
+    public final @Override @AdjunctSlow int lineNumber() {
+        return cursor.bufferLineNumber( text.start() ); }}
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

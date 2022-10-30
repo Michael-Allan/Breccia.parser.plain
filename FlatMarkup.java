@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.Markup;
 import java.util.List;
 
@@ -34,9 +35,10 @@ public abstract class FlatMarkup extends Markup_ {
     public static FlatMarkup make( final BrecciaCursor cursor, final String tagName ) {
         return new FlatMarkup( cursor ) {
 
-            public @Override int column() { return cursor.bufferColumn( text.start() ); }
+            public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
-            public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+            public @Override @AdjunctSlow int lineNumber() {
+                return cursor.bufferLineNumber( text.start() ); }
 
             public @Override String tagName() { return tagName; }}; }
 
@@ -52,4 +54,4 @@ public abstract class FlatMarkup extends Markup_ {
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

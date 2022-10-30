@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.Markup;
 import java.util.List;
 
@@ -21,7 +22,7 @@ final class Pattern extends Markup_ {
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override int column() { return cursor.bufferColumn( text.start() ); }
+    public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -31,7 +32,7 @@ final class Pattern extends Markup_ {
 
 
 
-    public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+    public @Override @AdjunctSlow int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
 
 
 
@@ -46,4 +47,4 @@ final class Pattern extends Markup_ {
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

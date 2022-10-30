@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.Markup;
 import Breccia.parser.Point;
 import java.util.List;
@@ -18,9 +19,9 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
     final FlatMarkup bullet = new FlatMarkup( this ) {
 
-        public @Override int column() { return cursor.fractumIndentWidth; }
+        public @Override @AdjunctSlow int column() { return cursor.fractumIndentWidth; }
 
-        public @Override int lineNumber() { return Point_.this.lineNumber(); }
+        public @Override @AdjunctSlow int lineNumber() { return Point_.this.lineNumber(); }
 
         public @Override String tagName() { return "Bullet"; }};
 
@@ -115,13 +116,14 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-        public final @Override int column() { // The descriptor is collinear with the bullet.
+        public final @Override @AdjunctSlow int column() { // The descriptor is collinear with the bullet.
           return bullet.column() + cursor.bufferClusterCount(bullet.text.start(),text.start()); }
 
 
 
-        public final @Override int lineNumber() { return Point_.this.lineNumber(); } /* The descriptor
-          begins on the first line of the point, if only because it includes that line’s terminator. */
+        public final @Override @AdjunctSlow int lineNumber() {
+            return Point_.this.lineNumber(); } /* The descriptor begins on the first line of the point,
+              if only because it includes that line’s terminator. */
 
 
 

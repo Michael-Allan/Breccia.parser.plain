@@ -87,7 +87,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override int column() { return cursor.bufferColumn( text.start() ); }
+        public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -97,7 +97,8 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+        public @Override @AdjunctSlow int lineNumber() {
+            return cursor.bufferLineNumber( text.start() ); }
 
 
 
@@ -177,7 +178,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override int column() { return cursor.bufferColumn( text.start() ); }
+        public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -187,7 +188,8 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
+        public @Override @AdjunctSlow int lineNumber() {
+            return cursor.bufferLineNumber( text.start() ); }}
 
 
 
@@ -248,7 +250,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override int column() { return cursor.bufferColumn( text.start() ); }
+        public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -256,7 +258,8 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }}
+        public @Override @AdjunctSlow int lineNumber() {
+            return cursor.bufferLineNumber( text.start() ); }}
 
 
 
@@ -288,7 +291,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override int column() { return command.column(); }
+        public @Override @AdjunctSlow int column() { return command.column(); }
           // Always the referrer clause leads the command.
 
 
@@ -299,7 +302,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override int lineNumber() { return command.lineNumber(); }}}
+        public @Override @AdjunctSlow int lineNumber() { return command.lineNumber(); }}}
           // Always the referrer clause leads the command.
 
 

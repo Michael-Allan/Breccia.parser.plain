@@ -1,5 +1,6 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.PatternMatcher;
 import Breccia.parser.Markup;
 import java.util.List;
@@ -48,7 +49,7 @@ final class PatternMatcher_ extends Markup_ implements PatternMatcher {
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override int column() { return cursor.bufferColumn( text.start() ); }
+    public final @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
@@ -56,7 +57,8 @@ final class PatternMatcher_ extends Markup_ implements PatternMatcher {
 
 
 
-    public final @Override int lineNumber() { return cursor.bufferLineNumber( text.start() ); }
+    public final @Override @AdjunctSlow int lineNumber() {
+        return cursor.bufferLineNumber( text.start() ); }
 
 
 

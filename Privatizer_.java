@@ -21,6 +21,16 @@ final class Privatizer_ extends SimpleCommandPoint<BrecciaCursor> implements Pri
 
     protected @Override void commit() {
         super.commit();
+        final int xuncParent; {
+            for( int h = cursor.hierarchy.size();; ) {
+                if( h == 0 ) {
+                    xuncParent = -1; // File fractum.
+                    break; }
+                final var hierarchParent = cursor.hierarchy.get( --h );
+                if( hierarchParent != null ) {
+                    xuncParent = hierarchParent.xunc();
+                    break; }}}
+        cursor.xuncPrivatized.add( xuncParent );
         cursor.privatizer( this ); }
 
 
@@ -37,4 +47,4 @@ final class Privatizer_ extends SimpleCommandPoint<BrecciaCursor> implements Pri
 
 
 
-                                                        // Copyright © 2021  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.

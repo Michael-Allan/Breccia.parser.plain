@@ -1,11 +1,13 @@
 package Breccia.parser.plain;
 
+import Breccia.parser.AdjunctSlow;
 import Breccia.parser.Markup;
 import Java.CharacterPointer;
 import Java.DelimitableCharSequence;
 
 import static Breccia.parser.plain.Language.impliesNewline;
 import static Java.CharBuffers.newDelimitableCharSequence;
+import static java.util.Arrays.copyOf;
 
 
 /** {@inheritDoc} <p>Warning: while the `{@linkplain Breccia.parser.DataReflector DataReflector}`
@@ -36,7 +38,7 @@ abstract class Markup_ implements Markup {
    // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override CharacterPointer characterPointer( final int c ) {
+    public final @Override @AdjunctSlow CharacterPointer characterPointer( final int c ) {
         return cursor.characterPointer( text.start() + c ); }
 
 
@@ -46,6 +48,22 @@ abstract class Markup_ implements Markup {
 
 
     public final @Override int xunc() { return cursor.xunc + text.start(); }
+
+
+
+    public final @Override @AdjunctSlow int[] xuncFractalDescent() {
+        final int hN = cursor.hierarchy.size();
+        int[] xuncs = new int[hN];
+        if( hN > 0 ) {
+            int h = 0, x = 0;
+            do {
+                final var hierarch = cursor.hierarchy.get( h++ );
+                if( hierarch != null ) xuncs[x++] = hierarch.xunc(); }
+                while( h < hN );
+            final int xN = x; // The number of xuncs copied from `hierarchy` above.
+            if( xN < hN ) { // Then a null hierarch was encountered and `xuncs` is too long.
+                xuncs = copyOf( xuncs, xN ); }} // Therefore truncate it to the correct length.
+        return xuncs; }
 
 
 

@@ -28,6 +28,8 @@ import static java.lang.Character.isAlphabetic;
 import static java.lang.Character.isDigit;
 import static Java.Unicode.graphemeClusterPattern;
 import static java.util.Arrays.binarySearch;
+import static java.util.Arrays.copyOf;
+import static java.util.Arrays.sort;
 
 
 /** A reusable, pull parser of plain Breccia as reflected through a cursor.
@@ -260,6 +262,14 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     public final @Override @NarrowNot ParseState state() { return state; }
+
+
+
+    public final @Override @AdjunctSlow int[] xuncPrivatized() {
+        if( !state.isFinal() || state == halt ) throw new IllegalStateException();
+        final int[] xuncs = copyOf( xuncPrivatized.array, xuncPrivatized.length );
+        sort( xuncs );
+        return xuncs; }
 
 
 
@@ -1457,18 +1467,16 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** A record in list form of the present body fractum’s indent and fractal ancestry.
+    /** A record in list form of the present fractum’s indent and line of descent.
       * The indent (as measured in spatial tetrads) it records by way of list size:
-      * `hierarchy.size - 1 == fractumIndentWidth / 4`.  Fractal ancestry it records
-      * by list entries each at an index equal to the ancestor’s indent in spatial tetrads,
-      * beginning with the top body fractum and ending with the present body fractum
+      * `hierarchy.size - 1 == fractumIndentWidth / 4`.  Descent it records by list entries
+      * each at an index equal to the descendant’s indent in spatial tetrads beginning with
+      * the top descendant (least descended) and ending with the present fractum (most)
       * at index `hierarchy.size - 1`.  Unoccupied indents it records as null entries.
-      *
-      * <p>For parse states other than body fracta, the hierarchy list is empty.</p>
       *
       *     @see #fractumIndentWidth
       */
-    private final @Subst ArrayList<Hierarch> hierarchy = new ArrayList<>();
+    final @Subst ArrayList<Hierarch> hierarchy = new ArrayList<>();
 
 
 
@@ -1487,6 +1495,7 @@ public class BrecciaCursor implements ReusableCursor {
     private void _markupSource( final Reader r ) throws ParseError {
         sourceReader = r;
         sourceSpooler.rewind();
+        xuncPrivatized.clear();
         xunc = 0;
         final int count; {
             try { count = transferDirectly( sourceReader, buffer.clear() ); }
@@ -1665,8 +1674,10 @@ public class BrecciaCursor implements ReusableCursor {
         p.perfectIndent.text.delimit( /*0*/fractumStart, /*1*/bullet );    // Proper to body fracta.
         p.bullet       .text.delimit( /*1*/bullet,       /*2*/bulletEnd );
         p.descriptor() .text.delimit( /*2*/bulletEnd,    /*3*/segmentEnd );
-        if( privately == null ) p.modifierSet.clear();
-        else p.modifierSet.add( CommandPoint.Modifier.privately );
+        if( privately != null ) {
+            p.modifierSet.add( CommandPoint.Modifier.privately );
+            xuncPrivatized.add( p.xunc() ); }
+        else p.modifierSet.clear();
         p.keyword.delimitAs( keyword );
 
       // Ready to commit
@@ -1995,6 +2006,10 @@ public class BrecciaCursor implements ReusableCursor {
       *     @see #buffer
       */
     int xunc;
+
+
+
+    final IntArrayExtensor xuncPrivatized = new IntArrayExtensor( new int[0x400] ); // = 1024
 
 
 
@@ -2661,6 +2676,7 @@ public class BrecciaCursor implements ReusableCursor {
         private BodyFractum_<?>.End_ pendingEnd;
 
 
+
         /** Sets the fields of this hierarch from the present body fractum and returns the hierarch.
           * This is a convenience method.
           *
@@ -2669,7 +2685,20 @@ public class BrecciaCursor implements ReusableCursor {
         private Hierarch set() {
             if( state != bodyFractum ) throw new IllegalStateException();
             pendingEnd = (BodyFractum_<?>.End_)bodyFractum.end;
-            return this; }}
+            xunc = bodyFractum.xunc();
+            return this; }
+
+
+
+        /** The xunc offset of the body fractum.
+          *
+          *     @see Markup#xunc()
+          */
+        int xunc() { return xunc; }
+
+
+
+        private int xunc; }
 
 
 
@@ -3049,9 +3078,8 @@ public class BrecciaCursor implements ReusableCursor {
     /** A warning that the target member is meaningful (fulfils its API description) only for substansive
       * parse states, those which implement `Markup` and therefore model text of non-zero length.
       * These are the parse states of {@linkplain Typestamp Typestamp} category (a).
-      *
-      */ @Documented @Retention(SOURCE) @Target({ FIELD, METHOD })
-    private static @interface Subst {}
+      */
+    private static @Documented @Retention(SOURCE) @Target({ FIELD, METHOD }) @interface Subst {}
 
 
 

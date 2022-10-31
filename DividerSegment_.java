@@ -2,11 +2,11 @@ package Breccia.parser.plain;
 
 import Breccia.parser.AdjunctSlow;
 import Breccia.parser.DividerSegment;
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import java.util.List;
 
 
-final class DividerSegment_ extends Markup_ implements DividerSegment {
+final class DividerSegment_ extends Granum_ implements DividerSegment {
 
 
     DividerSegment_( final BrecciaCursor cursor ) {
@@ -17,7 +17,7 @@ final class DividerSegment_ extends Markup_ implements DividerSegment {
 
 
 
-    final CoalescentMarkupList components;
+    final CoalescentGranumList components;
 
 
 
@@ -35,14 +35,14 @@ final class DividerSegment_ extends Markup_ implements DividerSegment {
    // ━━━  D i v i d e r   S e g m e n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override Markup perfectIndent() { return perfectIndent; }
+    public @Override Granum perfectIndent() { return perfectIndent; }
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override List<Markup> components() {
+    public @Override List<Granum> components() {
         assert components.isFlush();
         return components; }
 

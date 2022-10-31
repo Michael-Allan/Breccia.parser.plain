@@ -1,7 +1,7 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.FileFractum;
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import java.util.List;
 
 
@@ -14,16 +14,16 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-    List<Markup> components;
+    List<Granum> components;
 
 
 
-    static final List<Markup> componentsWhenAbsent = List.of(); /* Setting this will be marginally faster
+    static final List<Granum> componentsWhenAbsent = List.of(); /* Setting this will be marginally faster
       than would be the alternative of `components.clear`, at least for a `CoalescentArrayList`. */
 
 
 
-    final CoalescentMarkupList componentsWhenPresent;
+    final CoalescentGranumList componentsWhenPresent;
 
 
 
@@ -53,10 +53,10 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override List<Markup> components() {
+    public final @Override List<Granum> components() {
         if( !isComposed ) {
             cursor.composeFileFractum();
             isComposed = true; }

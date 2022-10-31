@@ -28,7 +28,7 @@ final class PlainCommandPoint_ extends CommandPoint_<BrecciaCursor> implements P
    // ━━━  P o i n t _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    final @Override void compose() throws MalformedMarkup {
+    final @Override void compose() throws MalformedText {
         cursor.composeDescriptor( PlainCommandPoint_.this ); }
 
 

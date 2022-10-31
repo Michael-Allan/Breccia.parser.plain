@@ -46,7 +46,7 @@ final class Division_ extends BodyFractum_<BrecciaCursor> implements Division {
 
 
 
-   // ━━━  M a r k u p  ━━━  D i v i s i o n  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━  D i v i s i o n  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     public final @Override List<? extends DividerSegment> components() {

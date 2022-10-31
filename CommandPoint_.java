@@ -2,7 +2,7 @@ package Breccia.parser.plain;
 
 import Breccia.parser.AdjunctSlow;
 import Breccia.parser.CommandPoint;
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import Java.DelimitableCharSequence;
 import java.util.*;
 
@@ -21,7 +21,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
     /** @param hasSimpleCommand Whether the command always comprises the keyword alone.
-      *   If true, then never add markup to its component list; rather leave it empty.
+      *   If true, then never add to its component list; rather leave it empty.
       */
     CommandPoint_( final C cursor, final boolean hasSimpleCommand ) {
         super( cursor );
@@ -33,7 +33,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
    // ━━━  C o m m a n d   P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override AppendageClause appendageClause() throws MalformedMarkup {
+    public final @Override AppendageClause appendageClause() throws MalformedText {
         ensureComposition();
         return appendageClause; }
 
@@ -43,10 +43,10 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override List<Markup> components() { return components; }
+    public final @Override List<Granum> components() { return components; }
 
 
 
@@ -72,7 +72,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-    private final List<Markup> components;;
+    private final List<Granum> components;
 
 
 
@@ -111,32 +111,32 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
       *     @see #appendageClause()
       *     @see Descriptor#components()
       */
-    abstract @Override void compose() throws MalformedMarkup;
+    abstract @Override void compose() throws MalformedText;
 
 
 
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class Appendage extends Markup_ {
+    final class Appendage extends Granum_ {
 
 
         Appendage() { super( cursor ); }
 
 
 
-        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
+        final CoalescentGranumList components = new CoalescentArrayList( cursor.spooler );
 
 
 
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
         public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
-        public @Override List<Markup> components() {
+        public @Override List<Granum> components() {
             assert components.isFlush();
             return components; }
 
@@ -154,7 +154,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class AppendageClause_ extends Markup_ implements AppendageClause {
+    final class AppendageClause_ extends Granum_ implements AppendageClause {
 
 
         AppendageClause_() {
@@ -167,33 +167,33 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-        private final List<Markup> components;
+        private final List<Granum> components;
 
 
 
-        final FlatMarkup delimiter = FlatMarkup.make( cursor, "Delimiter");
+        final FlatGranum delimiter = FlatGranum.make( cursor, "Delimiter");
 
 
 
        // ━━━  A p p e n d a g e   C l a u s e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override Markup appendage() { return appendage; }
+        public @Override Granum appendage() { return appendage; }
 
 
 
-        public @Override Markup delimiter() { return delimiter; }
+        public @Override Granum delimiter() { return delimiter; }
 
 
 
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
         public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
-        public @Override List<Markup> components() { return components; }
+        public @Override List<Granum> components() { return components; }
 
 
 
@@ -205,18 +205,18 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class Command extends Markup_ {
+    final class Command extends Granum_ {
 
 
         Command() { super( cursor ); }
 
 
 
-        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
+        final CoalescentGranumList components = new CoalescentArrayList( cursor.spooler );
 
 
 
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
         public @Override @AdjunctSlow int column() { // The command is collinear with the bullet.
@@ -224,7 +224,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-        public @Override List<Markup> components() {
+        public @Override List<Granum> components() {
             assert components.isFlush();
             return components; }
 

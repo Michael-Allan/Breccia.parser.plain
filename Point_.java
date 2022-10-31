@@ -1,7 +1,7 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.AdjunctSlow;
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import Breccia.parser.Point;
 import java.util.List;
 
@@ -17,7 +17,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-    final FlatMarkup bullet = new FlatMarkup( this ) {
+    final FlatGranum bullet = new FlatGranum( this ) {
 
         public @Override @AdjunctSlow int column() { return cursor.fractumIndentWidth; }
 
@@ -35,7 +35,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
       *     @see #ensureComposition()
       *     @see Descriptor#components()
       */
-    abstract void compose() throws MalformedMarkup;
+    abstract void compose() throws MalformedText;
 
 
 
@@ -46,7 +46,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
       *     @see #commit()
       *     @see #compose()
       */
-    final void ensureComposition() throws MalformedMarkup {
+    final void ensureComposition() throws MalformedText {
         if( !isComposed ) {
             compose();
             isComposed = true; }}
@@ -80,7 +80,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
    // ━━━  P o i n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override Markup bullet() { return bullet; }
+    public final @Override Granum bullet() { return bullet; }
 
 
 
@@ -88,28 +88,28 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-    public final @Override Markup perfectIndent() { return perfectIndent; }
+    public final @Override Granum perfectIndent() { return perfectIndent; }
 
 
 
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class Descriptor extends Markup_ {
+    final class Descriptor extends Granum_ {
 
 
         Descriptor() { super( cursor ); }
 
 
 
-        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
+        final CoalescentGranumList components = new CoalescentArrayList( cursor.spooler );
 
 
 
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public final @Override List<Markup> components() throws MalformedMarkup {
+        public final @Override List<Granum> components() throws MalformedText {
             ensureComposition();
             assert components.isFlush();
             return components; }

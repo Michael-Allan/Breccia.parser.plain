@@ -1,20 +1,20 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.AdjunctSlow;
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import java.nio.CharBuffer;
 
 
-final class PerfectIndent extends FlatMarkup {
+final class PerfectIndent extends FlatGranum {
 
 
-    PerfectIndent( BrecciaCursor cursor, Markup_ container ) {
+    PerfectIndent( BrecciaCursor cursor, Granum_ container ) {
         super( cursor );
         this.container = container; }
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     /** Returns zero, always the indent leads the line.
@@ -34,7 +34,7 @@ final class PerfectIndent extends FlatMarkup {
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
 
 
-    private final Markup_ container; }
+    private final Granum_ container; }
 
 
 

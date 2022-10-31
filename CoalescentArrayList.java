@@ -1,18 +1,18 @@
 package Breccia.parser.plain;
 
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import Java.DelimitableCharSequence;
 import Java.RangedArrayList;
 
 
-final class CoalescentArrayList extends RangedArrayList<Markup> implements CoalescentMarkupList {
+final class CoalescentArrayList extends RangedArrayList<Granum> implements CoalescentGranumList {
 
 
     CoalescentArrayList( FractalSpooler spooler ) { this.spooler = spooler; }
 
 
 
-   // ━━━  C o a l e s c e n t   M a r k u p   L i s t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  C o a l e s c e n t   G r a n u m   L i s t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     public @Override void appendFlat( final int start, final int end ) {
@@ -29,9 +29,9 @@ final class CoalescentArrayList extends RangedArrayList<Markup> implements Coale
           // ───────
             if( flatFlush != flatEnd ) flatText.delimit( flatStart, flatEnd );
               // Flushes any pending coalescene of a previous component.
-            final FlatMarkup flatMarkup = spooler.flatMarkup.unwind();
-            add( flatMarkup );
-            flatText = flatMarkup.text;
+            final FlatGranum flatGranum = spooler.flatGranum.unwind();
+            add( flatGranum );
+            flatText = flatGranum.text;
             flatStart = flatFlush = start; // Enables flushing unless (caller error) `start == end`.
             flatEnd = end;
             flatSize = size(); }} // Enables coalescence.

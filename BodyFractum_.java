@@ -1,7 +1,7 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.BodyFractum;
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 
 
 /** @param <C> The type of cursor.

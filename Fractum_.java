@@ -8,7 +8,7 @@ import static Java.Classes.nameWithoutPackageLeader;
 
 /** @param <C> The type of cursor.
   */
-abstract class Fractum_<C extends BrecciaCursor> extends Markup_ implements Fractum {
+abstract class Fractum_<C extends BrecciaCursor> extends Granum_ implements Fractum {
 
 
     Fractum_( final C cursor ) {
@@ -45,7 +45,7 @@ abstract class Fractum_<C extends BrecciaCursor> extends Markup_ implements Frac
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     public final @Override @AdjunctSlow int lineNumber() { return cursor.fractumLineNumber(); }

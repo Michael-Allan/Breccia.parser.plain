@@ -3,9 +3,9 @@ package Breccia.parser.plain;
 import java.util.ArrayList;
 
 
-/** A spooler of per-source resources.  Use them in one markup source, then rewind them for the next.
+/** A spooler of per-source resources.  Use them in one text source, then rewind them for the next.
   *
-  *     @see BrecciaCursor#markupSource(java.io.Reader)
+  *     @see BrecciaCursor#source(java.io.Reader)
   */
 final class SourceSpooler extends Spooler {
 

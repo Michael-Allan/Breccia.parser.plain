@@ -1,34 +1,34 @@
 package Breccia.parser.plain;
 
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import java.util.List;
 
 
-/** A list of markup components augmented to support coalescence.  It enables generic markup that would
-  * otherwise be listed as separate components, yet is all of the same type and lies contiguous
-  * in the cursor buffer, to be coalesced into a single component.
+/** A list of component grana augmented to support coalescence.  It enables occurences of generic
+  * flat text that would otherwise be listed as separate components, yet is all of the same type
+  * and lies contiguous in the cursor buffer, to be coalesced into a single component.
   *
   * <p>Warning: if an element is removed from the list after coalescence has begun and before the next
   * {@linkplain #clear() clearance call}, then the effect of further coalescence is undefined.
   * In other words, coalescence-removal-coalescence with no intermediate clearance
   * is an invalid order of operations.</p>
   */
-interface CoalescentMarkupList extends List<Markup> {
+interface CoalescentGranumList extends List<Granum> {
 
 
-    /** Appends to this list the flat markup bounded in the cursor by buffer positions `start` and `end`.
-      * By default the markup is appended as a distinct component with a generic tag name of ‘Markup’.
-      * If already the list ends with such a component, however, then effectively the markup is appended
-      * by scheduled coalescence with that component on the next flush.
+    /** Appends to this list the flat text bounded in the cursor by buffer positions `start` and `end`.
+      * By default the text is appended as a special coalescent component with a generic tag name of
+      * ‘Granum’.  If already the list ends with such a coalescent component, however, then effectively
+      * the text is appended by scheduled coalescence with that component on the next flush.
       *
-      * <p>Warning: be sure to call `flush` before attempting to read the appended markup.</p>
+      * <p>Warning: be sure to call `flush` before attempting to read the appended text.</p>
       *
-      *     @see Breccia.parser.Markup#tagName()
+      *     @see Breccia.parser.Granum#tagName()
       *     @see #flush()
       *     @throws AssertionError If assertions are enabled and `start` is not less than `end`.
       *     @throws AssertionError If coalescence is attempted and `start` is unequal to the `end`
       *       given in the previous call to this method.  Cf. the contiguity stipulated
-      *       by `Markup.{@linkplain Breccia.parser.Markup#components() components}`.
+      *       by `Granum.{@linkplain Breccia.parser.Granum#components() components}`.
       */
     public void appendFlat( int start, int end );
 

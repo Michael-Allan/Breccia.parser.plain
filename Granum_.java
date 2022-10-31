@@ -1,7 +1,7 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.AdjunctSlow;
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import Java.CharacterPointer;
 import Java.DelimitableCharSequence;
 
@@ -18,16 +18,16 @@ import static java.util.Arrays.copyOf;
   *
   *     @see Breccia.parser.DataReflector
   */
-abstract class Markup_ implements Markup {
+abstract class Granum_ implements Granum {
 
 
-    Markup_( final BrecciaCursor cursor ) {
+    Granum_( final BrecciaCursor cursor ) {
         this.cursor = cursor;
         text = newDelimitableCharSequence( cursor.buffer ); }
 
 
 
-    Markup_( final Fractum_<?> f ) { this( f.cursor ); }
+    Granum_( final Fractum_<?> f ) { this( f.cursor ); }
 
 
 
@@ -35,7 +35,7 @@ abstract class Markup_ implements Markup {
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     public final @Override @AdjunctSlow CharacterPointer characterPointer( final int c ) {

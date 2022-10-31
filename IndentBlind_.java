@@ -2,12 +2,12 @@ package Breccia.parser.plain;
 
 import Breccia.parser.AdjunctSlow;
 import Breccia.parser.IndentBlind;
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import java.util.ArrayList;
 import java.util.List;
 
 
-final class IndentBlind_ extends Markup_ implements IndentBlind {
+final class IndentBlind_ extends Granum_ implements IndentBlind {
 
 
     IndentBlind_( final BrecciaCursor cursor ) {
@@ -20,7 +20,7 @@ final class IndentBlind_ extends Markup_ implements IndentBlind {
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     public @Override List<Line> components() { return components; }
@@ -34,19 +34,19 @@ final class IndentBlind_ extends Markup_ implements IndentBlind {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    static final class Line_ extends Markup_ implements Line {
+    static final class Line_ extends Granum_ implements Line {
 
 
         Line_( final BrecciaCursor cursor ) {
             super( cursor );
             this.cursor = cursor;
-            indentWhenPresent    = FlatMarkup.make( cursor );
-            delimiter            = FlatMarkup.make( cursor, "Delimiter" );
-            substanceWhenPresent = FlatMarkup.make( cursor ); }
+            indentWhenPresent    = FlatGranum.make( cursor );
+            delimiter            = FlatGranum.make( cursor, "Delimiter" );
+            substanceWhenPresent = FlatGranum.make( cursor ); }
 
 
 
-        final List<Markup> components = new ArrayList<>( /*initial capacity*/componentsMaximum );
+        final List<Granum> components = new ArrayList<>( /*initial capacity*/componentsMaximum );
 
 
 
@@ -59,44 +59,44 @@ final class IndentBlind_ extends Markup_ implements IndentBlind {
 
 
 
-        final FlatMarkup delimiter;
+        final FlatGranum delimiter;
 
 
 
-        final FlatMarkup indentWhenPresent;
+        final FlatGranum indentWhenPresent;
 
 
 
-        FlatMarkup substance;
+        FlatGranum substance;
 
 
 
-        final FlatMarkup substanceWhenPresent;
+        final FlatGranum substanceWhenPresent;
 
 
 
-       // ━━━  I n d e n t   B l i n d  .  L i n e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public final @Override Markup substance() { return substance; }
-
-
-
-        public final @Override Markup delimiter() { return delimiter; }
-
-
-
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        public final @Override List<Markup> components() {
+        public final @Override List<Granum> components() {
             assert components.size() <= componentsMaximum; // Within optimal capacity, as initialized.
             return components; }
 
 
 
         public final @Override @AdjunctSlow int lineNumber() {
-            return cursor.bufferLineNumber( text.start() ); }}
+            return cursor.bufferLineNumber( text.start() ); }
+
+
+
+       // ━━━  I n d e n t   B l i n d  .  L i n e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public final @Override Granum substance() { return substance; }
+
+
+
+        public final @Override Granum delimiter() { return delimiter; }}
 
 
 

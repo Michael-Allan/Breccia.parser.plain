@@ -9,7 +9,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
     AssociativeReference_( BrecciaCursor cursor ) {
         super( cursor );
-        referentialCommand = FlatMarkup.make( cursor, "ReferentialCommand" ); }
+        referentialCommand = FlatGranum.make( cursor, "ReferentialCommand" ); }
 
 
 
@@ -27,7 +27,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    final FlatMarkup referentialCommand;
+    final FlatGranum referentialCommand;
 
 
 
@@ -46,7 +46,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    public @Override Markup referentialCommand() { return referentialCommand; }
+    public @Override Granum referentialCommand() { return referentialCommand; }
 
 
 
@@ -66,32 +66,32 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
    // ━━━  P o i n t _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    final @Override void compose() throws MalformedMarkup { cursor.composeAssociativeReference(); }
+    final @Override void compose() throws MalformedText { cursor.composeAssociativeReference(); }
 
 
 
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class ContainmentClause extends Markup_ {
+    final class ContainmentClause extends Granum_ {
 
 
         ContainmentClause() { super( cursor ); }
 
 
 
-        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
+        final CoalescentGranumList components = new CoalescentArrayList( cursor.spooler );
 
 
 
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
         public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
-        public @Override List<Markup> components() {
+        public @Override List<Granum> components() {
             assert components.isFlush();
             return components; }
 
@@ -121,7 +121,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class InferentialReferentIndicant_ extends Markup_ implements InferentialReferentIndicant {
+    final class InferentialReferentIndicant_ extends Granum_ implements InferentialReferentIndicant {
 
 
         InferentialReferentIndicant_() { super( cursor ); }
@@ -144,19 +144,37 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        Markup referentialForm;
+        Granum referentialForm;
 
 
 
-        final FlatMarkup referentialFormWhenPresent = FlatMarkup.make( cursor, "ReferentialForm" );
+        final FlatGranum referentialFormWhenPresent = FlatGranum.make( cursor, "ReferentialForm" );
 
 
 
-        Markup referrerSimilarity;
+        Granum referrerSimilarity;
 
 
 
-        final FlatMarkup referrerSimilarityWhenPresent = FlatMarkup.make( cursor, "ReferrerSimilarity" );
+        final FlatGranum referrerSimilarityWhenPresent = FlatGranum.make( cursor, "ReferrerSimilarity" );
+
+
+
+       // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
+
+
+
+        public @Override List<Granum> components() {
+            assert components.isFlush();
+            return components; }
+
+
+
+        public @Override @AdjunctSlow int lineNumber() {
+            return cursor.bufferLineNumber( text.start() ); }
 
 
 
@@ -167,36 +185,18 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override Markup referentialForm() { return referentialForm; }
+        public @Override Granum referentialForm() { return referentialForm; }
 
 
 
-        public @Override Markup referrerSimilarity() { return referrerSimilarity; }
-
-
-
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
-
-
-
-        public @Override List<Markup> components() {
-            assert components.isFlush();
-            return components; }
-
-
-
-        public @Override @AdjunctSlow int lineNumber() {
-            return cursor.bufferLineNumber( text.start() ); }}
+        public @Override Granum referrerSimilarity() { return referrerSimilarity; }}
 
 
 
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class ReferentClause_ extends Markup_ implements ReferentClause {
+    final class ReferentClause_ extends Granum_ implements ReferentClause {
 
 
         ReferentClause_() {
@@ -206,15 +206,15 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        List<Markup> components;
+        List<Granum> components;
 
 
 
-        final List<Markup> componentsAsFractumIndicant;
+        final List<Granum> componentsAsFractumIndicant;
 
 
 
-        final List<Markup> componentsAsInferentialReferentIndicant;
+        final List<Granum> componentsAsInferentialReferentIndicant;
 
 
 
@@ -235,6 +235,22 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
+       // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
+
+
+
+        public @Override List<Granum> components() { return components; }
+
+
+
+        public @Override @AdjunctSlow int lineNumber() {
+            return cursor.bufferLineNumber( text.start() ); }
+
+
+
        // ━━━  R e f e r e n t   C l a u s e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
@@ -243,37 +259,21 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
         public @Override InferentialReferentIndicant inferentialReferentIndicant() {
-            return inferentialReferentIndicant; }
-
-
-
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
-
-
-
-        public @Override List<Markup> components() { return components; }
-
-
-
-        public @Override @AdjunctSlow int lineNumber() {
-            return cursor.bufferLineNumber( text.start() ); }}
+            return inferentialReferentIndicant; }}
 
 
 
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class ReferrerClause_ extends Markup_ implements ReferrerClause {
+    final class ReferrerClause_ extends Granum_ implements ReferrerClause {
 
 
         ReferrerClause_() { super( cursor ); }
 
 
 
-        final CoalescentMarkupList components = new CoalescentArrayList( cursor.spooler );
+        final CoalescentGranumList components = new CoalescentArrayList( cursor.spooler );
 
 
 
@@ -281,14 +281,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-       // ━━━  R e f e r r e r   C l a u s e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        public @Override PatternMatcher patternMatcher() { return patternMatcher; }
-
-
-
-       // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
         public @Override @AdjunctSlow int column() { return command.column(); }
@@ -296,14 +289,21 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override List<Markup> components() {
+        public @Override List<Granum> components() {
             assert components.isFlush();
             return components; }
 
 
 
-        public @Override @AdjunctSlow int lineNumber() { return command.lineNumber(); }}}
+        public @Override @AdjunctSlow int lineNumber() { return command.lineNumber(); }
           // Always the referrer clause leads the command.
+
+
+
+       // ━━━  R e f e r r e r   C l a u s e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override PatternMatcher patternMatcher() { return patternMatcher; }}}
 
 
 

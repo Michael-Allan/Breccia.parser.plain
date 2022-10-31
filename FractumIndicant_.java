@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-final class FractumIndicant_ extends Markup_ implements FractumIndicant {
+final class FractumIndicant_ extends Granum_ implements FractumIndicant {
 
 
     FractumIndicant_( final BrecciaCursor cursor ) {
@@ -47,14 +47,14 @@ final class FractumIndicant_ extends Markup_ implements FractumIndicant {
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     public final @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
-    public @Override List<Markup> components() {
+    public @Override List<Granum> components() {
         assert components.isFlush();
         return components; }
 

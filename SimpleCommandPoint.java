@@ -18,7 +18,7 @@ public abstract class SimpleCommandPoint<C extends BrecciaCursor> extends Comman
    // ━━━  P o i n t _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    final @Override void compose() throws MalformedMarkup {
+    final @Override void compose() throws MalformedText {
         cursor.composeDescriptor( SimpleCommandPoint.this ); }}
 
 

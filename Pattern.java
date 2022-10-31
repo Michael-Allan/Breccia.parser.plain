@@ -1,11 +1,11 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.AdjunctSlow;
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import java.util.List;
 
 
-final class Pattern extends Markup_ {
+final class Pattern extends Granum_ {
 
 
     Pattern( final BrecciaCursor cursor ) {
@@ -15,18 +15,18 @@ final class Pattern extends Markup_ {
 
 
 
-    final CoalescentMarkupList components;
+    final CoalescentGranumList components;
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
 
 
 
-    public @Override List<Markup> components() {
+    public @Override List<Granum> components() {
         assert components.isFlush();
         return components; }
 

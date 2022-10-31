@@ -1,6 +1,6 @@
 package Breccia.parser.plain;
 
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import java.util.List;
 
 
@@ -9,13 +9,13 @@ abstract class NonCommandPoint extends Point_<BrecciaCursor> {
 
     NonCommandPoint( BrecciaCursor cursor ) {
         super( cursor );
-        components = new DelimitableMarkupList( perfectIndent, bullet, descriptorWhenPresent ); }
+        components = new DelimitableGranumList( perfectIndent, bullet, descriptorWhenPresent ); }
 
 
 
     /** A component list of 2 or 3 elements, depending on whether a descriptor is present.
       */
-    final DelimitableMarkupList components;
+    final DelimitableGranumList components;
 
 
 
@@ -27,10 +27,10 @@ abstract class NonCommandPoint extends Point_<BrecciaCursor> {
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public final @Override List<Markup> components() { return components; }
+    public final @Override List<Granum> components() { return components; }
 
 
 
@@ -44,7 +44,7 @@ abstract class NonCommandPoint extends Point_<BrecciaCursor> {
    // ━━━  P o i n t _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    final @Override void compose() throws MalformedMarkup {
+    final @Override void compose() throws MalformedText {
         cursor.composeDescriptor( NonCommandPoint.this ); }}
 
 

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-final class CommentBlock_ extends Markup_ implements CommentBlock {
+final class CommentBlock_ extends Granum_ implements CommentBlock {
 
 
     CommentBlock_( final BrecciaCursor cursor ) {
@@ -20,7 +20,7 @@ final class CommentBlock_ extends Markup_ implements CommentBlock {
 
 
 
-   // ━━━  M a r k u p  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     public @Override List<Line> components() { return components; }
@@ -38,8 +38,8 @@ final class CommentBlock_ extends Markup_ implements CommentBlock {
 
 
         Line_( final BrecciaCursor cursor ) {
-            super( /*c0_white*/FlatMarkup.make(cursor), cursor );
-            initialize( /*c3_commentaryWhenPresent*/new FlatMarkup( cursor ) {
+            super( /*c0_white*/FlatGranum.make(cursor), cursor );
+            initialize( /*c3_commentaryWhenPresent*/new FlatGranum( cursor ) {
                 public @Override @AdjunctSlow int column() {
                     return cursor.bufferColumn( text.start() ); }
                 public @Override @AdjunctSlow int lineNumber() {

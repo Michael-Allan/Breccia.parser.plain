@@ -5,7 +5,7 @@ import Java.CharacterPointer;
 import static java.lang.String.format;
 
 
-public class ForbiddenWhitespace extends MalformedMarkup {
+public class ForbiddenWhitespace extends MalformedText {
 
 
     /** @see #pointer

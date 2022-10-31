@@ -1,22 +1,22 @@
 package Breccia.parser.plain;
 
-import Breccia.parser.Markup;
+import Breccia.parser.Granum;
 import java.util.AbstractList;
 import java.util.RandomAccess;
 
 
-/** A markup list of redefinable boundaries based on a backing array.
+/** A granum list of redefinable boundaries based on a backing array.
   * It supports the `set` operation directly.  The `add` and `remove` operations
   * it supports only indirectly through redefinition of the terminal boundaries `start` and `end`.
   */
-final class DelimitableMarkupList extends AbstractList<Markup> implements RandomAccess {
+final class DelimitableGranumList extends AbstractList<Granum> implements RandomAccess {
 
 
-    /** Makes a delimitable markup list that initially includes all the given elements.
+    /** Makes a delimitable granum list that initially includes all the given elements.
       *
       *     @param elements The content of the backing array.
       */
-    DelimitableMarkupList( final Markup... elements ) {
+    DelimitableGranumList( final Granum... elements ) {
         back = elements;
         end = back.length; }
 
@@ -72,7 +72,7 @@ final class DelimitableMarkupList extends AbstractList<Markup> implements Random
    // ━━━  L i s t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override Markup get( final int index ) {
+    public @Override Granum get( final int index ) {
         if( index >= 0 ) {
             final int i = start + index;
             if( i < end ) return back[i]; }
@@ -80,11 +80,11 @@ final class DelimitableMarkupList extends AbstractList<Markup> implements Random
 
 
 
-    public @Override Markup set( final int index, final Markup element ) {
+    public @Override Granum set( final int index, final Granum element ) {
         if( index >= 0 ) {
             final int i = start + index;
             if( i < end ) {
-                final Markup elementWas = back[i];
+                final Granum elementWas = back[i];
                 back[i] = element;
                 return elementWas; }}
         throw new IndexOutOfBoundsException( index ); }
@@ -96,7 +96,7 @@ final class DelimitableMarkupList extends AbstractList<Markup> implements Random
 
     /** The backing array of elements, a delimitable section of which determines this list.
       */
-    private final Markup[] back;
+    private final Granum[] back;
 
 
 

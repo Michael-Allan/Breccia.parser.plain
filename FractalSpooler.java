@@ -13,14 +13,14 @@ final class FractalSpooler extends Spooler {
 
     FractalSpooler( final BrecciaCursor c ) {
         final ArrayList<Spool<?>> ss = new ArrayList<>();
-        ss.add( flatMarkup          = new Spool<>( () -> FlatMarkup.make( c )));
-        ss.add( backslashedSpecial  = new Spool<>( () -> FlatMarkup.make( c, "BackslashedSpecial" )));
-        ss.add( containmentOperator = new Spool<>( () -> FlatMarkup.make( c, "ContainmentOperator" )));
-        ss.add( divisionLabel       = new Spool<>( () -> FlatMarkup.make( c, "DivisionLabel" )));
-        ss.add( groupDelimiter      = new Spool<>( () -> FlatMarkup.make( c, "GroupDelimiter" )));
-        ss.add( literalizer         = new Spool<>( () -> FlatMarkup.make( c, "Literalizer" )));
-        ss.add( metacharacter       = new Spool<>( () -> FlatMarkup.make( c, "Metacharacter" )));
-        ss.add( perfectIndentMarker = new Spool<>( () -> FlatMarkup.make( c, "PerfectIndentMarker" )));
+        ss.add( flatGranum          = new Spool<>( () -> FlatGranum.make( c )));
+        ss.add( backslashedSpecial  = new Spool<>( () -> FlatGranum.make( c, "BackslashedSpecial" )));
+        ss.add( containmentOperator = new Spool<>( () -> FlatGranum.make( c, "ContainmentOperator" )));
+        ss.add( divisionLabel       = new Spool<>( () -> FlatGranum.make( c, "DivisionLabel" )));
+        ss.add( groupDelimiter      = new Spool<>( () -> FlatGranum.make( c, "GroupDelimiter" )));
+        ss.add( literalizer         = new Spool<>( () -> FlatGranum.make( c, "Literalizer" )));
+        ss.add( metacharacter       = new Spool<>( () -> FlatGranum.make( c, "Metacharacter" )));
+        ss.add( perfectIndentMarker = new Spool<>( () -> FlatGranum.make( c, "PerfectIndentMarker" )));
         ss.add( commentAppender     = new Spool<>( () -> new CommentAppender_   ( c )));
         ss.add( commentBlock        = new Spool<>( () -> new CommentBlock_      ( c )));
         ss.add( commentBlockLine    = new Spool<>( () -> new CommentBlock_.Line_( c )));
@@ -31,13 +31,13 @@ final class FractalSpooler extends Spooler {
 
 
 
-    /** Spool of flat-markup instances, each reflective of a ‘backslash sequence’,
-      * a sequence commencing with a backslash that has special meaning in a regular-expression pattern.
+    /** Spool of flat grana each reflective of a ‘backslash sequence’, a sequence commencing
+      * with a backslash that has special meaning in a regular-expression pattern.
       *
       *     @see <a href='https://perldoc.perl.org/perlrebackslash#The-backslash'>The backslash</a>
       *     @see #literalizer
       */
-    final Spool<@TagName("BackslashedSpecial") FlatMarkup> backslashedSpecial;
+    final Spool<@TagName("BackslashedSpecial") FlatGranum> backslashedSpecial;
 
 
 
@@ -59,30 +59,30 @@ final class FractalSpooler extends Spooler {
 
 
 
-    /** Spool of flat-markup instances, each reflective of a containment operator.
+    /** Spool of flat grana each reflective of a containment operator.
       */
-    final Spool<@TagName("ContainmentOperator") FlatMarkup> containmentOperator;
+    final Spool<@TagName("ContainmentOperator") FlatGranum> containmentOperator;
 
 
 
-    /** Spool of flat-markup instances, each reflective of a division label.
+    /** Spool of flat grana each reflective of a division label.
       */
-    final Spool<@TagName("DivisionLabel") FlatMarkup> divisionLabel;
+    final Spool<@TagName("DivisionLabel") FlatGranum> divisionLabel;
 
 
 
-    /** Spool of generic flat-markup instances, each with a tag name of ‘Markup’.
+    /** Spool of generic flat grana each with a tag name of ‘Granum’.
       *
-      *     @see Breccia.parser.Markup#tagName()
+      *     @see Breccia.parser.Granum#tagName()
       */
-    final Spool<FlatMarkup> flatMarkup;
+    final Spool<FlatGranum> flatGranum;
 
 
 
-    /** Spool of flat-markup instances, each reflective of a group delimiter within
-      * a regular-expression pattern, one of ‘(’, ‘(?:’ or ‘)’.
+    /** Spool of flat grana each reflective of a group delimiter within a regular-expression pattern,
+      * one of ‘(’, ‘(?:’ or ‘)’.
       */
-    final Spool<@TagName("GroupDelimiter") FlatMarkup> groupDelimiter;
+    final Spool<@TagName("GroupDelimiter") FlatGranum> groupDelimiter;
 
 
 
@@ -98,23 +98,21 @@ final class FractalSpooler extends Spooler {
 
 
 
-    /** Spool of flat-markup instances, each reflective of a literalizing backslash within
-      * a regular-expression pattern, one that ‘takes away [any] special meaning
-      * of the character following it’.
+    /** Spool of flat grana each reflective of a literalizing backslash within a regular-expression
+      * pattern, one that ‘takes away [any] special meaning of the character following it’.
       *
       *     @see <a href='https://perldoc.perl.org/perlrebackslash#The-backslash'>The backslash</a>
       *     @see #backslashedSpecial
       */
-    final Spool<@TagName("Literalizer") FlatMarkup> literalizer;
+    final Spool<@TagName("Literalizer") FlatGranum> literalizer;
 
 
 
-    /** Spool of flat-markup instances, each reflective of a metacharacter within
-      * a regular-expression pattern.
+    /** Spool of flat grana each reflective of a metacharacter within a regular-expression pattern.
       *
       *     @see <a href='https://perldoc.perl.org/perlre#Metacharacters'>Metacharacters</a>
       */
-    final Spool<@TagName("Metacharacter") FlatMarkup> metacharacter;
+    final Spool<@TagName("Metacharacter") FlatGranum> metacharacter;
 
 
 
@@ -124,10 +122,9 @@ final class FractalSpooler extends Spooler {
 
 
 
-    /** Spool of flat-markup instances, each reflective of a perfect indent ‘^^’ within
-      * a regular-expression pattern.
+    /** Spool of flat grana each reflective of a perfect indent ‘^^’ within a regular-expression pattern.
       */
-    final Spool<@TagName("PerfectIndentMarker") FlatMarkup> perfectIndentMarker; }
+    final Spool<@TagName("PerfectIndentMarker") FlatGranum> perfectIndentMarker; }
 
 
 

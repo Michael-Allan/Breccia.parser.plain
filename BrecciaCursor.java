@@ -1231,35 +1231,35 @@ public class BrecciaCursor implements ReusableCursor {
 
     /** Reads through any fractal segment located at `segmentStart`, beginning at the present buffer
       * position, and sets the remainder of its determining bounds.  Ensure before calling this method
-      * that the following are updated.
+      * that the following are updated.<ul>
       *
-      * <ul><li>`{@linkplain #fractumStart       fractumStart}`</li>
+      *     <li>`{@linkplain #fractumStart       fractumStart}`</li>
       *     <li>`{@linkplain #fractumIndentWidth fractumIndentWidth}`</li>
       *     <li>`{@linkplain #fractumLineCounter fractumLineCounter}`</li>
       *     <li>`{@linkplain #segmentStart       segmentStart}`</li></ul>
       *
-      * <p>Also ensure that:</p>
+      * <p>Also ensure that:</p><ul>
       *
-      * <ul><li>`{@linkplain #fractumLineEnds fractumLineEnds}` is empty in the case of a segment
+      *     <li>`{@linkplain #fractumLineEnds fractumLineEnds}` is empty in the case of a segment
       *         that begins a new fractum, and</li>
       *     <li>the buffer is positioned at the `{@linkplain #segmentEndIndicant segmentEndIndicant}`
       *         of the preceding segment, or at zero in case of a new text source.</li></ul>
       *
-      * <p>This method updates the following.</p>
+      * <p>This method updates the following.</p><ul>
       *
-      * <ul><li>`{@linkplain #fractumLineEnds        fractumLineEnds}`</li>
+      *     <li>`{@linkplain #fractumLineEnds        fractumLineEnds}`</li>
       *     <li>`{@linkplain #segmentEnd             segmentEnd}`</li>
       *     <li>`{@linkplain #segmentEndIndicant     segmentEndIndicant}`</li>
       *     <li>`{@linkplain #segmentEndIndicantChar segmentEndIndicantChar}`</li></ul>
       *
-      * <p>And, in case of a buffer shift:</p>
+      * <p>And, in case of a buffer shift:</p><ul>
       *
-      * <ul><li>`{@linkplain #xunc} xunc`</li></ul>
+      *     <li>`{@linkplain #xunc} xunc`</li></ul>
       *
       * <p>Moreover if the shift happens while delimiting a divider segment, then for each segment `s`
-      *  of `{@linkplain #basicDivision basicDivision}.components`, this method updates:</p>
+      *  of `{@linkplain #basicDivision basicDivision}.components`, this method updates:</p><ul>
       *
-      * <ul><li>`{@linkplain DividerSegment s}.text.start`</li>
+      *     <li>`{@linkplain DividerSegment s}.text.start`</li>
       *     <li>`{@linkplain DividerSegment s}.text.end`</li></ul>
       *
       * <p>Always the first call to this method for a new source of text will determine the bounds
@@ -2328,9 +2328,9 @@ public class BrecciaCursor implements ReusableCursor {
 
 
         /** Parses any postgap at buffer position `b`, with or without a succeeding appendage clause,
-          * appending the result to one of two given granum lists.  Three normal cases are possible:
+          * appending the result to one of two given granum lists.  Three normal cases are possible:<ol>
           *
-          * <ol><li>Neither postgap nor appendage clause is present, in which case this method
+          *     <li>Neither postgap nor appendage clause is present, in which case this method
           *         simply returns `b`.</li>
           *     <li>A postgap alone is present, in which case this method equates to
           *         `appendAnyPostgap(b, innerGrana)`.</li>
@@ -2358,9 +2358,9 @@ public class BrecciaCursor implements ReusableCursor {
 
 
         /** Parses a postgap at buffer position `b`, with or without a succeeding appendage clause,
-          * appending the result to one of two given granum lists.  Two normal cases are possible:
+          * appending the result to one of two given granum lists.  Two normal cases are possible:<ol>
           *
-          * <ol><li>A postgap alone is present, in which case this method equates to
+          *     <li>A postgap alone is present, in which case this method equates to
           *         `appendPostgap(b, innerGrana)`.</li>
           *     <li>Both postgap and appendage clause are present, in which case this method equates to
           *         appendPostgap(b, outerGrana); appendAny(b, outerGrana, p)`.</li></ol>

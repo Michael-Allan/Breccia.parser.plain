@@ -3,6 +3,7 @@ package Breccia.parser.plain;
 import Breccia.parser.AdjunctSlow;
 import Breccia.parser.DividerSegment;
 import Breccia.parser.Granum;
+import Breccia.parser.PerfectIndent;
 import java.util.List;
 
 
@@ -13,7 +14,7 @@ final class DividerSegment_ extends Granum_ implements DividerSegment {
         super( cursor );
         this.cursor = cursor;
         components = new CoalescentArrayList( cursor.spooler );
-        perfectIndent = new PerfectIndent( cursor, /*container*/this ); }
+        perfectIndent = new PerfectIndent_( cursor, /*container*/this ); }
 
 
 
@@ -28,14 +29,14 @@ final class DividerSegment_ extends Granum_ implements DividerSegment {
 
 
 
-    final PerfectIndent perfectIndent;
+    final PerfectIndent_ perfectIndent;
 
 
 
    // ━━━  D i v i d e r   S e g m e n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override Granum perfectIndent() { return perfectIndent; }
+    public @Override PerfectIndent perfectIndent() { return perfectIndent; }
 
 
 

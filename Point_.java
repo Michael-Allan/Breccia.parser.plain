@@ -2,6 +2,7 @@ package Breccia.parser.plain;
 
 import Breccia.parser.AdjunctSlow;
 import Breccia.parser.Granum;
+import Breccia.parser.PerfectIndent;
 import Breccia.parser.Point;
 import java.util.List;
 
@@ -13,7 +14,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
     Point_( final C cursor ) {
         super( cursor );
-        perfectIndent = new PerfectIndent( cursor, /*container*/this ); }
+        perfectIndent = new PerfectIndent_( cursor, /*container*/this ); }
 
 
 
@@ -63,7 +64,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-    final PerfectIndent perfectIndent;
+    final PerfectIndent_ perfectIndent;
 
 
 
@@ -88,7 +89,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-    public final @Override Granum perfectIndent() { return perfectIndent; }
+    public final @Override PerfectIndent perfectIndent() { return perfectIndent; }
 
 
 

@@ -73,10 +73,81 @@ final class PatternMatcher_ extends Granum_ implements PatternMatcher {
 
 
 
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    static final class BackslashedSpecial_ extends PatternElement implements BackslashedSpecial {
+
+
+        BackslashedSpecial_ ( BrecciaCursor cursor ) { super( cursor ); }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    static final class GroupDelimiter_ extends PatternElement implements GroupDelimiter {
+
+
+        GroupDelimiter_ ( BrecciaCursor cursor ) { super( cursor ); }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    static final class Literalizer_ extends PatternElement implements Literalizer {
+
+
+        Literalizer_ ( BrecciaCursor cursor ) { super( cursor ); }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    static final class Metacharacter_ extends PatternElement implements Metacharacter {
+
+
+        Metacharacter_ ( BrecciaCursor cursor ) { super( cursor ); }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    static final class PerfectIndentMarker_ extends PatternElement implements PerfectIndentMarker {
+
+
+        PerfectIndentMarker_ ( BrecciaCursor cursor ) { super( cursor ); }}
+
+
+
 ////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
 
 
-    private final BrecciaCursor cursor; }
+    private final BrecciaCursor cursor;
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+    private static abstract class PatternElement extends FlatGranum {
+
+
+        PatternElement( BrecciaCursor cursor ) { super( cursor ); }
+
+
+       // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
+
+
+
+        public @Override @AdjunctSlow int lineNumber() {
+            return cursor.bufferLineNumber( text.start() ); }}}
 
 
 

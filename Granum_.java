@@ -31,6 +31,10 @@ abstract class Granum_ implements Granum {
 
 
 
+    final BrecciaCursor cursor;
+
+
+
     final DelimitableCharSequence text;
 
 
@@ -91,14 +95,7 @@ abstract class Granum_ implements Granum {
                 if( cBreak != 0 ) b.insert( cBreak, '\\' ); // One backslash for the whole sequence.
                 break; }}
         b.append( '}' );
-        return b.toString(); }
-
-
-
-////  P r i v a t e  ////////////////////////////////////////////////////////////////////////////////////
-
-
-    private final BrecciaCursor cursor; }
+        return b.toString(); }}
 
 
 

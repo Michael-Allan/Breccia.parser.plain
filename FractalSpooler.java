@@ -3,6 +3,8 @@ package Breccia.parser.plain;
 import Breccia.parser.TagName;
 import java.util.ArrayList;
 
+import static Breccia.parser.plain.PatternMatcher_.*;
+
 
 /** A spooler of per-fractum resources.  Use them in one fractum, then rewind them for the next.
   *
@@ -14,30 +16,26 @@ final class FractalSpooler extends Spooler {
     FractalSpooler( final BrecciaCursor c ) {
         final ArrayList<Spool<?>> ss = new ArrayList<>();
         ss.add( flatGranum          = new Spool<>( () -> FlatGranum.make( c )));
-        ss.add( backslashedSpecial  = new Spool<>( () -> FlatGranum.make( c, "BackslashedSpecial" )));
         ss.add( containmentOperator = new Spool<>( () -> FlatGranum.make( c, "ContainmentOperator" )));
         ss.add( divisionLabel       = new Spool<>( () -> FlatGranum.make( c, "DivisionLabel" )));
-        ss.add( groupDelimiter      = new Spool<>( () -> FlatGranum.make( c, "GroupDelimiter" )));
-        ss.add( literalizer         = new Spool<>( () -> FlatGranum.make( c, "Literalizer" )));
-        ss.add( metacharacter       = new Spool<>( () -> FlatGranum.make( c, "Metacharacter" )));
-        ss.add( perfectIndentMarker = new Spool<>( () -> FlatGranum.make( c, "PerfectIndentMarker" )));
-        ss.add( commentAppender     = new Spool<>( () -> new CommentAppender_   ( c )));
-        ss.add( commentBlock        = new Spool<>( () -> new CommentBlock_      ( c )));
-        ss.add( commentBlockLine    = new Spool<>( () -> new CommentBlock_.Line_( c )));
-        ss.add( indentBlind         = new Spool<>( () -> new IndentBlind_       ( c )));
-        ss.add( indentBlindLine     = new Spool<>( () -> new IndentBlind_.Line_ ( c )));
-        ss.add( patternMatcher      = new Spool<>( () -> new PatternMatcher_    ( c )));
+        ss.add( backslashedSpecial  = new Spool<>( () -> new BackslashedSpecial_ ( c )));
+        ss.add( commentAppender     = new Spool<>( () -> new CommentAppender_    ( c )));
+        ss.add( commentBlock        = new Spool<>( () -> new CommentBlock_       ( c )));
+        ss.add( commentBlockLine    = new Spool<>( () -> new CommentBlock_.Line_ ( c )));
+        ss.add( groupDelimiter      = new Spool<>( () -> new GroupDelimiter_     ( c )));
+        ss.add( indentBlind         = new Spool<>( () -> new IndentBlind_        ( c )));
+        ss.add( indentBlindLine     = new Spool<>( () -> new IndentBlind_.Line_  ( c )));
+        ss.add( literalizer         = new Spool<>( () -> new Literalizer_        ( c )));
+        ss.add( metacharacter       = new Spool<>( () -> new Metacharacter_      ( c )));
+        ss.add( patternMatcher      = new Spool<>( () -> new PatternMatcher_     ( c )));
+        ss.add( perfectIndentMarker = new Spool<>( () -> new PerfectIndentMarker_( c )));
         initialize( ss ); }
 
 
 
-    /** Spool of flat grana each reflective of a ‘backslash sequence’, a sequence commencing
-      * with a backslash that has special meaning in a regular-expression pattern.
-      *
-      *     @see <a href='https://perldoc.perl.org/perlrebackslash#The-backslash'>The backslash</a>
-      *     @see #literalizer
+    /** Spool of regexp backslashed specials.
       */
-    final Spool<@TagName("BackslashedSpecial") FlatGranum> backslashedSpecial;
+    final Spool<BackslashedSpecial_> backslashedSpecial;
 
 
 
@@ -79,10 +77,9 @@ final class FractalSpooler extends Spooler {
 
 
 
-    /** Spool of flat grana each reflective of a group delimiter within a regular-expression pattern,
-      * one of ‘(’, ‘(?:’ or ‘)’.
+    /** Spool of regexp group delimiters.
       */
-    final Spool<@TagName("GroupDelimiter") FlatGranum> groupDelimiter;
+    final Spool<GroupDelimiter_> groupDelimiter;
 
 
 
@@ -98,21 +95,15 @@ final class FractalSpooler extends Spooler {
 
 
 
-    /** Spool of flat grana each reflective of a literalizing backslash within a regular-expression
-      * pattern, one that ‘takes away [any] special meaning of the character following it’.
-      *
-      *     @see <a href='https://perldoc.perl.org/perlrebackslash#The-backslash'>The backslash</a>
-      *     @see #backslashedSpecial
+    /** Spool of regexp literalizers.
       */
-    final Spool<@TagName("Literalizer") FlatGranum> literalizer;
+    final Spool<Literalizer_> literalizer;
 
 
 
-    /** Spool of flat grana each reflective of a metacharacter within a regular-expression pattern.
-      *
-      *     @see <a href='https://perldoc.perl.org/perlre#Metacharacters'>Metacharacters</a>
+    /** Spool of regexp metacharacters.
       */
-    final Spool<@TagName("Metacharacter") FlatGranum> metacharacter;
+    final Spool<Metacharacter_> metacharacter;
 
 
 
@@ -122,9 +113,9 @@ final class FractalSpooler extends Spooler {
 
 
 
-    /** Spool of flat grana each reflective of a perfect indent ‘^^’ within a regular-expression pattern.
+    /** Spool of regexp perfect indent markers.
       */
-    final Spool<@TagName("PerfectIndentMarker") FlatGranum> perfectIndentMarker; }
+    final Spool<PerfectIndentMarker_> perfectIndentMarker; }
 
 
 

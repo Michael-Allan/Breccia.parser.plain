@@ -121,7 +121,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
     final class Appendage extends Granum_ {
 
 
-        Appendage() { super( cursor ); }
+        Appendage() { super( CommandPoint_.this.cursor ); }
 
 
 
@@ -158,7 +158,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
         AppendageClause_() {
-            super( cursor );
+            super( CommandPoint_.this.cursor );
             components = List.of( delimiter, appendage ); }
 
 
@@ -208,7 +208,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
     final class Command extends Granum_ {
 
 
-        Command() { super( cursor ); }
+        Command() { super( CommandPoint_.this.cursor ); }
 
 
 

@@ -99,7 +99,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
     final class Descriptor extends Granum_ {
 
 
-        Descriptor() { super( cursor ); }
+        Descriptor() { super( Point_.this.cursor ); }
 
 
 

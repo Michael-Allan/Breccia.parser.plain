@@ -76,7 +76,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
     final class ContainmentClause extends Granum_ {
 
 
-        ContainmentClause() { super( cursor ); }
+        ContainmentClause() { super( AssociativeReference_.this.cursor ); }
 
 
 
@@ -124,7 +124,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
     final class InferentialReferentIndicant_ extends Granum_ implements InferentialReferentIndicant {
 
 
-        InferentialReferentIndicant_() { super( cursor ); }
+        InferentialReferentIndicant_() { super( AssociativeReference_.this.cursor ); }
 
 
 
@@ -200,7 +200,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
         ReferentClause_() {
-            super( cursor );
+            super( AssociativeReference_.this.cursor );
             componentsAsFractumIndicant = List.of( fractumIndicantWhenPresent );
             componentsAsInferentialReferentIndicant = List.of( inferentialReferentIndicantWhenPresent ); }
 
@@ -269,7 +269,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
     final class ReferrerClause_ extends Granum_ implements ReferrerClause {
 
 
-        ReferrerClause_() { super( cursor ); }
+        ReferrerClause_() { super( AssociativeReference_.this.cursor ); }
 
 
 

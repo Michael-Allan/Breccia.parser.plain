@@ -13,7 +13,7 @@ final class PerfectIndent_ extends FlatGranum implements PerfectIndent {
 
 
 
-   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
     public @Override @AdjunctSlow int lineNumber() { return container.lineNumber(); }

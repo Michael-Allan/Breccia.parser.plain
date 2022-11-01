@@ -1577,9 +1577,10 @@ public class BrecciaCursor implements ReusableCursor {
       */
     private void readyDividerSegment( final int indentWidth ) {
         final DividerSegment_ segment = basicDivision.components.add();
-        segment.text.delimit( segmentStart, segmentEnd ); /* Position nothing else in advance,
-          because `delimitSegment`, in the event of a buffer shift, will *shift* nothing else. */
-        segment.indentWidth = indentWidth; }
+        segment.text.delimit( segmentStart, segmentEnd ); /* Position nothing else in advance of a
+          potential `delimitSegment` which, in the event of a buffer shift, will *shift* nothing else. */
+        segment.indentWidth = indentWidth; } /* Meantime record this for use in delimiting
+          the perfect indent later, when its final position is known. */
 
 
 

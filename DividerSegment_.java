@@ -13,12 +13,12 @@ final class DividerSegment_ extends Granum_ implements DividerSegment {
     DividerSegment_( final BrecciaCursor cursor ) {
         super( cursor );
         this.cursor = cursor;
-        components = new CoalescentArrayList( cursor.spooler );
+        components = new GranalArrayList( cursor.spooler );
         perfectIndent = new PerfectIndent_( cursor, /*container*/this ); }
 
 
 
-    final CoalescentGranumList components;
+    final CoalescentGranalList components;
 
 
 

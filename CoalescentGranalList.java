@@ -13,7 +13,7 @@ import java.util.List;
   * In other words, coalescence-removal-coalescence with no intermediate clearance
   * is an invalid order of operations.</p>
   */
-interface CoalescentGranumList extends List<Granum> {
+interface CoalescentGranalList extends List<Granum> {
 
 
     /** Appends to this list the flat text bounded in the cursor by buffer positions `start` and `end`.

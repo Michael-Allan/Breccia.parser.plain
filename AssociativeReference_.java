@@ -80,7 +80,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        final CoalescentGranumList components = new CoalescentArrayList( cursor.spooler );
+        final CoalescentGranalList components = new GranalArrayList( cursor.spooler );
 
 
 
@@ -128,7 +128,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        final CoalescentArrayList components = new CoalescentArrayList( cursor.spooler );
+        final GranalArrayList components = new GranalArrayList( cursor.spooler );
 
 
 
@@ -273,7 +273,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        final CoalescentGranumList components = new CoalescentArrayList( cursor.spooler );
+        final CoalescentGranalList components = new GranalArrayList( cursor.spooler );
 
 
 

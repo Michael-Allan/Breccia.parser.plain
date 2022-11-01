@@ -5,10 +5,10 @@ import Java.DelimitableCharSequence;
 import Java.RangedArrayList;
 
 
-final class CoalescentArrayList extends RangedArrayList<Granum> implements CoalescentGranumList {
+final class GranalArrayList extends RangedArrayList<Granum> implements CoalescentGranalList {
 
 
-    CoalescentArrayList( FractalSpooler spooler ) { this.spooler = spooler; }
+    GranalArrayList( FractalSpooler spooler ) { this.spooler = spooler; }
 
 
 

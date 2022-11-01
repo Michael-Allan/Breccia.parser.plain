@@ -13,12 +13,12 @@ final class ResourceIndicant_ extends Granum_ implements ResourceIndicant {
     ResourceIndicant_( final BrecciaCursor cursor ) {
         super( cursor );
         this.cursor = cursor;
-        components = new CoalescentArrayList( cursor.spooler );
+        components = new GranalArrayList( cursor.spooler );
         reference = FlatGranum.make( cursor, "Reference" ); }
 
 
 
-    final CoalescentGranumList components;
+    final CoalescentGranalList components;
 
 
 

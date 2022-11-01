@@ -125,7 +125,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-        final CoalescentGranumList components = new CoalescentArrayList( cursor.spooler );
+        final CoalescentGranalList components = new GranalArrayList( cursor.spooler );
 
 
 
@@ -212,7 +212,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-        final CoalescentGranumList components = new CoalescentArrayList( cursor.spooler );
+        final CoalescentGranalList components = new GranalArrayList( cursor.spooler );
 
 
 

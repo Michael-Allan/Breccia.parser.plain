@@ -403,7 +403,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @return The end boundary of the sequence, or `b` if none was found.
       */
-    private int appendAnyDrawing( final int b, final CoalescentGranumList grana ) {
+    private int appendAnyDrawing( final int b, final CoalescentGranalList grana ) {
         final int c = throughAnyDrawing( b );
         if( c /*moved*/!= b ) grana.appendFlat( b, c );
         return c; }
@@ -416,7 +416,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @return The end boundary of the foregap, or `b` if none was found.
       */
-    private int appendAnyForegap( int b, final CoalescentGranumList grana ) {
+    private int appendAnyForegap( int b, final CoalescentGranalList grana ) {
         if( b >= segmentEnd ) return b; /* As required, either `b` bounds the segment end (left),
           or a line start (right). */ assert b == segmentStart || completesNewline(buffer.get(b-1));
         int bLine = b; // The last position at which a line starts.
@@ -487,7 +487,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @return The end boundary of the sequence, or `b` if none was found.
       */
-    private int appendAnyNewlines( final int b, final CoalescentGranumList grana ) {
+    private int appendAnyNewlines( final int b, final CoalescentGranalList grana ) {
         final int c = throughAnyNewlines( b );
         if( b != c ) grana.appendFlat( b, c );
         return c; }
@@ -515,7 +515,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @return The end boundary of the postgap, or `b` if none was found.
       */
-    private int appendAnyPostgap( int b, final CoalescentGranumList grana ) {
+    private int appendAnyPostgap( int b, final CoalescentGranalList grana ) {
         if( b /*moved*/!= (b = appendAnyS( b, grana ))) {
             if( b /*moved*/!= (b = appendAnyCommentAppender( b, grana ))) {
                 return appendAnyForegap( b, grana ); }}
@@ -529,7 +529,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @return The end boundary of the sequence, or `b` if none was found.
       */
-    private int appendAnyS( final int b, final CoalescentGranumList grana ) {
+    private int appendAnyS( final int b, final CoalescentGranalList grana ) {
         final int c = throughAnyS( b );
         if( b != c ) grana.appendFlat( b, c );
         return c; }
@@ -540,7 +540,7 @@ public class BrecciaCursor implements ReusableCursor {
       *
       *     @return The end boundary of the term, or `b` if none was found.
       */
-    private int appendAnyTerm( final int b, final CoalescentGranumList grana ) {
+    private int appendAnyTerm( final int b, final CoalescentGranalList grana ) {
         final int c = termParser.throughAny( b );
         if( c /*moved*/!= b ) grana.appendFlat( b, c );
         return c; }
@@ -581,7 +581,7 @@ public class BrecciaCursor implements ReusableCursor {
       // ───────
         pattern: {
             final Pattern pattern = matcher.pattern;
-            final CoalescentGranumList cc = pattern.components;
+            final CoalescentGranalList cc = pattern.components;
             cc.clear();
             final int bPattern = b;
             boolean inEscape = false; // Whether the last character was a backslash ‘\’.
@@ -695,7 +695,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the postgap.
       *     @throws MalformedText If no postgap occurs at `b`.
       */
-    private int appendPostgap( int b, final CoalescentGranumList grana ) throws MalformedText {
+    private int appendPostgap( int b, final CoalescentGranalList grana ) throws MalformedText {
         if( b /*moved*/!= (b = appendAnyPostgap( b, grana ))) return b;
         throw new MalformedText( characterPointer(b), "Postgap expected" ); }
 
@@ -707,7 +707,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the sequence.
       *     @throws MalformedText If no such sequence occurs at `b`.
       */
-    private int appendS( int b, final CoalescentGranumList grana ) throws MalformedText {
+    private int appendS( int b, final CoalescentGranalList grana ) throws MalformedText {
         grana.appendFlat( b, b = throughS(b) );
         return b; }
 
@@ -718,7 +718,7 @@ public class BrecciaCursor implements ReusableCursor {
       *     @return The end boundary of the term.
       *     @throws MalformedText If no term occurs at `b`.
       */
-    private int appendTerm( int b, final CoalescentGranumList grana ) throws MalformedText {
+    private int appendTerm( int b, final CoalescentGranalList grana ) throws MalformedText {
         grana.appendFlat( b, b = termParser.through(b) );
         return b; }
 
@@ -954,7 +954,7 @@ public class BrecciaCursor implements ReusableCursor {
         final AssociativeReference_ rA = associativeReference;
         assert !rA.isComposed;
         final DelimitableCharSequence keyword = rA.keyword;
-        final CoalescentGranumList dcc = rA.descriptor.components;
+        final CoalescentGranalList dcc = rA.descriptor.components;
         dcc.clear();
         int b;
         final int bKeyword;
@@ -964,7 +964,7 @@ public class BrecciaCursor implements ReusableCursor {
       // ───────
         dcc.add( rA.command ); /* Added early (before parsing) because any postgap that follows it
           could be added as a side effect of parsing the referent clause, q.v. below. */
-        final CoalescentGranumList cc = rA.command.components;
+        final CoalescentGranalList cc = rA.command.components;
         cc.clear();
         final int bReferentialCommand;
         final DelimitableCharSequence referentialCommandKeyword;
@@ -973,7 +973,7 @@ public class BrecciaCursor implements ReusableCursor {
           // Referrer clause, from keyword
           // ───────────────
             final var cR = rA.referrerClauseWhenPresent;
-            final CoalescentGranumList cRcc = cR.components;
+            final CoalescentGranalList cRcc = cR.components;
             cRcc.clear();
             cRcc.appendFlat( b, b = keyword.end() );
             b = appendPostgap( b, cRcc );
@@ -1047,7 +1047,7 @@ public class BrecciaCursor implements ReusableCursor {
             cR.text.delimit( bStart, cRIParser.bEnd );
             cc.add( rA.referentClause = cR );
             if( cRIParser.wasAnyPostgapParsed ) {
-                final CoalescentArrayList cRIcc = cRIParser.components;
+                final GranalArrayList cRIcc = cRIParser.components;
                 final int cTermEnd = cRIParser.cTermEnd;
                 final int cN = cRIcc.size();
                 if( cTermEnd < cN ) { /* Then components of a final postgap were inadvertently
@@ -1075,7 +1075,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     final void composeDescriptor( final NonCommandPoint p ) throws MalformedText {
         assert !p.isComposed;
-        final CoalescentGranumList cc = p.descriptor.components;
+        final CoalescentGranalList cc = p.descriptor.components;
         cc.clear();
         int b = p.bullet.text.end();
         assert segmentEnd > b;
@@ -1099,7 +1099,7 @@ public class BrecciaCursor implements ReusableCursor {
         // This method parses as such neither the command nor any appendage clause,
         // as they would be difficult to parse without knowing the command form.
         assert !p.isComposed;
-        final CoalescentGranumList cc = p.descriptor.components;
+        final CoalescentGranalList cc = p.descriptor.components;
         cc.clear();
         int b;
         cc.appendFlat( p.bullet.text.end(), b = p.keyword.end() );
@@ -1115,7 +1115,7 @@ public class BrecciaCursor implements ReusableCursor {
       */
     final void composeDescriptor( final SimpleCommandPoint<?> p ) throws MalformedText {
         assert !p.isComposed;
-        final CoalescentGranumList cc = p.descriptor.components;
+        final CoalescentGranalList cc = p.descriptor.components;
         cc.clear();
         final DelimitableCharSequence keyword = p.keyword;
         cc.appendFlat( p.bullet.text.end(), keyword.start() );
@@ -1149,7 +1149,7 @@ public class BrecciaCursor implements ReusableCursor {
                 final DividerSegment_ seg = segments.get( s );
                 int b = seg.text.start();
                 seg.perfectIndent.text.delimit( b, b += seg.indentWidth );
-                final CoalescentGranumList cc = seg.components;
+                final CoalescentGranalList cc = seg.components;
                 cc.clear();
 
               // Perfect indent
@@ -1214,7 +1214,7 @@ public class BrecciaCursor implements ReusableCursor {
     final void composeFileFractum() {
         final FileFractum_ f = fileFractum;
         assert !f.isComposed;
-        final CoalescentGranumList cc = f.componentsWhenPresent;
+        final CoalescentGranalList cc = f.componentsWhenPresent;
         cc.clear();
         int b = 0;
         assert b == fractumStart && segmentEnd > b;
@@ -2266,7 +2266,7 @@ public class BrecciaCursor implements ReusableCursor {
             final CommandPoint_<?>.AppendageClause_ cA = p.appendageClauseWhenPresent;
             final int a = b;
             cA.delimiter.text.delimit( a, ++b );
-            final CoalescentGranumList cc = cA.appendage.components;
+            final CoalescentGranalList cc = cA.appendage.components;
             cc.clear();
             b = appendPostgap( b, cc );
             b = appendTerm( b, cc );
@@ -2343,8 +2343,8 @@ public class BrecciaCursor implements ReusableCursor {
           *     @throws IllegalStateException If already an appendage clause
           *       `{@linkplain #wasAppended wasAppended}`.
           */
-        int appendAnyPostgap_AnyClause( int b, final CoalescentGranumList outerGrana,
-              final CoalescentGranumList innerGrana, final CommandPoint_<?> p ) throws MalformedText {
+        int appendAnyPostgap_AnyClause( int b, final CoalescentGranalList outerGrana,
+              final CoalescentGranalList innerGrana, final CommandPoint_<?> p ) throws MalformedText {
             if( wasAppended ) throw new IllegalStateException( "Appendage clause already appended" );
             cachedGrana.clear();
             if( b /*moved*/!= (b = appendAnyPostgap( b, cachedGrana ))) {
@@ -2372,15 +2372,15 @@ public class BrecciaCursor implements ReusableCursor {
           *       `{@linkplain #wasAppended wasAppended}`.
           *     @throws MalformedText If no postgap occurs at `b`.
           */
-        int appendPostgap_AnyClause( final int b, final CoalescentGranumList outerGrana,
-              final CoalescentGranumList innerGrana, final CommandPoint_<?> p ) throws MalformedText {
+        int appendPostgap_AnyClause( final int b, final CoalescentGranalList outerGrana,
+              final CoalescentGranalList innerGrana, final CommandPoint_<?> p ) throws MalformedText {
             final int c = appendAnyPostgap_AnyClause( b, outerGrana, innerGrana, p );
             if( c /*unmoved*/== b ) throw new MalformedText( characterPointer(b), "Postgap expected" );
             return c; }
 
 
 
-        private final CoalescentGranumList cachedGrana = new CoalescentArrayList( spooler );
+        private final CoalescentGranalList cachedGrana = new GranalArrayList( spooler );
 
 
 
@@ -2868,7 +2868,7 @@ public class BrecciaCursor implements ReusableCursor {
         int append( int b, final FractumIndicant_ iF, final String failureMessage )
               throws MalformedText {
             final int bOriginal = b;
-            final CoalescentArrayList cc = iF.components;
+            final GranalArrayList cc = iF.components;
             cc.clear();
             composition: {
 
@@ -2928,7 +2928,7 @@ public class BrecciaCursor implements ReusableCursor {
         int appendAny( int b, final AssociativeReference_. InferentialReferentIndicant_ iIR )
               throws MalformedText {
             final int bOriginal = b;
-            final CoalescentArrayList cc = iIR.components;
+            final GranalArrayList cc = iIR.components;
             cc.clear();
             seqTerm.delimit( b, termParser.through(b) );
             composition: {
@@ -2969,7 +2969,7 @@ public class BrecciaCursor implements ReusableCursor {
               // ────────────────
                 if( equalInContent( "@", seqTerm )) {
                     final var cC = iIR.containmentClauseWhenPresent;
-                    final CoalescentGranumList cCcc = cC.components;
+                    final CoalescentGranalList cCcc = cC.components;
                     cCcc.clear();
                     final FlatGranum opC = spooler.containmentOperator.unwind();
                     opC.text.delimit( b, ++b );
@@ -3011,7 +3011,7 @@ public class BrecciaCursor implements ReusableCursor {
             int d = termParser.throughAny( a ); // End bound of term.
             if( d /*moved*/!= a ) {
                 int b = a; // Start bound of term.
-                final CoalescentGranumList cc = iR.components;
+                final CoalescentGranalList cc = iR.components;
                 cc.clear();
                 iR.qualifiers.clear();
                 qualifiers: for( String qualifier;; ) {
@@ -3043,7 +3043,7 @@ public class BrecciaCursor implements ReusableCursor {
           *
           *     @see #cTermEnd
           */
-        CoalescentArrayList components;
+        GranalArrayList components;
 
 
 

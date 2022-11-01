@@ -11,12 +11,12 @@ final class FractumIndicant_ extends Granum_ implements FractumIndicant {
     FractumIndicant_( final BrecciaCursor cursor ) {
         super( cursor );
         this.cursor = cursor;
-        components = new CoalescentArrayList( cursor.spooler );
+        components = new GranalArrayList( cursor.spooler );
         resourceIndicantWhenPresent = new ResourceIndicant_( cursor ); }
 
 
 
-    final CoalescentArrayList components;
+    final GranalArrayList components;
 
 
 

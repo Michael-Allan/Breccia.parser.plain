@@ -10,7 +10,7 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
     FileFractum_( BrecciaCursor cursor ) {
         super( cursor );
-        componentsWhenPresent = new CoalescentArrayList( cursor.spooler ); }
+        componentsWhenPresent = new GranalArrayList( cursor.spooler ); }
 
 
 
@@ -19,11 +19,11 @@ final class FileFractum_ extends Fractum_<BrecciaCursor> implements FileFractum 
 
 
     static final List<Granum> componentsWhenAbsent = List.of(); /* Setting this will be marginally faster
-      than would be the alternative of `components.clear`, at least for a `CoalescentArrayList`. */
+      than would be the alternative of `components.clear`, at least for a `GranalArrayList`. */
 
 
 
-    final CoalescentGranumList componentsWhenPresent;
+    final CoalescentGranalList componentsWhenPresent;
 
 
 

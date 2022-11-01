@@ -103,7 +103,7 @@ abstract class Point_<C extends BrecciaCursor> extends BodyFractum_<C> implement
 
 
 
-        final CoalescentGranumList components = new CoalescentArrayList( cursor.spooler );
+        final CoalescentGranalList components = new GranalArrayList( cursor.spooler );
 
 
 

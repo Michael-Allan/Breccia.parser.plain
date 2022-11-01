@@ -11,11 +11,11 @@ final class Pattern extends Granum_ {
     Pattern( final BrecciaCursor cursor ) {
         super( cursor );
         this.cursor = cursor;
-        components = new CoalescentArrayList( cursor.spooler ); }
+        components = new GranalArrayList( cursor.spooler ); }
 
 
 
-    final CoalescentGranumList components;
+    final CoalescentGranalList components;
 
 
 

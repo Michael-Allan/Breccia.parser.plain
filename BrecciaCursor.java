@@ -28,7 +28,6 @@ import static java.lang.Character.isAlphabetic;
 import static java.lang.Character.isDigit;
 import static Java.Unicode.graphemeClusterPattern;
 import static java.util.Arrays.binarySearch;
-import static java.util.Arrays.copyOf;
 import static java.util.Arrays.sort;
 
 
@@ -226,6 +225,26 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    public final @Override boolean isPrivatized( final int[] xuncFractalDescent ) {
+        if( !state.isFinal() || state == halt ) throw new IllegalStateException();
+        final int pEnd = xuncPrivatized.length;
+        if( pEnd == 0 ) return false; // No fractum is privatized, so nothing at all is privatized.
+        if( xuncPrivatized.array[0] == -1 ) return true; // The file fractum is, so everything is.
+        int pStart = 0;
+        for( final int xD: xuncFractalDescent ) {
+            for( int p = pStart; p < pEnd; ++p ) {
+                final int xP = xuncPrivatized.array[p];
+                if( xP == xD) return true; /* A fractum in the granum’s line of descent is privatized
+                  (either an ancestor or the granum itself) whereby the granum too is privatized. */
+                if( xP > xD ) { // Then the remaining `xP` will also be greater, none matching.
+                    pStart = p; /* Start here for the next `xD` because none of the preceding `xP`
+                      will be able to match it, because it will be larger than the present `xD`. */
+                    break; }}}
+        return false; } /* No fractum in the granum’s line of descent is privatized (neither an ancestor
+          nor the granum itself) so the granum is not privatized. */
+
+
+
     public final @Override @NarrowNot ParseState next() throws ParseError {
         if( state.isFinal() ) throw new NoSuchElementException();
         try { _next(); }
@@ -260,14 +279,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     public final @Override @NarrowNot ParseState state() { return state; }
-
-
-
-    public final @Override @AdjunctSlow int[] xuncPrivatized() {
-        if( !state.isFinal() || state == halt ) throw new IllegalStateException();
-        final int[] xuncs = copyOf( xuncPrivatized.array, xuncPrivatized.length );
-        sort( xuncs );
-        return xuncs; }
 
 
 
@@ -1509,6 +1520,7 @@ public class BrecciaCursor implements ReusableCursor {
                     sourceSpooler.hierarch.rewind( past );
                     return; }}
  /**/       basicFileFractum.end.commit();
+            rest();
             return; }
         final int nextIndentWidth = segmentEndIndicant - segmentEnd; /* The offset from the start of
           the next fractum (`segmentEnd`) to its first non-space character (`segmentEndIndicant`). */
@@ -1817,6 +1829,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    private final void rest() { sort( xuncPrivatized.array, 0, xuncPrivatized.length ); } // As per API.
+
+
+
     /** The end boundary in the buffer of the present fractal segment, which is the position
       * after its final character.  This is zero in case of an empty text source
       * or headless file fractum, the only cases of a zero length fractal segment.
@@ -1857,6 +1873,7 @@ public class BrecciaCursor implements ReusableCursor {
         if( count < 0 ) {
             buffer.limit( 0 );
  /**/       basicEmpty.commit();
+            rest();
             return; }
         if( count == 0 ) throw new IllegalStateException(); // Forbidden by `Reader` for array reads.
         buffer.flip();
@@ -2008,6 +2025,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Extensible array of xunc offsets of directly privatized fracta.  That of any file fractum
+      * is entered as -1.  The array may contain duplicate entries.  On any final parse state
+      * other than `Halt`, the array is sorted in ascending order.
+      */
     final IntArrayExtensor xuncPrivatized = new IntArrayExtensor( new int[0x400] ); // = 1024
 
 

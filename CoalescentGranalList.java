@@ -26,9 +26,10 @@ interface CoalescentGranalList extends List<Granum> {
       *     @see Breccia.parser.Granum#tagName()
       *     @see #flush()
       *     @throws AssertionError If assertions are enabled and `start` is not less than `end`.
-      *     @throws AssertionError If coalescence is attempted and `start` is unequal to the `end`
-      *       given in the previous call to this method.  Cf. the contiguity stipulated
-      *       by `Granum.{@linkplain Breccia.parser.Granum#components() components}`.
+      *     @throws AssertionError If assertions are enabled, the list ends with
+      *       a coalescent component and `start` is unequal to the `end` given in
+      *       the previous call to this method.  Cf. the contiguity stipulated by
+      *       `Granum.{@linkplain Breccia.parser.Granum#components() components}`.
       */
     public void appendFlat( int start, int end );
 

@@ -41,6 +41,7 @@ abstract class Fractum_<C extends BrecciaCursor> extends Granum_ implements Frac
 
 
     public final @Override int xuncLineEnd( final int i ) {
+        if( i >= lineCount() ) throw new IndexOutOfBoundsException( i );
         return cursor.xunc + cursor.fractumLineEnds.array[i]; }
 
 

@@ -1655,9 +1655,9 @@ public class BrecciaCursor implements ReusableCursor {
         p.bullet       .text.delimit( /*1*/bullet,       /*2*/bulletEnd );
         p.descriptor() .text.delimit( /*2*/bulletEnd,    /*3*/segmentEnd );
         if( privately != null ) {
-            p.modifierSet.add( CommandPoint.Modifier.privately );
+            p.modifiers.add( "privately" );
             xuncPrivatized.add( p.xunc() ); }
-        else p.modifierSet.clear();
+        else p.modifiers.clear();
         p.keyword.delimitAs( keyword );
 
       // Ready to commit

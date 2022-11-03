@@ -4,7 +4,8 @@ import Breccia.parser.AdjunctSlow;
 import Breccia.parser.CommandPoint;
 import Breccia.parser.Granum;
 import Java.DelimitableCharSequence;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static Java.CharBuffers.newDelimitableCharSequence;
 
@@ -39,7 +40,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-    public final @Override Set<Modifier> modifierSet() { return modifierSet; }
+    public final @Override List<String> modifiers() { return modifiers; }
 
 
 
@@ -86,7 +87,7 @@ public abstract class CommandPoint_<C extends BrecciaCursor> extends Point_<C> i
 
 
 
-    final Set<Modifier> modifierSet = EnumSet.noneOf( Modifier.class );
+    final List<String> modifiers = new ArrayList<>( /*initial capacity*/2 );
 
 
 

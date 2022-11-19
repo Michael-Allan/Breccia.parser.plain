@@ -862,7 +862,7 @@ public class BrecciaCursor implements ReusableCursor {
       // Form the pointer
       // ────────────────
         final int column = bufferClusterCount( lineStart, position );
-        return new CharacterPointer( line, lineLocator.number(), column ); }
+        return new CharacterPointer( line, column, lineLocator.number() ); }
 
 
 

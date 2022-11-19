@@ -897,7 +897,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     /** @return The end boundary of the holder, viz. past any terminal newline. *//*
-      *
       * @paramImplied #commentaryHoldDetector What detected the hold in the text.
       */
     private int compose( final CommentaryHolder_ holder ) {

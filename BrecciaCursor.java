@@ -26,6 +26,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static java.lang.Character.codePointAt;
 import static java.lang.Character.isAlphabetic;
 import static java.lang.Character.isDigit;
+import static Java.StringBuilding.clear;
 import static Java.Unicode.graphemeClusterPattern;
 import static java.util.Arrays.binarySearch;
 import static java.util.Arrays.sort;
@@ -847,16 +848,16 @@ public class BrecciaCursor implements ReusableCursor {
 
       // Resolve its content
       // ───────────────────
-        final int lineLength; { // Or partial length, if the whole line has yet to enter the buffer.
+        final int lineEnd; { // Or less, if the whole line has yet to enter the buffer.
             final int lineIndex = lineLocator.index();
-            if( lineIndex < fractumLineEnds.length ) { // Then measure the easy way:
-                lineLength = fractumLineEnds.array[lineIndex] - lineStart; }
-            else { // The line has yet to be parsed to its end.  Measure it the hard way:
+            if( lineIndex < fractumLineEnds.length ) { // Then delimit the line the easy way:
+                lineEnd = fractumLineEnds.array[lineIndex]; }
+            else { // The line has yet to be parsed to its end.  Delimit it the hard way:
                 final int pN = buffer.limit();
                 int p = position;
                 while( p < pN && !completesNewline(buffer.get(p++)) );
-                lineLength = p - lineStart; }}
-        final String line = buffer.slice( lineStart, lineLength ).toString();
+                lineEnd = p; }}
+        final String line = clear(stringBuilder).append( buffer, lineStart, lineEnd ).toString();
 
       // Form the pointer
       // ────────────────
@@ -1905,6 +1906,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private ParseState state;
+
+
+
+    private final StringBuilder stringBuilder = new StringBuilder( /*initial capacity*/bufferHeadRoom );
 
 
 

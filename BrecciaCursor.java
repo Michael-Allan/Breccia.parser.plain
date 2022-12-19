@@ -614,6 +614,13 @@ public class BrecciaCursor implements ReusableCursor {
                         final FlatGranum special = spooler.backslashedSpecial.unwind();
                         special.text.delimit( bStart, b );
                         cc.add( special ); }
+                    else if( '0' <= ch && ch <= '9' || isAlphabetic( ch )) {
+                        final int a = b - 1;
+                        final StringBuilder s = clear( stringBuilder );
+                        s.append( "Unsupported backslash sequence: `" ); // Viz. reserved for future use.
+                        s.append( buffer, a, b + 1 );
+                        s.append( '`' );
+                        throw new MalformedText( characterPointer(a), s.toString() ); }
                     else {
                         final FlatGranum literalizer = spooler.literalizer.unwind();
                         literalizer.text.delimit( b - 1, b );
@@ -644,6 +651,9 @@ public class BrecciaCursor implements ReusableCursor {
                     metacharacter.text.delimit( b, ++b );
                     cc.add( metacharacter );
                     continue; }
+                if( ch == '[' || ch == ']' || ch == '{' || ch == '}' ) {
+                    throw new MalformedText( characterPointer(b),
+                      "Illegal use of a reserved symbol, must be literalized with `\\`" ); }
 
               // Terminus
               // ────────
@@ -837,7 +847,8 @@ public class BrecciaCursor implements ReusableCursor {
       * of the parsed region, then the fallbacks of `locateLine` apply.
       *
       *     @param position A buffer position within the parsed region of the present fractal head.
-      *     @see LineLocator#locateLine(int)
+      *     @see LineLocator#locateLine(int) *//*
+      *     @paramImplied #stringBuilder2
       */
     @Subst CharacterPointer characterPointer( final int position ) {
 
@@ -857,7 +868,7 @@ public class BrecciaCursor implements ReusableCursor {
                 int p = position;
                 while( p < pN && !completesNewline(buffer.get(p++)) );
                 lineEnd = p; }}
-        final String line = clear(stringBuilder).append( buffer, lineStart, lineEnd ).toString();
+        final String line = clear(stringBuilder2).append( buffer, lineStart, lineEnd ).toString();
 
       // Form the pointer
       // ────────────────
@@ -1910,6 +1921,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private final StringBuilder stringBuilder = new StringBuilder( /*initial capacity*/bufferHeadRoom );
+
+
+
+    private final StringBuilder stringBuilder2 = new StringBuilder( /*initial capacity*/bufferHeadRoom );
 
 
 

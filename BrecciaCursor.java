@@ -604,7 +604,7 @@ public class BrecciaCursor implements ReusableCursor {
               // Backslashed sequences
               // ─────────────────────
                 if( inEscape ) {
-                    if( ch == 'b' || ch == 'd' || ch == 'R' || ch == 't' ) {
+                    if( ch == 'b' || ch == 'd' || ch == 'R' ) {
                         final FlatGranum special = spooler.backslashedSpecial.unwind();
                         special.text.delimit( b - 1, ++b ); // Including the prior backslash.
                         cc.add( special ); }

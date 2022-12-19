@@ -647,8 +647,7 @@ public class BrecciaCursor implements ReusableCursor {
               // Terminus
               // ────────
                 if( ch == '`' ) {
-                    if( b == bPattern ) {
-                        throw new MalformedText( characterPointer(b), "Empty pattern" ); }
+                    if( b == bPattern ) throw new MalformedText( characterPointer(b), "Empty pattern" );
                     pattern.text.delimit( bPattern, b );
                     cc.flush();
                     break pattern; }

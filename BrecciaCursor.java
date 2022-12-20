@@ -1522,7 +1522,7 @@ public class BrecciaCursor implements ReusableCursor {
     /** A list of the recognized modifiers for regular-expression pattern matching.  Parser extensions
       * may modify this list at any time prior to parsing.
       */
-    protected String matchModifiers = "msp";
+    protected String matchModifiers = "imsp";
 
 
 

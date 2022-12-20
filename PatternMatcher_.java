@@ -116,10 +116,10 @@ final class PatternMatcher_ extends Granum_ implements PatternMatcher {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    static final class PerfectIndentMarker_ extends PatternElement implements PerfectIndentMarker {
+    static final class AnchoredPrefix_ extends PatternElement implements AnchoredPrefix {
 
 
-        PerfectIndentMarker_ ( BrecciaCursor cursor ) { super( cursor ); }}
+        AnchoredPrefix_ ( BrecciaCursor cursor ) { super( cursor ); }}
 
 
 

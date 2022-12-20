@@ -18,6 +18,7 @@ final class FractalSpooler extends Spooler {
         ss.add( flatGranum          = new Spool<>( () -> FlatGranum.make( c )));
         ss.add( containmentOperator = new Spool<>( () -> FlatGranum.make( c, "ContainmentOperator" )));
         ss.add( divisionLabel       = new Spool<>( () -> FlatGranum.make( c, "DivisionLabel" )));
+        ss.add( anchoredPrefix      = new Spool<>( () -> new AnchoredPrefix_     ( c )));
         ss.add( backslashedSpecial  = new Spool<>( () -> new BackslashedSpecial_ ( c )));
         ss.add( commentAppender     = new Spool<>( () -> new CommentAppender_    ( c )));
         ss.add( commentBlock        = new Spool<>( () -> new CommentBlock_       ( c )));
@@ -28,8 +29,13 @@ final class FractalSpooler extends Spooler {
         ss.add( literalizer         = new Spool<>( () -> new Literalizer_        ( c )));
         ss.add( metacharacter       = new Spool<>( () -> new Metacharacter_      ( c )));
         ss.add( patternMatcher      = new Spool<>( () -> new PatternMatcher_     ( c )));
-        ss.add( perfectIndentMarker = new Spool<>( () -> new PerfectIndentMarker_( c )));
         initialize( ss ); }
+
+
+
+    /** Spool of regexp anchored prefixes.
+      */
+    final Spool<AnchoredPrefix_> anchoredPrefix;
 
 
 
@@ -109,13 +115,7 @@ final class FractalSpooler extends Spooler {
 
     /** Spool of pattern matchers.
       */
-    final Spool<PatternMatcher_> patternMatcher;
-
-
-
-    /** Spool of regexp perfect indent markers.
-      */
-    final Spool<PerfectIndentMarker_> perfectIndentMarker; }
+    final Spool<PatternMatcher_> patternMatcher; }
 
 
 

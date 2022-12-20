@@ -633,14 +633,14 @@ public class BrecciaCursor implements ReusableCursor {
                     ++b;
                     continue; }
 
-              // Metacharacters
-              // ──────────────
+              // Metacharacters and anchored prefixes
+              // ────────────────────────────────────
                 if( ch == '^' ) {
                     final int bStart = b++;
-                    if( b < segmentEnd && buffer.get(b) == '^' ) { // A second ‘^’, so making ‘^^’.
-                        final FlatGranum indent = spooler.perfectIndentMarker.unwind();
-                        indent.text.delimit( bStart, ++b );
-                        cc.add( indent ); }
+                    if( b < segmentEnd && completesAnchoredPrefix( buffer.get( b ))) {
+                        final FlatGranum prefix = spooler.anchoredPrefix.unwind();
+                        prefix.text.delimit( bStart, ++b );
+                        cc.add( prefix ); }
                     else {
                         final FlatGranum metacharacter = spooler.metacharacter.unwind();
                         metacharacter.text.delimit( bStart, b );
@@ -904,6 +904,14 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private final BlockParser commentBlockParser = new CommentBlockParser();
+
+
+
+    /** Whether character  `ch` is one that formally ends an achored prefix `^*`, `^+` or `^^`.
+      * Returns true if `ch` is ‘*’, ‘+’ or ‘^’.
+      */
+    private static boolean completesAnchoredPrefix( final char ch ) {
+        return ch == '*' || ch == '+' || ch == '^'; }
 
 
 

@@ -76,6 +76,16 @@ final class PatternMatcher_ extends Granum_ implements PatternMatcher {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
+    static final class AnchoredPrefix_ extends PatternElement implements AnchoredPrefix {
+
+
+        AnchoredPrefix_ ( BrecciaCursor cursor ) { super( cursor ); }}
+
+
+
+   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
     static final class BackslashedSpecial_ extends PatternElement implements BackslashedSpecial {
 
 
@@ -110,16 +120,6 @@ final class PatternMatcher_ extends Granum_ implements PatternMatcher {
 
 
         Metacharacter_ ( BrecciaCursor cursor ) { super( cursor ); }}
-
-
-
-   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-
-
-    static final class AnchoredPrefix_ extends PatternElement implements AnchoredPrefix {
-
-
-        AnchoredPrefix_ ( BrecciaCursor cursor ) { super( cursor ); }}
 
 
 

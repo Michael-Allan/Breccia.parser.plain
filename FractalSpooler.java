@@ -29,6 +29,7 @@ final class FractalSpooler extends Spooler {
         ss.add( literalizer         = new Spool<>( () -> new Literalizer_        ( c )));
         ss.add( metacharacter       = new Spool<>( () -> new Metacharacter_      ( c )));
         ss.add( patternMatcher      = new Spool<>( () -> new PatternMatcher_     ( c )));
+        ss.add( variable            = new Spool<>( () -> new Variable_           ( c )));
         initialize( ss ); }
 
 
@@ -115,7 +116,13 @@ final class FractalSpooler extends Spooler {
 
     /** Spool of pattern matchers.
       */
-    final Spool<PatternMatcher_> patternMatcher; }
+    final Spool<PatternMatcher_> patternMatcher;
+
+
+
+    /** Spool of regexp variable interpolations.
+      */
+    final Spool<Variable_> variable; }
 
 
 

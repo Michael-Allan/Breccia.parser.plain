@@ -633,8 +633,8 @@ public class BrecciaCursor implements ReusableCursor {
                     ++b;
                     continue; }
 
-              // Metacharacters and anchored prefixes
-              // ────────────────────────────────────
+              // Metacharacters, anchored prefixes and variable interpolations
+              // ──────────────
                 if( ch == '^' ) {
                     final int bStart = b++;
                     if( b < segmentEnd && completesAnchoredPrefix( buffer.get( b ))) {
@@ -646,7 +646,18 @@ public class BrecciaCursor implements ReusableCursor {
                         metacharacter.text.delimit( bStart, b );
                         cc.add( metacharacter ); }
                     continue; }
-                if( ch == '.' || ch == '$' || ch == '|' || ch == '*' || ch == '+' || ch == '?' ) {
+                if( ch == '$' ) {
+                    final int bStart = b++;
+                    if( b /*moved*/!= (b = throughAnyBracketedVariableName( b ))) {
+                        final FlatGranum variable = spooler.variable.unwind();
+                        variable.text.delimit( bStart, b );
+                        cc.add( variable ); }
+                    else {
+                        final FlatGranum metacharacter = spooler.metacharacter.unwind();
+                        metacharacter.text.delimit( bStart, b );
+                        cc.add( metacharacter ); }
+                    continue; }
+                if( ch == '.' || ch == '|' || ch == '*' || ch == '+' || ch == '?' ) {
                     final FlatGranum metacharacter = spooler.metacharacter.unwind();
                     metacharacter.text.delimit( b, ++b );
                     cc.add( metacharacter );
@@ -1937,6 +1948,25 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private final TermParser termParser = new TermParser();
+
+
+
+    /** Scans through any bracketed NAME of a ‘${NAME}’ variable interpolation at buffer position `b`,
+      * beginning with the ‘{’ delimitier.  Already the character before `b` is known to be `$`.
+      *
+      *     @return The end boundary of the variable interpolation, or `b` if none was found.
+      */
+    private int throughAnyBracketedVariableName( final int b ) {
+        v: if( b < segmentEnd && buffer.get(b) == '{' ) {
+            int v = b + 1;
+            for( final int nameStart = v;; ++v ) {
+                if( v >= segmentEnd ) break v;
+                final char ch = buffer.get( v );
+                if( ch == '\\'  || ch == '`' || impliesNewline(ch) ) break v;
+                if( ch == '}' ) {
+                    if( v > nameStart ) return v + 1;
+                    break v; }}}
+        return b; }
 
 
 

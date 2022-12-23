@@ -2043,10 +2043,10 @@ public class BrecciaCursor implements ReusableCursor {
                 return ++b; }
             if( ch == '+'  &&  chLast == 'U'  &&  b - bContent == 1 ) inNumeric = true;
             else if( inNumeric ) {
-                if( !( ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'F' || ch >= 'a' && ch <= 'f' )) {
+                if( !( '0' <= ch && ch <= '9' || 'A' <= ch && ch <= 'F' || 'a' <= ch && ch <= 'f' )) {
                     throw new MalformedText( characterPointer(b), "Hexadecimal digit expected" ); }}
-            else if( !( ch >= 'A' && ch <= 'Z'
-              || b > bContent && ( ch >= '0' && ch <= '9' || ch == ' ' || ch == '-' ))) {
+            else if( !( 'A' <= ch && ch <= 'Z'
+              || b > bContent && ( '0' <= ch && ch <= '9' || ch == ' ' || ch == '-' ))) {
                 // See Names § 4.8, `https://www.unicode.org/versions/Unicode13.0.0/ch04.pdf`
                 throw new MalformedText( characterPointer(b),
                   "Character not allowed here, Unicode " + (int)ch ); }}

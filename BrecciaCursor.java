@@ -633,7 +633,7 @@ public class BrecciaCursor implements ReusableCursor {
                     ++b;
                     continue; }
 
-              // Metacharacters, anchored prefixes and variable interpolations
+              // Metacharacters, anchored prefixes and variable interpolators
               // ──────────────
                 if( ch == '^' ) {
                     final int bStart = b++;
@@ -1951,10 +1951,10 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** Scans through any bracketed NAME of a ‘${NAME}’ variable interpolation at buffer position `b`,
+    /** Scans through any bracketed NAME of a ‘${NAME}’ variable interpolator at buffer position `b`,
       * beginning with the ‘{’ delimitier.  Already the character before `b` is known to be `$`.
       *
-      *     @return The end boundary of the variable interpolation, or `b` if none was found.
+      *     @return The end boundary of the variable interpolator, or `b` if none was found.
       */
     private int throughAnyBracketedVariableName( final int b ) {
         v: if( b < segmentEnd && buffer.get(b) == '{' ) {

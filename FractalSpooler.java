@@ -120,7 +120,7 @@ final class FractalSpooler extends Spooler {
 
 
 
-    /** Spool of regexp variable interpolations.
+    /** Spool of regexp variable interpolators.
       */
     final Spool<Variable_> variable; }
 

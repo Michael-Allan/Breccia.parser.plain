@@ -73,42 +73,6 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class ContainmentClause extends Granum_ {
-
-
-        ContainmentClause() { super( AssociativeReference_.this.cursor ); }
-
-
-
-        final CoalescentGranalList components = new GranalArrayList( cursor.spooler );
-
-
-
-       // ━━━  G r a n u m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-        public @Override @AdjunctSlow int column() { return cursor.bufferColumn( text.start() ); }
-
-
-
-        public @Override List<Granum> components() {
-            assert components.isFlush();
-            return components; }
-
-
-
-        public @Override @AdjunctSlow int lineNumber() {
-            return cursor.bufferLineNumber( text.start() ); }
-
-
-
-        public @Override String tagName() { return "ContainmentClause"; }}
-
-
-
-   // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-
-
     final class End_ extends CommandPoint_<BrecciaCursor>.End_ implements AssociativeReference.End {
 
 
@@ -132,31 +96,11 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        final ContainmentClause containmentClauseWhenPresent = new ContainmentClause();
+        final FlatGranum containmentOperator = FlatGranum.make( cursor, "ContainmentOperator" );
 
 
 
-        FractumIndicant fractumIndicant;
-
-
-
-        final FractumIndicant_ fractumIndicantWhenPresent = new FractumIndicant_( cursor );
-
-
-
-        Granum referentialForm;
-
-
-
-        final FlatGranum referentialFormWhenPresent = FlatGranum.make( cursor, "ReferentialForm" );
-
-
-
-        Granum referrerSimilarity;
-
-
-
-        final FlatGranum referrerSimilarityWhenPresent = FlatGranum.make( cursor, "ReferrerSimilarity" );
+        final FractumIndicant_ fractumIndicant = new FractumIndicant_( cursor );
 
 
 
@@ -181,15 +125,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  I n f e r e n t i a l   R e f e r e n t   I n d i c a n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override FractumIndicant fractumIndicant() { return fractumIndicant; }
-
-
-
-        public @Override Granum referentialForm() { return referentialForm; }
-
-
-
-        public @Override Granum referrerSimilarity() { return referrerSimilarity; }}
+        public @Override FractumIndicant fractumIndicant() { return fractumIndicant; }}
 
 
 

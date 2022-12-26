@@ -3004,77 +3004,23 @@ public class BrecciaCursor implements ReusableCursor {
           */
         int appendAny( int b, final AssociativeReference_. InferentialReferentIndicant_ iIR )
               throws MalformedText {
-            final int bOriginal = b;
-            final GranalArrayList cc = iIR.components;
-            cc.clear();
-            seqTerm.delimit( b, termParser.through(b) );
-            composition: {
+            if( b < segmentEnd && buffer.get(b) == '@' ) {
+                final int bOriginal = b;
+                final GranalArrayList cc = iIR.components;
+                cc.clear();
+                final FlatGranum opC = iIR.containmentOperator;
+                opC.text.delimit( b, ++b );
+                cc.add( opC );              // The containment operator ‘@’,
+                b = appendPostgap( b, cc ); // and its trailing postgap.
+                final var iF = iIR.fractumIndicant;
+                b = append( b, iF, "Fractum indicant expected" ); // Which sets the parser fields.
+                cc.add( iF );
 
-              // i. Referrer similarity
-              // ──────────────────────
-                if( equalInContent( "same", seqTerm ) || equalInContent( "similar", seqTerm )) {
-                    b = seqTerm.end();
-                    final var sim = iIR.referrerSimilarityWhenPresent;
-                    sim.text.delimit( seqTerm.start(), b );
-                    cc.add( iIR.referrerSimilarity = sim );
-                    cTermEnd = cc.size();
-                    if( b /*unmoved*/== (b = appendAnyPostgap( b, cc ))) {
-                        iIR.referentialForm = null; // No referential form (ii) is present.
-                        break composition; }
-                    final int d = termParser.throughAny( b );
-                    if( d /*unmoved*/== b ) {
-                        iIR.referentialForm = null; // No referential form (ii) is present.
-                        break composition; }
-                    seqTerm.delimit( b, d ); }
-                else iIR.referrerSimilarity = null; // None is present.
-
-              // ii. Referential form
-              // ────────────────────
-                if( equalInContent( "head", seqTerm ) || equalInContent( "term", seqTerm )) {
-                    b = seqTerm.end();
-                    final var form = iIR.referentialFormWhenPresent;
-                    form.text.delimit( seqTerm.start(), b );
-                    cc.add( iIR.referentialForm = form );
-                    cTermEnd = cc.size();
-                    if( b /*unmoved*/== (b = appendAnyPostgap( b, cc ))) break composition;
-                    final int d = termParser.throughAny( b );
-                    if( d /*unmoved*/== b ) break composition;
-                    seqTerm.delimit( b, d ); }
-                else iIR.referentialForm = null; // None is present.
-
-              // iii. Containment
-              // ────────────────
-                if( equalInContent( "@", seqTerm )) {
-                    final var cC = iIR.containmentClauseWhenPresent;
-                    final CoalescentGranalList cCcc = cC.components;
-                    cCcc.clear();
-                    final FlatGranum opC = spooler.containmentOperator.unwind();
-                    opC.text.delimit( b, ++b );
-                    cCcc.add( opC );              // The containment operator ‘@’,
-                    b = appendPostgap( b, cCcc ); // and its trailing postgap.
-                    final var iF = iIR.fractumIndicantWhenPresent;
-                    b = append( b, iF, "Fractum indicant expected" ); // Which sets the parser fields.
-                    cCcc.add( iIR.fractumIndicant = iF );
-                    cC.text.delimit( seqTerm.start(), b );
-                    cCcc.flush();
-                    cc.add( cC );
-
-                  // Finalization where `iIR` ends with a containment clause (iii)
-                  // ────────────
-                    wasAnyPostgapParsed = false;
-                    iIR.text.delimit( bOriginal, b );
-                    cc.flush();
-                    return b; }
-                if( b == bOriginal ) return b; } // No inferential referent indicant is present.
-
-          // Finalization where `iIR` comprises referrer similarity (i) and/or referential form (ii)
-          // ────────────
-            iIR.fractumIndicant = null; // No containment clause (iii) is present.
-            wasAnyPostgapParsed = true;
-            bEnd = seqTerm.end();
-            components = cc;
-            iIR.text.delimit( bOriginal, bEnd ); // `bEnd` not `b`, which bounds instead any postgap.
-            cc.flush();
+              // Finalization
+              // ────────────
+                wasAnyPostgapParsed = false;
+                iIR.text.delimit( bOriginal, b );
+                cc.flush(); }
             return b; }
 
 
@@ -3130,12 +3076,6 @@ public class BrecciaCursor implements ReusableCursor {
           * any such components to the component list of the point descriptor, where they belong.
           */
         int cTermEnd; // [AMP]
-
-
-
-        private final DelimitableCharSequence seqTerm = newDelimitableCharSequence( buffer );
-          // Used by `appendAny(int,AssociativeReference_.InferentialReferentIndicant_)`
-          // to hold the character sequence of the last discovered term of the referent clause.
 
 
 

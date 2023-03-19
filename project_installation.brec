@@ -11,7 +11,7 @@ Installation instructions for the plain Breccia parser
                 / The command directory is where project installations are accessible by their
                   proper paths.  The present project, for example, will shortly be accessible
                   at `Breccia/parser/plain`.
-                    : see `^*command directory$` @ http://reluk.ca/project/lexicon.brec
+                    : see `^*command directory$` @ http://reluk.ca/project/glossary.brec
             >+ git clone http://reluk.ca/var/repo/git/Breccia.parser.plain.git Breccia/parser/plain
         + Build the software.
             : see http://reluk.ca/project/building/Makeshift/bin/build.brec

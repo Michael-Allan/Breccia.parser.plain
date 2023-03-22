@@ -45,18 +45,21 @@ public class BrecciaCursor implements ReusableCursor {
 
       // `spooler` dependant
       // ┈┈┈┈┈┈┈┈┈
-        _appendageParser = new AppendageParserC();
+        _appendageParserC = new AppendageParserC();
 
       // `basicAssociativeReference` (etc.) dependants
       // ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
         final String[] commandPointKeywords = { // Those known to Breccia, in lexicographic order.
             "N.B.",
             "NB",
+            "ad",
             "cf.",
             "contra",
             "e.g.",
             "i.e.",
             "join",
+            "note",
+            "on",
             "pace",
             "private",
             "q.v.",
@@ -67,11 +70,14 @@ public class BrecciaCursor implements ReusableCursor {
         final CommandPoint_<?>[] commandPoints = { // Each at the same index as its keyword above.
             basicAssociativeReference,   // ‘N.B.’
             basicAssociativeReference,   // ‘NB’
+            basicNoteCarrier,            // ‘ad’
             basicAssociativeReference,   // ‘cf.’
             basicAssociativeReference,   // ‘contra’
             basicAssociativeReference,   // ‘e.g.’
             basicAssociativeReference,   // ‘i.e.’
             basicAssociativeReference,   // ‘join’
+            basicNoteCarrier,            // ‘note’
+            basicNoteCarrier,            // ‘on’
             basicAssociativeReference,   // ‘pace’
             basicPrivatizer,             // ‘private’
             basicAssociativeReference,   // ‘q.v.’
@@ -174,6 +180,16 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     public final @Override @NarrowNot Halt asHalt() { return state == halt ? halt : null; }
+
+
+
+    public final @Override @NarrowNot NoteCarrier asNoteCarrier() {
+        return state == noteCarrier ? noteCarrier : null; }
+
+
+
+    public final @Override @NarrowNot NoteCarrier.End asNoteCarrierEnd() {
+        return state == noteCarrierEnd ? noteCarrierEnd : null; }
 
 
 
@@ -382,15 +398,15 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private final AppendageParserC _appendageParser;
+    private final AppendageParserC _appendageParserC;
 
 
 
-    /** Resets and returns `_appendageParser`.
+    /** Resets and returns `_appendageParserC`.
       */
-    private AppendageParserC appendageParserReset() {
-        _appendageParser.reset();
-        return _appendageParser; }
+    private AppendageParserC appendageParserCReset() {
+        _appendageParserC.reset();
+        return _appendageParserC; }
 
 
 
@@ -495,6 +511,17 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    /** Parses any newline at buffer position `b`, adding it to the given granum list.
+      *
+      *     @return The end boundary of the newline, or `b` if none was found.
+      */
+    private int appendAnyNewline( final int b, final CoalescentGranalList grana ) {
+        final int c = throughAnyNewline( b );
+        if( b != c ) grana.appendFlat( b, c );
+        return c; }
+
+
+
     /** Parses any sequence of newlines at buffer position `b`, adding it to the given granum list.
       *
       *     @return The end boundary of the sequence, or `b` if none was found.
@@ -503,6 +530,20 @@ public class BrecciaCursor implements ReusableCursor {
         final int c = throughAnyNewlines( b );
         if( b != c ) grana.appendFlat( b, c );
         return c; }
+
+
+
+    /** Parses any postgap at buffer position `b`,
+      * adding each of its components to the given granum list.
+      *
+      *     @return The end boundary of the postgap, or `b` if none was found.
+      */
+    private int appendAnyP( int b, final CoalescentGranalList grana ) {
+        if( b /*moved*/!= (b = appendAnyS( b, grana ))) {
+            if( b /*moved*/!= (b = appendAnyCommentAppender( b, grana ))) {
+                return appendAnyForegap( b, grana ); }}
+        if( b /*moved*/!= (b = appendAnyNewline( b, grana ))) b = appendAnyForegap( b, grana );
+        return b; }
 
 
 
@@ -518,20 +559,6 @@ public class BrecciaCursor implements ReusableCursor {
             final PatternMatcher_ matcher = spooler.patternMatcher.unwind();
             b = appendPatternMatcherAt( b, grana, matcher );
             matchers.add( matcher ); }
-        return b; }
-
-
-
-    /** Parses any postgap at buffer position `b`,
-      * adding each of its components to the given granum list.
-      *
-      *     @return The end boundary of the postgap, or `b` if none was found.
-      */
-    private int appendAnyPostgap( int b, final CoalescentGranalList grana ) {
-        if( b /*moved*/!= (b = appendAnyS( b, grana ))) {
-            if( b /*moved*/!= (b = appendAnyCommentAppender( b, grana ))) {
-                return appendAnyForegap( b, grana ); }}
-        if( b /*moved*/!= (b = appendAnyNewlines( b, grana ))) b = appendAnyForegap( b, grana );
         return b; }
 
 
@@ -556,6 +583,17 @@ public class BrecciaCursor implements ReusableCursor {
         final int c = termParser.throughAny( b );
         if( c /*moved*/!= b ) grana.appendFlat( b, c );
         return c; }
+
+
+
+    /** Parses a postgap at buffer position `b`, adding each of its components to the given granum list.
+      *
+      *     @return The end boundary of the postgap.
+      *     @throws MalformedText If no postgap occurs at `b`.
+      */
+    private int appendP( int b, final CoalescentGranalList grana ) throws MalformedText {
+        if( b /*moved*/!= (b = appendAnyP( b, grana ))) return b;
+        throw new MalformedText( characterPointer(b), "Postgap expected" ); }
 
 
 
@@ -719,17 +757,6 @@ public class BrecciaCursor implements ReusableCursor {
         matcher.text.delimit( bMatcher, b );
         grana.add( matcher );
         return b; }
-
-
-
-    /** Parses a postgap at buffer position `b`, adding each of its components to the given granum list.
-      *
-      *     @return The end boundary of the postgap.
-      *     @throws MalformedText If no postgap occurs at `b`.
-      */
-    private int appendPostgap( int b, final CoalescentGranalList grana ) throws MalformedText {
-        if( b /*moved*/!= (b = appendAnyPostgap( b, grana ))) return b;
-        throw new MalformedText( characterPointer(b), "Postgap expected" ); }
 
 
 
@@ -997,13 +1024,13 @@ public class BrecciaCursor implements ReusableCursor {
         final CoalescentGranalList dcc = rA.descriptor.components;
         dcc.clear();
         int b;
-        final int bKeyword;
-        dcc.appendFlat( rA.bullet.text.end(), b = bKeyword = keyword.start() );
+        final int bCommand = keyword.start();
+        dcc.appendFlat( rA.bullet.text.end(), b = bCommand );
 
       // Command
       // ───────
-        dcc.add( rA.command ); /* Added early (before parsing) because any postgap that follows it
-          could be added as a side effect of parsing the referent clause, q.v. below. */
+        dcc.add( rA.command ); /* Added early (before parsing it) because the parse might overshoot
+          the command into a subsequent postgap, prematurely adding it to `dcc`. */
         final CoalescentGranalList cc = rA.command.components;
         cc.clear();
         final int bReferentialCommand;
@@ -1016,12 +1043,12 @@ public class BrecciaCursor implements ReusableCursor {
             final CoalescentGranalList cRcc = cR.components;
             cRcc.clear();
             cRcc.appendFlat( b, b = keyword.end() );
-            b = appendPostgap( b, cRcc );
+            b = appendP( b, cRcc );
             b = appendPatternMatcher( b, cRcc, cR.patternMatcher );
-            cR.text.delimit( bKeyword, b );
+            cR.text.delimit( bCommand, b );
             cRcc.flush();
             cc.add( rA.referrerClause = cR );
-            b = appendPostgap( b, cc );
+            b = appendP( b, cc );
 
           // Referential command, from scratch
           // ───────────────────
@@ -1063,10 +1090,11 @@ public class BrecciaCursor implements ReusableCursor {
         cc.add( rA.referentialCommand );
 
         rA.referentClause = null; // Till proven otherwise.
-        boolean isReferentClausePostgapped = false; // Till proven otherwise.
-        final AppendageParserC appendageParser = appendageParserReset();
-        b = appendageParser.appendPostgap_AnyClause( b, /*outer*/dcc, /*inner*/cc, rA );
-        cR: if( !appendageParser.wasAppended  &&  b < segmentEnd ) {
+        boolean toParseAppendage = false; /* Whether a postgap following the command has been added
+          to `dcc`, but no parse of a subsequent appendage clause has yet been attempted. */
+        final AppendageParserC pAC = appendageParserCReset();
+        b = pAC.appendP_AnyClause( b, /*outer*/dcc, /*inner*/cc, rA );
+        cR: if( !pAC.wasAppended  &&  b < segmentEnd ) {
 
           // Referent clause
           // ───────────────
@@ -1096,15 +1124,11 @@ public class BrecciaCursor implements ReusableCursor {
                     do dcc.add( cRIcc.get( c++ )); while( c < cN );
                     cRIcc.removeRange( cTermEnd, cN ); /* With this, `cRIcc` would be broken
                       by any further coalescence.  But none will occur ∵ it is now complete. */
-                    isReferentClausePostgapped = true; }}
-            else if( b /*moved*/!= (b = appendAnyPostgap( b, dcc ))) {
-                isReferentClausePostgapped = true; }}
-        rA.command.text.delimit( bKeyword, b );
+                    toParseAppendage = true; }}
+            else if( b /*moved*/!= (b = appendAnyP( b, dcc ))) toParseAppendage = true; }
+        rA.command.text.delimit( bCommand, b );
         cc.flush();
-
-      // Appendage clause subsequent to a referent clause
-      // ────────────────
-        if( isReferentClausePostgapped ) b = appendageParser.appendAny( b, dcc, rA );
+        if( toParseAppendage ) b = pAC.appendAny( b, dcc, rA );
         if( b < segmentEnd ) throw unexpectedTerm( characterPointer( b ));
         assert b == segmentEnd: parseEndsWithSegment(b);
         dcc.flush(); }
@@ -1123,11 +1147,11 @@ public class BrecciaCursor implements ReusableCursor {
             if( buffer.get(b) == '\u00A0' ) { // A single no-break space may bound the bullet.
                 cc.appendFlat( b, ++b );
                 if( b >= segmentEnd ) break cc; } // It may also comprise the whole descriptor.
-            if( b /*unmoved*/== (b = appendAnyPostgap( b, cc ))) {
+            if( b /*unmoved*/== (b = appendAnyP( b, cc ))) {
                 throw new IllegalParseState( characterPointer(b), "Postgap expected" ); }
                 // Because no alternative is possible if `reifyPoint` has done its job.
             while( b /*moved*/!= (b = appendAnyTerm( b, cc ))
-                && b /*moved*/!= (b = appendAnyPostgap( b, cc ))); }
+                && b /*moved*/!= (b = appendAnyP( b, cc ))); }
         assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush(); }
 
@@ -1143,7 +1167,7 @@ public class BrecciaCursor implements ReusableCursor {
         cc.clear();
         int b;
         cc.appendFlat( p.bullet.text.end(), b = p.keyword.end() );
-        while( b /*moved*/!= (b = appendAnyPostgap( b, cc ))
+        while( b /*moved*/!= (b = appendAnyP( b, cc ))
             && b /*moved*/!= (b = appendAnyTerm( b, cc )));
         assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush();
@@ -1165,7 +1189,7 @@ public class BrecciaCursor implements ReusableCursor {
         assert p.command.components.isEmpty(); // The command is simple, its text being identical to
         assert p.command.text == keyword;     // the keyword already delimited by `reifyCommandPoint`.
         cc.add( p.command );
-        int b = appendAnyPostgap( keyword.end(), cc );
+        int b = appendAnyP( keyword.end(), cc );
 
       // Appendage clause
       // ────────────────
@@ -1203,7 +1227,7 @@ public class BrecciaCursor implements ReusableCursor {
                 boolean lastWasDrawing = true;
                 for( ;; ) {
                     for( ;; ) {
-                        if( b /*unmoved*/== (b = appendAnyPostgap( b, cc ))) break;
+                        if( b /*unmoved*/== (b = appendAnyP( b, cc ))) break;
                         lastWasDrawing = false;
                         if( b /*unmoved*/== (b = appendAnyDrawing( b, cc ))) break;
                         lastWasDrawing = true; }
@@ -1235,7 +1259,7 @@ public class BrecciaCursor implements ReusableCursor {
                     cc.add( label );
                     if( spacedAppenderFollows ) continue; /* Rather than trouble to append it (with any
                       ensuing foregap) and then recover the loop invariant, simply let it be redetected
-                      and appended by `appendAnyPostgap` atop the loop. */
+                      and appended by `appendAnyP` atop the loop. */
                     if( b > bLabelEnd ) cc.appendFlat( bLabelEnd, b ); // Trailing plain whitespace.
                     if( b >= segmentEnd ) break;
 
@@ -1262,10 +1286,70 @@ public class BrecciaCursor implements ReusableCursor {
             throw new IllegalParseState( characterPointer(b), "Foregap expected" ); }
             // Because no alternative is possible if `delimitSegment` has done its job.
         while( b /*moved*/!= (b = appendAnyTerm( b, cc ))
-            && b /*moved*/!= (b = appendAnyPostgap( b, cc )));
+            && b /*moved*/!= (b = appendAnyP( b, cc )));
         assert b == segmentEnd: parseEndsWithSegment(b);
         cc.flush();
         f.components = cc; }
+
+
+
+    /** @see NoteCarrier_#compose()
+      */
+    final void composeNoteCarrier() throws MalformedText {
+        final NoteCarrier_ nC = noteCarrier;
+        assert !nC.isComposed;
+        final DelimitableCharSequence keyword = nC.keyword;
+        final CoalescentGranalList dcc = nC.descriptor.components;
+        dcc.clear();
+        int b;
+        final int bCommand = keyword.start();
+        dcc.appendFlat( nC.bullet.text.end(), b = bCommand );
+
+      // Command
+      // ───────
+        dcc.add( nC.command ); /* Added early (before parsing it) because the parse that follows
+          will overshoot the command into any subsequent postgap, prematurely adding it to `dcc`. */
+        final CoalescentGranalList cc = nC.command.components;
+        cc.clear();
+        int bCommandEnd;
+        if( equalInContent( "note", keyword )) { // Then no pertainment clause is present, only a label.
+
+          // Label
+          // ─────
+            nC.patternMatcher = null;
+            nC.labelWhenPresent.text.delimit( b, b = keyword.end() );
+            cc.add( nC.labelWhenPresent );
+            bCommandEnd = b;
+            if( b /*moved*/!= (b = appendAnyP( b, dcc ))) {
+                b = appendageParser.appendAny( b, dcc, nC ); }}
+        else { // A pertainment clause is present and possibly a label, too.
+
+          // Pertainment clause, comprising a preposition and a pattern matcher
+          // ──────────────────
+            nC.prepositionWhenPresent.text.delimit( b, b = keyword.end() );
+            cc.add( nC.prepositionWhenPresent );
+            b = appendP( b, cc );
+            b = appendPatternMatcher( b, cc, nC.patternMatcher = nC.patternMatcherWhenPresent );
+            bCommandEnd = b; // Pending proof to the contrary.
+            final AppendageParserC pAC = appendageParserCReset();
+            if( b /*moved*/!= (b = pAC.appendAnyP_AnyClause( b, /*outer*/dcc, /*inner*/cc, nC ))
+              &&  !pAC.wasAppended  &&  b < segmentEnd ) {
+
+              // Label, too
+              // ─────
+                final DelimitableCharSequence text = nC.labelWhenPresent.text;
+                text.delimit( b, b = termParser.through(b) );
+                if( !equalInContent( "note", text )) {
+                    throw new MalformedText( characterPointer( text.start() ),
+                      "Unrecognized label in note carrier, expecting ‘note’" ); }
+                cc.add( nC.labelWhenPresent );
+                bCommandEnd = b;
+                if( b /*moved*/!= (b = appendAnyP( b, dcc ))) b = pAC.appendAny( b, dcc, nC ); }}
+        nC.command.text.delimit( bCommand, bCommandEnd );
+        cc.flush();
+        if( b < segmentEnd ) throw unexpectedTerm( characterPointer( b ));
+        assert b == segmentEnd: parseEndsWithSegment(b);
+        dcc.flush(); }
 
 
 
@@ -2067,7 +2151,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     private final DelimitableCharSequence xSeq = newDelimitableCharSequence( buffer );
-      // Shared reusable instance
+      // A shared, reusable instance.
 
 
 
@@ -2245,6 +2329,23 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+    final void noteCarrier( NoteCarrier_ r ) { noteCarrier = r; }
+
+
+        private NoteCarrier_ noteCarrier;
+
+
+        private final NoteCarrier_ basicNoteCarrier = new NoteCarrier_( this ).endSet(); // [CIC]
+
+
+
+    final void noteCarrierEnd( NoteCarrier.End e ) { noteCarrierEnd = e; }
+
+
+        private NoteCarrier.End noteCarrierEnd;
+
+
+
     final void plainCommandPoint( PlainCommandPoint p ) { plainCommandPoint = p; }
 
 
@@ -2336,7 +2437,7 @@ public class BrecciaCursor implements ReusableCursor {
     private class AppendageParser {
 
 
-        /**  @return The end boundary of the appendage clause.
+        /** @return The end boundary of the appendage clause.
           */
         protected int append( int b, final List<Granum> grana, final CommandPoint_<?> p )
               throws MalformedText {
@@ -2345,9 +2446,9 @@ public class BrecciaCursor implements ReusableCursor {
             cA.delimiter.text.delimit( a, ++b );
             final CoalescentGranalList cc = cA.appendage.components;
             cc.clear();
-            b = appendPostgap( b, cc );
+            b = appendP( b, cc );
             b = appendTerm( b, cc );
-            while( b /*moved*/!= (b = appendAnyPostgap( b, cc ))
+            while( b /*moved*/!= (b = appendAnyP( b, cc ))
                 && b /*moved*/!= (b = appendAnyTerm( b, cc )));
             cA.appendage.text.delimit( a + 1, b );
             cc.flush();
@@ -2405,14 +2506,16 @@ public class BrecciaCursor implements ReusableCursor {
 
 
         /** Parses any postgap at buffer position `b`, with or without a succeeding appendage clause,
-          * appending the result to one of two given granum lists.  Three normal cases are possible:<ol>
+          * appending the result to one of two given granum lists.  Four normal cases are possible:<ol>
           *
           *     <li>Neither postgap nor appendage clause is present, in which case this method
           *         simply returns `b`.</li>
-          *     <li>A postgap alone is present, in which case this method equates to
-          *         `appendAnyPostgap(b, innerGrana)`.</li>
+          *     <li>A non-terminal postgap alone is present, in which case this method equates to
+          *         `appendAnyP(b, innerGrana)`.</li>
+          *     <li>A terminal postgap alone is present, in which case this method equates to
+          *         `appendAnyP(b, outerGrana)`.</li>
           *     <li>Both postgap and appendage clause are present, in which case this method equates to
-          *         appendPostgap(b, outerGrana); appendAny(b, outerGrana, p)`.</li></ol>
+          *         appendP(b, outerGrana); appendAny(b, outerGrana, p)`.</li></ol>
           *
           *     @param outerGrana The component list of the command-point descriptor.
           *     @param innerGrana The component list of the command in the command-point descriptor.
@@ -2420,27 +2523,31 @@ public class BrecciaCursor implements ReusableCursor {
           *     @throws IllegalStateException If already an appendage clause
           *       `{@linkplain #wasAppended wasAppended}`.
           */
-        int appendAnyPostgap_AnyClause( int b, final CoalescentGranalList outerGrana,
+        int appendAnyP_AnyClause( int b, final CoalescentGranalList outerGrana,
               final CoalescentGranalList innerGrana, final CommandPoint_<?> p ) throws MalformedText {
             if( wasAppended ) throw new IllegalStateException( "Appendage clause already appended" );
             cachedGrana.clear();
-            if( b /*moved*/!= (b = appendAnyPostgap( b, cachedGrana ))) {
+            if( b /*moved*/!= (b = appendAnyP( b, cachedGrana ))) {
                 cachedGrana.flush();
-                if( isDelimiterAt( b )) { // Both a postgap and an appendage clause are present.
-                    outerGrana.addAll( cachedGrana );
-                    b = append( b, outerGrana, p ); }
-                else innerGrana.addAll( cachedGrana ); } // A postgap alone is present.
+                if( b < segmentEnd ) {
+                    if( isDelimiterAt( b )) { // Both a postgap and an appendage clause are present.
+                        outerGrana.addAll( cachedGrana );
+                        b = append( b, outerGrana, p ); }
+                    else innerGrana.addAll( cachedGrana ); } // A non-terminal postgap alone is present.
+                else outerGrana.addAll( cachedGrana ); } // A terminal postgap alone is present.
             return b; }
 
 
 
         /** Parses a postgap at buffer position `b`, with or without a succeeding appendage clause,
-          * appending the result to one of two given granum lists.  Two normal cases are possible:<ol>
+          * appending the result to one of two given granum lists.  Three normal cases are possible:<ol>
           *
-          *     <li>A postgap alone is present, in which case this method equates to
-          *         `appendPostgap(b, innerGrana)`.</li>
+          *     <li>A non-terminal postgap alone is present, in which case this method equates to
+          *         `appendAnyP(b, innerGrana)`.</li>
+          *     <li>A terminal postgap alone is present, in which case this method equates to
+          *         `appendAnyP(b, outerGrana)`.</li>
           *     <li>Both postgap and appendage clause are present, in which case this method equates to
-          *         appendPostgap(b, outerGrana); appendAny(b, outerGrana, p)`.</li></ol>
+          *         appendP(b, outerGrana); appendAny(b, outerGrana, p)`.</li></ol>
           *
           *     @param outerGrana The component list of the command-point descriptor.
           *     @param innerGrana The component list of the command in the command-point descriptor.
@@ -2449,9 +2556,9 @@ public class BrecciaCursor implements ReusableCursor {
           *       `{@linkplain #wasAppended wasAppended}`.
           *     @throws MalformedText If no postgap occurs at `b`.
           */
-        int appendPostgap_AnyClause( final int b, final CoalescentGranalList outerGrana,
+        int appendP_AnyClause( final int b, final CoalescentGranalList outerGrana,
               final CoalescentGranalList innerGrana, final CommandPoint_<?> p ) throws MalformedText {
-            final int c = appendAnyPostgap_AnyClause( b, outerGrana, innerGrana, p );
+            final int c = appendAnyP_AnyClause( b, outerGrana, innerGrana, p );
             if( c /*unmoved*/== b ) throw new MalformedText( characterPointer(b), "Postgap expected" );
             return c; }
 
@@ -2955,15 +3062,15 @@ public class BrecciaCursor implements ReusableCursor {
                 matchers.clear();
                 while( b /*moved*/!= (b = appendAnyPatternMatcher( b, cc, matchers ))) {
                     cTermEnd = cc.size();
-                    b = appendAnyPostgap( bEnd = b, cc );
+                    b = appendAnyP( bEnd = b, cc );
                     if( b /*unmoved*/== bEnd || b >= segmentEnd || buffer.get(b) != '@' ) {
                         iF.resourceIndicant = null;    // No resource indicant is present,
                         iF.patternMatchers = matchers; // only a pattern-matcher series.
                         break composition; }
                     final FlatGranum opC = spooler.containmentOperator.unwind();
                     opC.text.delimit( b, ++b );
-                    cc.add( opC );                // The containment operator ‘@’,
-                    b = appendPostgap( b, cc ); } // and its trailing postgap.
+                    cc.add( opC );          // The containment operator ‘@’,
+                    b = appendP( b, cc ); } // and its trailing postgap.
                 final int nPM = matchers.size();
                 iF.patternMatchers = nPM == 0 ? null : matchers;
 
@@ -3011,7 +3118,7 @@ public class BrecciaCursor implements ReusableCursor {
                 final FlatGranum opC = iIR.containmentOperator;
                 opC.text.delimit( b, ++b );
                 cc.add( opC );              // The containment operator ‘@’,
-                b = appendPostgap( b, cc ); // and its trailing postgap.
+                b = appendP( b, cc ); // and its trailing postgap.
                 final var iF = iIR.fractumIndicant;
                 b = append( b, iF, "Fractum indicant expected" ); // Which sets the parser fields.
                 cc.add( iF );
@@ -3046,7 +3153,7 @@ public class BrecciaCursor implements ReusableCursor {
                         if( q == 0 ) break qualifiers; }
                     iR.qualifiers.add( qualifier );
                     cc.appendFlat( b, d );
-                    b = appendPostgap( d, cc );
+                    b = appendP( d, cc );
                     d = termParser.through( b ); }
                 iR.reference.text.delimit( b, d );
                 cc.add( iR.reference );
@@ -3169,7 +3276,7 @@ public class BrecciaCursor implements ReusableCursor {
 //   ABP  Adjustable buffer position.  This note serves as a reminder to adjust the value of the variable
 //        in `delimitSegment` after each call to `buffer.compact`.
 //
-//   AMP  Avoiding misplaced postgaps.  The code here requires clean-up of any misplaced postgap,
+//   AMP  Avoiding misplaced postgaps.  The code here entails clean-up of any misplaced postgap,
 //        repositioning it after the fact.  It would be better, however, to avoid misplacement
 //        in the first place.  See e.g. the solution of `AppendageParserC`.
 //
@@ -3185,4 +3292,4 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-                                                   // Copyright © 2020-2022  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2020-2023  Michael Allan.  Licence MIT.

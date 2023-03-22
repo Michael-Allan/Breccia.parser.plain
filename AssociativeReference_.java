@@ -7,9 +7,7 @@ import java.util.List;
 final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implements AssociativeReference {
 
 
-    AssociativeReference_( BrecciaCursor cursor ) {
-        super( cursor );
-        referentialCommand = FlatGranum.make( cursor, "ReferentialCommand" ); }
+    AssociativeReference_( BrecciaCursor cursor ) { super( cursor ); }
 
 
 
@@ -27,7 +25,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    final FlatGranum referentialCommand;
+    final FlatGranum referentialCommand = FlatGranum.make( cursor, "ReferentialCommand" );
 
 
 
@@ -243,4 +241,4 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2023  Michael Allan.  Licence MIT.

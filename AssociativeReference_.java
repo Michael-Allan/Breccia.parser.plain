@@ -83,10 +83,10 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class InferentialReferentIndicant_ extends Granum_ implements InferentialReferentIndicant {
+    final class InferentialFractumLocant_ extends Granum_ implements InferentialFractumLocant {
 
 
-        InferentialReferentIndicant_() { super( AssociativeReference_.this.cursor ); }
+        InferentialFractumLocant_() { super( AssociativeReference_.this.cursor ); }
 
 
 
@@ -94,11 +94,11 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        final FlatGranum containmentOperator = FlatGranum.make( cursor, "ContainmentOperator" );
+        final FlatGranum contextOperator = FlatGranum.make( cursor, "ContextOperator" );
 
 
 
-        final FractumIndicant_ fractumIndicant = new FractumIndicant_( cursor );
+        final FractumLocant_ fractumLocant = new FractumLocant_( cursor );
 
 
 
@@ -123,7 +123,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  I n f e r e n t i a l   R e f e r e n t   I n d i c a n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override FractumIndicant fractumIndicant() { return fractumIndicant; }}
+        public @Override FractumLocant fractumLocant() { return fractumLocant; }}
 
 
 
@@ -135,8 +135,8 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
         ReferentClause_() {
             super( AssociativeReference_.this.cursor );
-            componentsAsFractumIndicant = List.of( fractumIndicantWhenPresent );
-            componentsAsInferentialReferentIndicant = List.of( inferentialReferentIndicantWhenPresent ); }
+            componentsAsFractumLocant = List.of( fractumLocantWhenPresent );
+            componentsAsInferentialFractumLocant = List.of( inferentialFractumLocantWhenPresent ); }
 
 
 
@@ -144,28 +144,28 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        final List<Granum> componentsAsFractumIndicant;
+        final List<Granum> componentsAsFractumLocant;
 
 
 
-        final List<Granum> componentsAsInferentialReferentIndicant;
+        final List<Granum> componentsAsInferentialFractumLocant;
 
 
 
-        FractumIndicant fractumIndicant;
+        FractumLocant fractumLocant;
 
 
 
-        final FractumIndicant_ fractumIndicantWhenPresent = new FractumIndicant_( cursor );
+        final FractumLocant_ fractumLocantWhenPresent = new FractumLocant_( cursor );
 
 
 
-        InferentialReferentIndicant inferentialReferentIndicant;
+        InferentialFractumLocant inferentialFractumLocant;
 
 
 
-        final InferentialReferentIndicant_ inferentialReferentIndicantWhenPresent
-          = new InferentialReferentIndicant_();
+        final InferentialFractumLocant_ inferentialFractumLocantWhenPresent
+          = new InferentialFractumLocant_();
 
 
 
@@ -188,12 +188,12 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
        // ━━━  R e f e r e n t   C l a u s e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-        public @Override FractumIndicant fractumIndicant() { return fractumIndicant; }
+        public @Override FractumLocant fractumLocant() { return fractumLocant; }
 
 
 
-        public @Override InferentialReferentIndicant inferentialReferentIndicant() {
-            return inferentialReferentIndicant; }}
+        public @Override InferentialFractumLocant inferentialFractumLocant() {
+            return inferentialFractumLocant; }}
 
 
 
@@ -241,4 +241,4 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-                                                   // Copyright © 2021-2023  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2021-2024  Michael Allan.  Licence MIT.

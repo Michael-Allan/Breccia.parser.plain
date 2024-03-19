@@ -5,18 +5,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-final class FractumIndicant_ extends Granum_ implements FractumIndicant {
+final class FractumLocant_ extends Granum_ implements FractumLocant {
 
 
-    FractumIndicant_( final BrecciaCursor cursor ) {
+    FractumLocant_( final BrecciaCursor cursor ) {
         super( cursor );
         this.cursor = cursor;
         components = new GranalArrayList( cursor.spooler );
-        resourceIndicantWhenPresent = new ResourceIndicant_( cursor ); }
+        fileLocantWhenPresent = new FileLocant_( cursor ); }
 
 
 
     final GranalArrayList components;
+
+
+
+    FileLocant fileLocant;
+
+
+
+    final FileLocant_ fileLocantWhenPresent;
 
 
 
@@ -28,22 +36,14 @@ final class FractumIndicant_ extends Granum_ implements FractumIndicant {
 
 
 
-    ResourceIndicant resourceIndicant;
-
-
-
-    final ResourceIndicant_ resourceIndicantWhenPresent;
-
-
-
    // ━━━  F r a c t u m   I n d i c a n t  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
+    public @Override FileLocant fileLocant() { return fileLocant; }
+
+
+
     public @Override List<? extends PatternMatcher> patternMatchers() { return patternMatchers; }
-
-
-
-    public @Override ResourceIndicant resourceIndicant() { return resourceIndicant; }
 
 
 
@@ -72,4 +72,4 @@ final class FractumIndicant_ extends Granum_ implements FractumIndicant {
 
 
 
-                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.
+                                             // Copyright © 2021-2022, 2024  Michael Allan.  Licence MIT.

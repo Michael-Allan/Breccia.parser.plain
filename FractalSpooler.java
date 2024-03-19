@@ -16,7 +16,7 @@ final class FractalSpooler extends Spooler {
     FractalSpooler( final BrecciaCursor c ) {
         final ArrayList<Spool<?>> ss = new ArrayList<>();
         ss.add( flatGranum          = new Spool<>( () -> FlatGranum.make( c )));
-        ss.add( containmentOperator = new Spool<>( () -> FlatGranum.make( c, "ContainmentOperator" )));
+        ss.add( contextOperator = new Spool<>( () -> FlatGranum.make( c, "ContextOperator" )));
         ss.add( divisionLabel       = new Spool<>( () -> FlatGranum.make( c, "DivisionLabel" )));
         ss.add( anchoredPrefix      = new Spool<>( () -> new AnchoredPrefix_     ( c )));
         ss.add( backslashedSpecial  = new Spool<>( () -> new BackslashedSpecial_ ( c )));
@@ -64,9 +64,9 @@ final class FractalSpooler extends Spooler {
 
 
 
-    /** Spool of flat grana each reflective of a containment operator.
+    /** Spool of flat grana each reflective of a context operator.
       */
-    final Spool<@TagName("ContainmentOperator") FlatGranum> containmentOperator;
+    final Spool<@TagName("ContextOperator") FlatGranum> contextOperator;
 
 
 

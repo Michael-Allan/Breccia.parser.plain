@@ -1,16 +1,16 @@
 package Breccia.parser.plain;
 
 import Breccia.parser.AdjunctSlow;
-import Breccia.parser.ResourceIndicant;
+import Breccia.parser.FileLocant;
 import Breccia.parser.Granum;
 import java.util.ArrayList;
 import java.util.List;
 
 
-final class ResourceIndicant_ extends Granum_ implements ResourceIndicant {
+final class FileLocant_ extends Granum_ implements FileLocant {
 
 
-    ResourceIndicant_( final BrecciaCursor cursor ) {
+    FileLocant_( final BrecciaCursor cursor ) {
         super( cursor );
         this.cursor = cursor;
         components = new GranalArrayList( cursor.spooler );
@@ -27,7 +27,7 @@ final class ResourceIndicant_ extends Granum_ implements ResourceIndicant {
 
 
     final List<String> qualifiers = new ArrayList<>(
-      BrecciaCursor.resourceIndicantQualifiers_initialCapacity );
+      BrecciaCursor.fileLocantQualifiers_initialCapacity );
 
 
 
@@ -67,4 +67,4 @@ final class ResourceIndicant_ extends Granum_ implements ResourceIndicant {
 
 
 
-                                                   // Copyright © 2021-2022  Michael Allan.  Licence MIT.
+                                             // Copyright © 2021-2022, 2024  Michael Allan.  Licence MIT.

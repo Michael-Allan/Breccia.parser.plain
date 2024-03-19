@@ -1099,24 +1099,24 @@ public class BrecciaCursor implements ReusableCursor {
           // Referent clause
           // ───────────────
             final var cR = rA.referentClauseWhenPresent;
-            final var cRIParser = referentClauseIndicantParser;
+            final var cRLParser = referentClauseLocantParser;
             final int bStart = b;
-            b = cRIParser.appendAny( b, cR.inferentialReferentIndicantWhenPresent );
-            if( b /*moved*/!= bStart ) {   // Then an inferential referent indicant is present
-                cR.fractumIndicant = null; // instead of a fractum indicant.
-                cR.inferentialReferentIndicant = cR.inferentialReferentIndicantWhenPresent;
-                cR.components = cR.componentsAsInferentialReferentIndicant; }
-            else { // A fractum indicant is present instead of an inferential referent indicant.
-                cR.inferentialReferentIndicant = null;
-                b = cRIParser.append( b, cR.fractumIndicantWhenPresent,
+            b = cRLParser.appendAny( b, cR.inferentialFractumLocantWhenPresent );
+            if( b /*moved*/!= bStart ) {   // Then an inferential fractum locant is present
+                cR.fractumLocant = null; // instead of a fractum locant.
+                cR.inferentialFractumLocant = cR.inferentialFractumLocantWhenPresent;
+                cR.components = cR.componentsAsInferentialFractumLocant; }
+            else { // A fractum locant is present instead of an inferential fractum locant.
+                cR.inferentialFractumLocant = null;
+                b = cRLParser.append( b, cR.fractumLocantWhenPresent,
                   /*failureMessage*/null/*none ∵ the foregoing guarantees at least a term*/ );
-                cR.fractumIndicant = cR.fractumIndicantWhenPresent;
-                cR.components = cR.componentsAsFractumIndicant; }
-            cR.text.delimit( bStart, cRIParser.bEnd );
+                cR.fractumLocant = cR.fractumLocantWhenPresent;
+                cR.components = cR.componentsAsFractumLocant; }
+            cR.text.delimit( bStart, cRLParser.bEnd );
             cc.add( rA.referentClause = cR );
-            if( cRIParser.wasAnyPostgapParsed ) {
-                final GranalArrayList cRIcc = cRIParser.components;
-                final int cTermEnd = cRIParser.cTermEnd;
+            if( cRLParser.wasAnyPostgapParsed ) {
+                final GranalArrayList cRIcc = cRLParser.components;
+                final int cTermEnd = cRLParser.cTermEnd;
                 final int cN = cRIcc.size();
                 if( cTermEnd < cN ) { /* Then components of a final postgap were inadvertently
                       appended to `cRIcc`.  Move them to `dcc`, where they belong:  [AMP] */
@@ -1728,8 +1728,8 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private final ReferentClauseIndicantParser referentClauseIndicantParser
-      = new ReferentClauseIndicantParser();
+    private final ReferentClauseLocantParser referentClauseLocantParser
+      = new ReferentClauseLocantParser();
 
 
 
@@ -1929,16 +1929,16 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** The recognized qualifiers of resource indicants.  Parser extensions may modify this list
+    /** The recognized qualifiers of file locants.  Parser extensions may modify this list
       * at any time prior to parsing.
       */
-    protected final ArrayList<String> resourceIndicantQualifiers =     // A list as opposed to a set
-      new ArrayList<>( resourceIndicantQualifiers_initialCapacity ); { // for sake of fast iteration.
-        resourceIndicantQualifiers.add( "non-fractal" ); }
+    protected final ArrayList<String> fileLocantQualifiers =     // A list as opposed to a set
+      new ArrayList<>( fileLocantQualifiers_initialCapacity ); { // for sake of fast iteration.
+        fileLocantQualifiers.add( "non-fractal" ); }
 
 
 
-    final static int resourceIndicantQualifiers_initialCapacity = 4;
+    final static int fileLocantQualifiers_initialCapacity = 4;
 
 
 
@@ -3034,142 +3034,142 @@ public class BrecciaCursor implements ReusableCursor {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    /** A parser of the indicants that populate referent clauses, namely fractum indicants
-      * and inferential referent indicants.
+    /** A parser of the locants that populate referent clauses, namely fractum locants
+      * and inferential fractum locants.
       */
-    private final class ReferentClauseIndicantParser {
+    private final class ReferentClauseLocantParser {
 
 
-        /** Parses a fractum indicant at buffer position `b`, adding its components to `iF.components`
+        /** Parses a fractum locant at buffer position `b`, adding its components to `oF.components`
           * and updating the fields of this parser.
           *
-          *     @param failureMessage The failure message to use in the event no fractum indicant occurs,
+          *     @param failureMessage The failure message to use in the event no fractum locant occurs,
           *       or null if one must occur, in which case an illegal-state exception is thrown instead.
-          *     @return The end boundary of the last thing that was parsed (fractum indicant
+          *     @return The end boundary of the last thing that was parsed (fractum locant
           *       or subsequent postgap).
-          *     @throws MalformedText If no fractum indicant occurs at `b`.
+          *     @throws MalformedText If no fractum locant occurs at `b`.
           */
-        int append( int b, final FractumIndicant_ iF, final String failureMessage )
+        int append( int b, final FractumLocant_ oF, final String failureMessage )
               throws MalformedText {
             final int bOriginal = b;
-            final GranalArrayList cc = iF.components;
+            final GranalArrayList cc = oF.components;
             cc.clear();
             composition: {
 
               // Pattern-matcher series
               // ──────────────────────
-                final List<PatternMatcher_> matchers = iF.patternMatchersWhenPresent;
+                final List<PatternMatcher_> matchers = oF.patternMatchersWhenPresent;
                 matchers.clear();
                 while( b /*moved*/!= (b = appendAnyPatternMatcher( b, cc, matchers ))) {
                     cTermEnd = cc.size();
                     b = appendAnyP( bEnd = b, cc );
                     if( b /*unmoved*/== bEnd || b >= segmentEnd || buffer.get(b) != '@' ) {
-                        iF.resourceIndicant = null;    // No resource indicant is present,
-                        iF.patternMatchers = matchers; // only a pattern-matcher series.
+                        oF.fileLocant = null;    // No file locant is present,
+                        oF.patternMatchers = matchers; // only a pattern-matcher series.
                         break composition; }
-                    final FlatGranum opC = spooler.containmentOperator.unwind();
+                    final FlatGranum opC = spooler.contextOperator.unwind();
                     opC.text.delimit( b, ++b );
-                    cc.add( opC );          // The containment operator ‘@’,
+                    cc.add( opC );          // The context operator ‘@’,
                     b = appendP( b, cc ); } // and its trailing postgap.
                 final int nPM = matchers.size();
-                iF.patternMatchers = nPM == 0 ? null : matchers;
+                oF.patternMatchers = nPM == 0 ? null : matchers;
 
-              // Resource indicant
-              // ─────────────────
-                final var iR = iF.resourceIndicantWhenPresent;
-                if( b /*unmoved*/== (b = appendAny( b, iR ))) {
-                    if( nPM > 0 ) { // Then a containment separator was just parsed.
-                        throw new MalformedText( characterPointer(b), "Resource indicant expected" ); }
-                    // No fractum indicant is present, at all.
+              // File locant
+              // ───────────
+                final var oFile = oF.fileLocantWhenPresent;
+                if( b /*unmoved*/== (b = appendAny( b, oFile ))) {
+                    if( nPM > 0 ) { // Then a context separator was just parsed.
+                        throw new MalformedText( characterPointer(b), "File locant expected" ); }
+                    // No fractum locant is present, at all.
                     if( failureMessage == null ) throw new IllegalStateException();
                       // Concordant with contract.
                     throw new MalformedText( characterPointer(b), failureMessage ); }
-                cc.add( iF.resourceIndicant = iR );
+                cc.add( oF.fileLocant = oFile );
 
-              // Finalization where `iF` ends with a resource indicant
+              // Finalization where `oF` ends with a file locant
               // ────────────
                 wasAnyPostgapParsed = false;
-                iF.text.delimit( bOriginal, bEnd = b );
+                oF.text.delimit( bOriginal, bEnd = b );
                 cc.flush();
                 return b; }
 
-          // Finalization where `iF` comprises a pattern series
+          // Finalization where `oF` comprises a pattern series
           // ────────────
             wasAnyPostgapParsed = true;
             components = cc;
-            iF.text.delimit( bOriginal, bEnd ); // `bEnd` not `b`, which bounds instead any postgap.
+            oF.text.delimit( bOriginal, bEnd ); // `bEnd` not `b`, which bounds instead any postgap.
             cc.flush();
             return b; }
 
 
 
-        /** Parses any inferential referent indicant at buffer position `b`, adding its components
-          * to `iIR.components` and updating the fields of this parser.
+        /** Parses any inferential fractum locant at buffer position `b`, adding its components
+          * to `oIF.components` and updating the fields of this parser.
           *
-          *     @return The end boundary of the last thing that was parsed (inferential referent indicant
-          *       or subsequent postgap), or `b` if no inferential referent indicant is present.
+          *     @return The end boundary of the last thing that was parsed (inferential fractum locant
+          *       or subsequent postgap), or `b` if no inferential fractum locant is present.
           */
-        int appendAny( int b, final AssociativeReference_. InferentialReferentIndicant_ iIR )
+        int appendAny( int b, final AssociativeReference_. InferentialFractumLocant_ oIF )
               throws MalformedText {
             if( b < segmentEnd && buffer.get(b) == '@' ) {
                 final int bOriginal = b;
-                final GranalArrayList cc = iIR.components;
+                final GranalArrayList cc = oIF.components;
                 cc.clear();
-                final FlatGranum opC = iIR.containmentOperator;
+                final FlatGranum opC = oIF.contextOperator;
                 opC.text.delimit( b, ++b );
-                cc.add( opC );              // The containment operator ‘@’,
+                cc.add( opC );              // The context operator ‘@’,
                 b = appendP( b, cc ); // and its trailing postgap.
-                final var iF = iIR.fractumIndicant;
-                b = append( b, iF, "Fractum indicant expected" ); // Which sets the parser fields.
-                cc.add( iF );
+                final var oF = oIF.fractumLocant;
+                b = append( b, oF, "Fractum locant expected" ); // Which sets the parser fields.
+                cc.add( oF );
 
               // Finalization
               // ────────────
                 wasAnyPostgapParsed = false;
-                iIR.text.delimit( bOriginal, b );
+                oIF.text.delimit( bOriginal, b );
                 cc.flush(); }
             return b; }
 
 
 
-        /** Parses any resource indicant at buffer position `a`,
-          * adding its components to `iR.components`.
+        /** Parses any file locant at buffer position `a`,
+          * adding its components to `oFile.components`.
           *
-          *     @return The end boundary of the resource indicant, or `a` if none was found.
+          *     @return The end boundary of the file locant, or `a` if none was found.
           */
-        private int appendAny( final int a, final ResourceIndicant_ iR ) throws MalformedText {
+        private int appendAny( final int a, final FileLocant_ oFile ) throws MalformedText {
             int d = termParser.throughAny( a ); // End bound of term.
             if( d /*moved*/!= a ) {
                 int b = a; // Start bound of term.
-                final CoalescentGranalList cc = iR.components;
+                final CoalescentGranalList cc = oFile.components;
                 cc.clear();
-                iR.qualifiers.clear();
+                oFile.qualifiers.clear();
                 qualifiers: for( String qualifier;; ) {
                     xSeq.delimit( b, d );
-                    for( int q = resourceIndicantQualifiers.size();; ) {
+                    for( int q = fileLocantQualifiers.size();; ) {
                         --q;
-                        qualifier = resourceIndicantQualifiers.get( q );
+                        qualifier = fileLocantQualifiers.get( q );
                         if( equalInContent( xSeq, qualifier )) break;
                         if( q == 0 ) break qualifiers; }
-                    iR.qualifiers.add( qualifier );
+                    oFile.qualifiers.add( qualifier );
                     cc.appendFlat( b, d );
                     b = appendP( d, cc );
                     d = termParser.through( b ); }
-                iR.reference.text.delimit( b, d );
-                cc.add( iR.reference );
-                iR.text.delimit( a, d );
+                oFile.reference.text.delimit( b, d );
+                cc.add( oFile.reference );
+                oFile.text.delimit( a, d );
                 cc.flush(); }
             return d; }
 
 
 
-        /** Set on each successful parse to the end boundary in the buffer of the indicant.
+        /** Set on each successful parse to the end boundary in the buffer of the locant.
           */
         int bEnd;
 
 
 
-        /** When `wasAnyPostgapParsed`, this component list contains the final term of the indicant.
+        /** When `wasAnyPostgapParsed`, this component list contains the final term of the locant.
           *
           *     @see #cTermEnd
           */
@@ -3292,4 +3292,4 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-                                                   // Copyright © 2020-2023  Michael Allan.  Licence MIT.
+                                                   // Copyright © 2020-2024  Michael Allan.  Licence MIT.

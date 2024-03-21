@@ -83,10 +83,10 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class InferentialFractumLocant_ extends Granum_ implements InferentialFractumLocant {
+    final class FractalContextLocant_ extends Granum_ implements FractalContextLocant {
 
 
-        InferentialFractumLocant_() { super( AssociativeReference_.this.cursor ); }
+        FractalContextLocant_() { super( AssociativeReference_.this.cursor ); }
 
 
 
@@ -135,8 +135,8 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
         ReferentClause_() {
             super( AssociativeReference_.this.cursor );
-            componentsAsFractumLocant = List.of( fractumLocantWhenPresent );
-            componentsAsInferentialFractumLocant = List.of( inferentialFractumLocantWhenPresent ); }
+            componentsAsFractalContextLocant = List.of( fractalContextLocantWhenPresent );
+            componentsAsFractumLocant = List.of( fractumLocantWhenPresent ); }
 
 
 
@@ -144,11 +144,19 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
+        final List<Granum> componentsAsFractalContextLocant;
+
+
+
         final List<Granum> componentsAsFractumLocant;
 
 
 
-        final List<Granum> componentsAsInferentialFractumLocant;
+        FractalContextLocant fractalContextLocant;
+
+
+
+        final FractalContextLocant_ fractalContextLocantWhenPresent = new FractalContextLocant_();
 
 
 
@@ -157,15 +165,6 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
         final FractumLocant_ fractumLocantWhenPresent = new FractumLocant_( cursor );
-
-
-
-        InferentialFractumLocant inferentialFractumLocant;
-
-
-
-        final InferentialFractumLocant_ inferentialFractumLocantWhenPresent
-          = new InferentialFractumLocant_();
 
 
 
@@ -192,8 +191,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-        public @Override InferentialFractumLocant inferentialFractumLocant() {
-            return inferentialFractumLocant; }}
+        public @Override FractalContextLocant fractalContextLocant() { return fractalContextLocant; }}
 
 
 

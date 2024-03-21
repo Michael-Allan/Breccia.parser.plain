@@ -1101,13 +1101,13 @@ public class BrecciaCursor implements ReusableCursor {
             final var cR = rA.referentClauseWhenPresent;
             final var cRLParser = referentClauseLocantParser;
             final int bStart = b;
-            b = cRLParser.appendAny( b, cR.inferentialFractumLocantWhenPresent );
-            if( b /*moved*/!= bStart ) {   // Then an inferential fractum locant is present
+            b = cRLParser.appendAny( b, cR.fractalContextLocantWhenPresent );
+            if( b /*moved*/!= bStart ) {   // Then a fractal context locant is present
                 cR.fractumLocant = null; // instead of a fractum locant.
-                cR.inferentialFractumLocant = cR.inferentialFractumLocantWhenPresent;
-                cR.components = cR.componentsAsInferentialFractumLocant; }
-            else { // A fractum locant is present instead of an inferential fractum locant.
-                cR.inferentialFractumLocant = null;
+                cR.fractalContextLocant = cR.fractalContextLocantWhenPresent;
+                cR.components = cR.componentsAsFractalContextLocant; }
+            else { // A fractum locant is present instead of a fractal context locant.
+                cR.fractalContextLocant = null;
                 b = cRLParser.append( b, cR.fractumLocantWhenPresent,
                   /*failureMessage*/null/*none ∵ the foregoing guarantees at least a term*/ );
                 cR.fractumLocant = cR.fractumLocantWhenPresent;
@@ -3035,7 +3035,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
     /** A parser of the locants that populate referent clauses, namely fractum locants
-      * and inferential fractum locants.
+      * and fractal context locants.
       */
     private final class ReferentClauseLocantParser {
 
@@ -3078,7 +3078,7 @@ public class BrecciaCursor implements ReusableCursor {
               // ───────────
                 final var oFile = oF.fileLocantWhenPresent;
                 if( b /*unmoved*/== (b = appendAny( b, oFile ))) {
-                    if( nPM > 0 ) { // Then a context separator was just parsed.
+                    if( nPM > 0 ) { // Then a context operator and postgap were just parsed.
                         throw new MalformedText( characterPointer(b), "File locant expected" ); }
                     // No fractum locant is present, at all.
                     if( failureMessage == null ) throw new IllegalStateException();
@@ -3103,30 +3103,30 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** Parses any inferential fractum locant at buffer position `b`, adding its components
-          * to `oIF.components` and updating the fields of this parser.
+        /** Parses any fractal context locant at buffer position `b`, adding its components
+          * to `oFC.components` and updating the fields of this parser.
           *
-          *     @return The end boundary of the last thing that was parsed (inferential fractum locant
-          *       or subsequent postgap), or `b` if no inferential fractum locant is present.
+          *     @return The end boundary of the last thing that was parsed (fractal context locant
+          *       or subsequent postgap), or `b` if no fractal context locant is present.
           */
-        int appendAny( int b, final AssociativeReference_. InferentialFractumLocant_ oIF )
+        int appendAny( int b, final AssociativeReference_. FractalContextLocant_ oFC )
               throws MalformedText {
             if( b < segmentEnd && buffer.get(b) == '@' ) {
                 final int bOriginal = b;
-                final GranalArrayList cc = oIF.components;
+                final GranalArrayList cc = oFC.components;
                 cc.clear();
-                final FlatGranum opC = oIF.contextOperator;
+                final FlatGranum opC = oFC.contextOperator;
                 opC.text.delimit( b, ++b );
                 cc.add( opC );              // The context operator ‘@’,
                 b = appendP( b, cc ); // and its trailing postgap.
-                final var oF = oIF.fractumLocant;
+                final var oF = oFC.fractumLocant;
                 b = append( b, oF, "Fractum locant expected" ); // Which sets the parser fields.
                 cc.add( oF );
 
               // Finalization
               // ────────────
                 wasAnyPostgapParsed = false;
-                oIF.text.delimit( bOriginal, b );
+                oFC.text.delimit( bOriginal, b );
                 cc.flush(); }
             return b; }
 

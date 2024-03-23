@@ -4,24 +4,24 @@ import Breccia.parser.*;
 import java.util.List;
 
 
-final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implements AssociativeReference {
+final class Afterlinker_ extends CommandPoint_<BrecciaCursor> implements Afterlinker {
 
 
-    AssociativeReference_( BrecciaCursor cursor ) { super( cursor ); }
+    Afterlinker_( BrecciaCursor cursor ) { super( cursor ); }
 
 
 
-    AssociativeReference_ endSet() {
+    Afterlinker_ endSet() {
         end = new End_();
         return this; }
 
 
 
-    ReferentClause referentClause;
+    ObjectClause objectClause;
 
 
 
-    final ReferentClause_ referentClauseWhenPresent = new ReferentClause_();
+    final ObjectClause_ objectClauseWhenPresent = new ObjectClause_();
 
 
 
@@ -29,18 +29,18 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    ReferrerClause referrerClause;
+    SubjectClause subjectClause;
 
 
 
-    final ReferrerClause_ referrerClauseWhenPresent = new ReferrerClause_();
+    final SubjectClause_ subjectClauseWhenPresent = new SubjectClause_();
 
 
 
    // ━━━  A s s o c i a t i v e   R e f e r e n c e  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    public @Override ReferentClause referentClause() { return referentClause; }
+    public @Override ObjectClause objectClause() { return objectClause; }
 
 
 
@@ -48,7 +48,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
 
-    public @Override ReferrerClause referrerClause() { return referrerClause; }
+    public @Override SubjectClause subjectClause() { return subjectClause; }
 
 
 
@@ -57,26 +57,26 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
     protected @Override void commit() {
         super.commit();
-        cursor.associativeReference( this ); }
+        cursor.afterlinker( this ); }
 
 
 
    // ━━━  P o i n t _  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-    final @Override void compose() throws MalformedText { cursor.composeAssociativeReference(); }
+    final @Override void compose() throws MalformedText { cursor.composeAfterlinker(); }
 
 
 
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class End_ extends CommandPoint_<BrecciaCursor>.End_ implements AssociativeReference.End {
+    final class End_ extends CommandPoint_<BrecciaCursor>.End_ implements Afterlinker.End {
 
 
         protected @Override void commit() {
             super.commit();
-            cursor.associativeReferenceEnd( this ); }}
+            cursor.afterlinkerEnd( this ); }}
 
 
 
@@ -86,7 +86,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
     final class FractalContextLocant_ extends Granum_ implements FractalContextLocant {
 
 
-        FractalContextLocant_() { super( AssociativeReference_.this.cursor ); }
+        FractalContextLocant_() { super( Afterlinker_.this.cursor ); }
 
 
 
@@ -130,11 +130,11 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class ReferentClause_ extends Granum_ implements ReferentClause {
+    final class ObjectClause_ extends Granum_ implements ObjectClause {
 
 
-        ReferentClause_() {
-            super( AssociativeReference_.this.cursor );
+        ObjectClause_() {
+            super( Afterlinker_.this.cursor );
             componentsAsFractalContextLocant = List.of( fractalContextLocantWhenPresent );
             componentsAsFractumLocant = List.of( fractumLocantWhenPresent ); }
 
@@ -198,10 +198,10 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    final class ReferrerClause_ extends Granum_ implements ReferrerClause {
+    final class SubjectClause_ extends Granum_ implements SubjectClause {
 
 
-        ReferrerClause_() { super( AssociativeReference_.this.cursor ); }
+        SubjectClause_() { super( Afterlinker_.this.cursor ); }
 
 
 
@@ -217,7 +217,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
         public @Override @AdjunctSlow int column() { return command.column(); }
-          // Always the referrer clause leads the command.
+          // Always the subject clause leads the command.
 
 
 
@@ -228,7 +228,7 @@ final class AssociativeReference_ extends CommandPoint_<BrecciaCursor> implement
 
 
         public @Override @AdjunctSlow int lineNumber() { return command.lineNumber(); }
-          // Always the referrer clause leads the command.
+          // Always the subject clause leads the command.
 
 
 

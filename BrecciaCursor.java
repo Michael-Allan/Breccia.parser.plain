@@ -47,8 +47,8 @@ public class BrecciaCursor implements ReusableCursor {
       // ┈┈┈┈┈┈┈┈┈
         _appendageParserC = new AppendageParserC();
 
-      // `basicAssociativeReference` (etc.) dependants
-      // ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+      // `basicAfterlinker` (etc.) dependants
+      // ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
         final String[] commandPointKeywords = { // Those known to Breccia, in lexicographic order.
             "N.B.",
             "NB",
@@ -68,29 +68,41 @@ public class BrecciaCursor implements ReusableCursor {
             "see",
             "viz." };
         final CommandPoint_<?>[] commandPoints = { // Each at the same index as its keyword above.
-            basicAssociativeReference,   // ‘N.B.’
-            basicAssociativeReference,   // ‘NB’
-            basicNoteCarrier,            // ‘ad’
-            basicAssociativeReference,   // ‘cf.’
-            basicAssociativeReference,   // ‘contra’
-            basicAssociativeReference,   // ‘e.g.’
-            basicAssociativeReference,   // ‘i.e.’
-            basicAssociativeReference,   // ‘join’
-            basicNoteCarrier,            // ‘note’
-            basicNoteCarrier,            // ‘on’
-            basicAssociativeReference,   // ‘pace’
-            basicPrivatizer,             // ‘private’
-            basicAssociativeReference,   // ‘q.v.’
-            basicAssociativeReference,   // ‘re’
-            basicAssociativeReference,   // ‘sc.’
-            basicAssociativeReference,   // ‘see’
-            basicAssociativeReference }; // ‘viz.’
+            basicAfterlinker,   // ‘N.B.’
+            basicAfterlinker,   // ‘NB’
+            basicNoteCarrier,   // ‘ad’
+            basicAfterlinker,   // ‘cf.’
+            basicAfterlinker,   // ‘contra’
+            basicAfterlinker,   // ‘e.g.’
+            basicAfterlinker,   // ‘i.e.’
+            basicAfterlinker,   // ‘join’
+            basicNoteCarrier,   // ‘note’
+            basicNoteCarrier,   // ‘on’
+            basicAfterlinker,   // ‘pace’
+            basicPrivatizer,    // ‘private’
+            basicAfterlinker,   // ‘q.v.’
+            basicAfterlinker,   // ‘re’
+            basicAfterlinker,   // ‘sc.’
+            basicAfterlinker,   // ‘see’
+            basicAfterlinker }; // ‘viz.’
         this.commandPointKeywords = commandPointKeywords;
         this.commandPoints = commandPoints; }
 
 
 
    // ━━━  C u r s o r  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+    public final @Override @NarrowNot Afterlinker asAfterlinker() throws MalformedText {
+        if( state != afterlinker ) return null;
+        afterlinker.ensureComposition();
+        return afterlinker; }
+
+
+
+    public final @Override @NarrowNot Afterlinker.End asAfterlinkerEnd() {
+        return state == afterlinkerEnd ? afterlinkerEnd : null; }
+
 
 
     public final @Override @NarrowNot AlarmPoint asAlarmPoint() {
@@ -110,19 +122,6 @@ public class BrecciaCursor implements ReusableCursor {
 
     public final @Override @NarrowNot AsidePoint.End asAsidePointEnd() {
         return state == asidePointEnd ? asidePointEnd : null; }
-
-
-
-    public final @Override @NarrowNot AssociativeReference asAssociativeReference()
-          throws MalformedText {
-        if( state != associativeReference ) return null;
-        associativeReference.ensureComposition();
-        return associativeReference; }
-
-
-
-    public final @Override @NarrowNot AssociativeReference.End asAssociativeReferenceEnd() {
-        return state == associativeReferenceEnd ? associativeReferenceEnd : null; }
 
 
 
@@ -1015,39 +1014,39 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    /** @see AssociativeReference_#compose()
+    /** @see Afterlinker_#compose()
       */
-    final void composeAssociativeReference() throws MalformedText {
-        final AssociativeReference_ rA = associativeReference;
-        assert !rA.isComposed;
-        final DelimitableCharSequence keyword = rA.keyword;
-        final CoalescentGranalList dcc = rA.descriptor.components;
+    final void composeAfterlinker() throws MalformedText {
+        final Afterlinker_ linker = afterlinker;
+        assert !linker.isComposed;
+        final DelimitableCharSequence keyword = linker.keyword;
+        final CoalescentGranalList dcc = linker.descriptor.components;
         dcc.clear();
         int b;
         final int bCommand = keyword.start();
-        dcc.appendFlat( rA.bullet.text.end(), b = bCommand );
+        dcc.appendFlat( linker.bullet.text.end(), b = bCommand );
 
       // Command
       // ───────
-        dcc.add( rA.command ); /* Added early (before parsing it) because the parse might overshoot
+        dcc.add( linker.command ); /* Added early (before parsing it) because the parse might overshoot
           the command into a subsequent postgap, prematurely adding it to `dcc`. */
-        final CoalescentGranalList cc = rA.command.components;
+        final CoalescentGranalList cc = linker.command.components;
         cc.clear();
         final int bReferentialCommand;
         final DelimitableCharSequence referentialCommandKeyword;
         if( equalInContent( "re", keyword )) {
 
-          // Referrer clause, from keyword
+          // Subject clause, from keyword
           // ───────────────
-            final var cR = rA.referrerClauseWhenPresent;
-            final CoalescentGranalList cRcc = cR.components;
-            cRcc.clear();
-            cRcc.appendFlat( b, b = keyword.end() );
-            b = appendP( b, cRcc );
-            b = appendPatternMatcher( b, cRcc, cR.patternMatcher );
-            cR.text.delimit( bCommand, b );
-            cRcc.flush();
-            cc.add( rA.referrerClause = cR );
+            final var cS = linker.subjectClauseWhenPresent;
+            final CoalescentGranalList cScc = cS.components;
+            cScc.clear();
+            cScc.appendFlat( b, b = keyword.end() );
+            b = appendP( b, cScc );
+            b = appendPatternMatcher( b, cScc, cS.patternMatcher );
+            cS.text.delimit( bCommand, b );
+            cScc.flush();
+            cc.add( linker.subjectClause = cS );
             b = appendP( b, cc );
 
           // Referential command, from scratch
@@ -1056,8 +1055,8 @@ public class BrecciaCursor implements ReusableCursor {
             b = termParser.through( b );
             xSeq.delimit( bReferentialCommand, b );
             referentialCommandKeyword = xSeq; }
-        else { // A referrer clause is absent.
-            rA.referrerClause = null;
+        else { // A subject clause is absent.
+            linker.subjectClause = null;
 
           // Referential command, from keyword
           // ───────────────────
@@ -1082,53 +1081,52 @@ public class BrecciaCursor implements ReusableCursor {
             if( !equalInContent( "re", referentialCommandKeyword )) {
                 final int k = binarySearch( commandPointKeywords, referentialCommandKeyword,
                   CharSequence::compare );
-                if( k >= 0 && commandPoints[k] == basicAssociativeReference ) {
-                    break trap; }}
+                if( k >= 0 && commandPoints[k] == basicAfterlinker ) break trap; }
             throw new MalformedText( characterPointer(bReferentialCommand),
               "Unrecognized referential command" ); }
-        rA.referentialCommand.text.delimit( bReferentialCommand, b );
-        cc.add( rA.referentialCommand );
+        linker.referentialCommand.text.delimit( bReferentialCommand, b );
+        cc.add( linker.referentialCommand );
 
-        rA.referentClause = null; // Till proven otherwise.
+        linker.objectClause = null; // Till proven otherwise.
         boolean toParseAppendage = false; /* Whether a postgap following the command has been added
           to `dcc`, but no parse of a subsequent appendage clause has yet been attempted. */
         final AppendageParserC pAC = appendageParserCReset();
-        b = pAC.appendP_AnyClause( b, /*outer*/dcc, /*inner*/cc, rA );
-        cR: if( !pAC.wasAppended  &&  b < segmentEnd ) {
+        b = pAC.appendP_AnyClause( b, /*outer*/dcc, /*inner*/cc, linker );
+        cO: if( !pAC.wasAppended  &&  b < segmentEnd ) {
 
-          // Referent clause
+          // Object clause
           // ───────────────
-            final var cR = rA.referentClauseWhenPresent;
-            final var cRLParser = referentClauseLocantParser;
+            final var cO = linker.objectClauseWhenPresent;
+            final var cOLParser = objectClauseLocantParser;
             final int bStart = b;
-            b = cRLParser.appendAny( b, cR.fractalContextLocantWhenPresent );
+            b = cOLParser.appendAny( b, cO.fractalContextLocantWhenPresent );
             if( b /*moved*/!= bStart ) {   // Then a fractal context locant is present
-                cR.fractumLocant = null; // instead of a fractum locant.
-                cR.fractalContextLocant = cR.fractalContextLocantWhenPresent;
-                cR.components = cR.componentsAsFractalContextLocant; }
+                cO.fractumLocant = null; // instead of a fractum locant.
+                cO.fractalContextLocant = cO.fractalContextLocantWhenPresent;
+                cO.components = cO.componentsAsFractalContextLocant; }
             else { // A fractum locant is present instead of a fractal context locant.
-                cR.fractalContextLocant = null;
-                b = cRLParser.append( b, cR.fractumLocantWhenPresent,
+                cO.fractalContextLocant = null;
+                b = cOLParser.append( b, cO.fractumLocantWhenPresent,
                   /*failureMessage*/null/*none ∵ the foregoing guarantees at least a term*/ );
-                cR.fractumLocant = cR.fractumLocantWhenPresent;
-                cR.components = cR.componentsAsFractumLocant; }
-            cR.text.delimit( bStart, cRLParser.bEnd );
-            cc.add( rA.referentClause = cR );
-            if( cRLParser.wasAnyPostgapParsed ) {
-                final GranalArrayList cRIcc = cRLParser.components;
-                final int cTermEnd = cRLParser.cTermEnd;
-                final int cN = cRIcc.size();
+                cO.fractumLocant = cO.fractumLocantWhenPresent;
+                cO.components = cO.componentsAsFractumLocant; }
+            cO.text.delimit( bStart, cOLParser.bEnd );
+            cc.add( linker.objectClause = cO );
+            if( cOLParser.wasAnyPostgapParsed ) {
+                final GranalArrayList cOIcc = cOLParser.components;
+                final int cTermEnd = cOLParser.cTermEnd;
+                final int cN = cOIcc.size();
                 if( cTermEnd < cN ) { /* Then components of a final postgap were inadvertently
-                      appended to `cRIcc`.  Move them to `dcc`, where they belong:  [AMP] */
+                      appended to `cOIcc`.  Move them to `dcc`, where they belong:  [AMP] */
                     int c = cTermEnd;
-                    do dcc.add( cRIcc.get( c++ )); while( c < cN );
-                    cRIcc.removeRange( cTermEnd, cN ); /* With this, `cRIcc` would be broken
+                    do dcc.add( cOIcc.get( c++ )); while( c < cN );
+                    cOIcc.removeRange( cTermEnd, cN ); /* With this, `cOIcc` would be broken
                       by any further coalescence.  But none will occur ∵ it is now complete. */
                     toParseAppendage = true; }}
             else if( b /*moved*/!= (b = appendAnyP( b, dcc ))) toParseAppendage = true; }
-        rA.command.text.delimit( bCommand, b );
+        linker.command.text.delimit( bCommand, b );
         cc.flush();
-        if( toParseAppendage ) b = pAC.appendAny( b, dcc, rA );
+        if( toParseAppendage ) b = pAC.appendAny( b, dcc, linker );
         if( b < segmentEnd ) throw unexpectedTerm( characterPointer( b ));
         assert b == segmentEnd: parseEndsWithSegment(b);
         dcc.flush(); }
@@ -1728,8 +1726,8 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-    private final ReferentClauseLocantParser referentClauseLocantParser
-      = new ReferentClauseLocantParser();
+    private final ObjectClauseLocantParser objectClauseLocantParser
+      = new ObjectClauseLocantParser();
 
 
 
@@ -2181,6 +2179,23 @@ public class BrecciaCursor implements ReusableCursor {
    // ┈┈┈  s t a t e   t y p i n g  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
 
+    final void afterlinker( Afterlinker_ r ) { afterlinker = r; }
+
+
+        private Afterlinker_ afterlinker;
+
+
+        private final Afterlinker_ basicAfterlinker = new Afterlinker_( this ).endSet(); // [CIC]
+
+
+
+    final void afterlinkerEnd( Afterlinker.End e ) { afterlinkerEnd = e; }
+
+
+        private Afterlinker.End afterlinkerEnd;
+
+
+
     final void alarmPoint( AlarmPoint p ) { alarmPoint = p; }
 
 
@@ -2212,24 +2227,6 @@ public class BrecciaCursor implements ReusableCursor {
 
 
         private AsidePoint.End asidePointEnd;
-
-
-
-    final void associativeReference( AssociativeReference_ r ) { associativeReference = r; }
-
-
-        private AssociativeReference_ associativeReference;
-
-
-        private final AssociativeReference_ basicAssociativeReference // [CIC]
-          = new AssociativeReference_( this ).endSet();
-
-
-
-    final void associativeReferenceEnd( AssociativeReference.End e ) { associativeReferenceEnd = e; }
-
-
-        private AssociativeReference.End associativeReferenceEnd;
 
 
 
@@ -3034,13 +3031,13 @@ public class BrecciaCursor implements ReusableCursor {
    // ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
 
-    /** A parser of the locants that populate referent clauses, namely fractum locants
+    /** A parser of the locants that populate object clauses, namely fractum locants
       * and fractal context locants.
       */
-    private final class ReferentClauseLocantParser {
+    private final class ObjectClauseLocantParser {
 
 
-        /** Parses a fractum locant at buffer position `b`, adding its components to `oF.components`
+        /** Parses a fractum locant at buffer position `b`, adding its components to `loF.components`
           * and updating the fields of this parser.
           *
           *     @param failureMessage The failure message to use in the event no fractum locant occurs,
@@ -3049,101 +3046,100 @@ public class BrecciaCursor implements ReusableCursor {
           *       or subsequent postgap).
           *     @throws MalformedText If no fractum locant occurs at `b`.
           */
-        int append( int b, final FractumLocant_ oF, final String failureMessage )
+        int append( int b, final FractumLocant_ loF, final String failureMessage )
               throws MalformedText {
             final int bOriginal = b;
-            final GranalArrayList cc = oF.components;
+            final GranalArrayList cc = loF.components;
             cc.clear();
             composition: {
 
               // Pattern-matcher series
               // ──────────────────────
-                final List<PatternMatcher_> matchers = oF.patternMatchersWhenPresent;
+                final List<PatternMatcher_> matchers = loF.patternMatchersWhenPresent;
                 matchers.clear();
                 while( b /*moved*/!= (b = appendAnyPatternMatcher( b, cc, matchers ))) {
                     cTermEnd = cc.size();
                     b = appendAnyP( bEnd = b, cc );
                     if( b /*unmoved*/== bEnd || b >= segmentEnd || buffer.get(b) != '@' ) {
-                        oF.fileLocant = null;    // No file locant is present,
-                        oF.patternMatchers = matchers; // only a pattern-matcher series.
+                        loF.fileLocant = null;          // No file locant is present,
+                        loF.patternMatchers = matchers; // only a pattern-matcher series.
                         break composition; }
                     final FlatGranum opC = spooler.contextOperator.unwind();
                     opC.text.delimit( b, ++b );
                     cc.add( opC );          // The context operator ‘@’,
                     b = appendP( b, cc ); } // and its trailing postgap.
                 final int nPM = matchers.size();
-                oF.patternMatchers = nPM == 0 ? null : matchers;
+                loF.patternMatchers = nPM == 0 ? null : matchers;
 
               // File locant
               // ───────────
-                final var oFile = oF.fileLocantWhenPresent;
-                if( b /*unmoved*/== (b = appendAny( b, oFile ))) {
+                final var loFile = loF.fileLocantWhenPresent;
+                if( b /*unmoved*/== (b = appendAny( b, loFile ))) {
                     if( nPM > 0 ) { // Then a context operator and postgap were just parsed.
                         throw new MalformedText( characterPointer(b), "File locant expected" ); }
                     // No fractum locant is present, at all.
                     if( failureMessage == null ) throw new IllegalStateException();
                       // Concordant with contract.
                     throw new MalformedText( characterPointer(b), failureMessage ); }
-                cc.add( oF.fileLocant = oFile );
+                cc.add( loF.fileLocant = loFile );
 
-              // Finalization where `oF` ends with a file locant
+              // Finalization where `loF` ends with a file locant
               // ────────────
                 wasAnyPostgapParsed = false;
-                oF.text.delimit( bOriginal, bEnd = b );
+                loF.text.delimit( bOriginal, bEnd = b );
                 cc.flush();
                 return b; }
 
-          // Finalization where `oF` comprises a pattern series
+          // Finalization where `loF` comprises a pattern series
           // ────────────
             wasAnyPostgapParsed = true;
             components = cc;
-            oF.text.delimit( bOriginal, bEnd ); // `bEnd` not `b`, which bounds instead any postgap.
+            loF.text.delimit( bOriginal, bEnd ); // `bEnd` not `b`, which bounds instead any postgap.
             cc.flush();
             return b; }
 
 
 
         /** Parses any fractal context locant at buffer position `b`, adding its components
-          * to `oFC.components` and updating the fields of this parser.
+          * to `loFC.components` and updating the fields of this parser.
           *
           *     @return The end boundary of the last thing that was parsed (fractal context locant
           *       or subsequent postgap), or `b` if no fractal context locant is present.
           */
-        int appendAny( int b, final AssociativeReference_. FractalContextLocant_ oFC )
-              throws MalformedText {
+        int appendAny( int b, final Afterlinker_. FractalContextLocant_ loFC ) throws MalformedText {
             if( b < segmentEnd && buffer.get(b) == '@' ) {
                 final int bOriginal = b;
-                final GranalArrayList cc = oFC.components;
+                final GranalArrayList cc = loFC.components;
                 cc.clear();
-                final FlatGranum opC = oFC.contextOperator;
+                final FlatGranum opC = loFC.contextOperator;
                 opC.text.delimit( b, ++b );
                 cc.add( opC );              // The context operator ‘@’,
                 b = appendP( b, cc ); // and its trailing postgap.
-                final var oF = oFC.fractumLocant;
-                b = append( b, oF, "Fractum locant expected" ); // Which sets the parser fields.
-                cc.add( oF );
+                final var loF = loFC.fractumLocant;
+                b = append( b, loF, "Fractum locant expected" ); // Which sets the parser fields.
+                cc.add( loF );
 
               // Finalization
               // ────────────
                 wasAnyPostgapParsed = false;
-                oFC.text.delimit( bOriginal, b );
+                loFC.text.delimit( bOriginal, b );
                 cc.flush(); }
             return b; }
 
 
 
         /** Parses any file locant at buffer position `a`,
-          * adding its components to `oFile.components`.
+          * adding its components to `loFile.components`.
           *
           *     @return The end boundary of the file locant, or `a` if none was found.
           */
-        private int appendAny( final int a, final FileLocant_ oFile ) throws MalformedText {
+        private int appendAny( final int a, final FileLocant_ loFile ) throws MalformedText {
             int d = termParser.throughAny( a ); // End bound of term.
             if( d /*moved*/!= a ) {
                 int b = a; // Start bound of term.
-                final CoalescentGranalList cc = oFile.components;
+                final CoalescentGranalList cc = loFile.components;
                 cc.clear();
-                oFile.qualifiers.clear();
+                loFile.qualifiers.clear();
                 qualifiers: for( String qualifier;; ) {
                     xSeq.delimit( b, d );
                     for( int q = fileLocantQualifiers.size();; ) {
@@ -3151,13 +3147,13 @@ public class BrecciaCursor implements ReusableCursor {
                         qualifier = fileLocantQualifiers.get( q );
                         if( equalInContent( xSeq, qualifier )) break;
                         if( q == 0 ) break qualifiers; }
-                    oFile.qualifiers.add( qualifier );
+                    loFile.qualifiers.add( qualifier );
                     cc.appendFlat( b, d );
                     b = appendP( d, cc );
                     d = termParser.through( b ); }
-                oFile.reference.text.delimit( b, d );
-                cc.add( oFile.reference );
-                oFile.text.delimit( a, d );
+                loFile.reference.text.delimit( b, d );
+                cc.add( loFile.reference );
+                loFile.text.delimit( a, d );
                 cc.flush(); }
             return d; }
 
@@ -3187,7 +3183,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
         /** When true, the caller must transfer from `components` any subsequent to `cTermEnd`, as there
-          * described.  When false, the caller must parse any postgap subsequent to the referent clause.
+          * described.  When false, the caller must parse any postgap subsequent to the object clause.
           *
           *     @see #cTermEnd
           */

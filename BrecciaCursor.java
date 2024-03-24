@@ -1310,7 +1310,7 @@ public class BrecciaCursor implements ReusableCursor {
         final CoalescentGranalList cc = nC.command.components;
         cc.clear();
         int bCommandEnd;
-        if( equalInContent( "note", keyword )) { // Then no pertainment clause is present, only a label.
+        if( equalInContent( "note", keyword )) { // Then no purview clause is present, only a label.
 
           // Label
           // ─────
@@ -1320,7 +1320,7 @@ public class BrecciaCursor implements ReusableCursor {
             bCommandEnd = b;
             if( b /*moved*/!= (b = appendAnyP( b, dcc ))) {
                 b = appendageParser.appendAny( b, dcc, nC ); }}
-        else { // A pertainment clause is present and possibly a label, too.
+        else { // A purview clause is present and possibly a label, too.
 
           // Pertainment clause, comprising a preposition and a pattern matcher
           // ──────────────────

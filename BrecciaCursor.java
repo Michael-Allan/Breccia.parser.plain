@@ -832,7 +832,7 @@ public class BrecciaCursor implements ReusableCursor {
     /** Returns the number of grapheme clusters between buffer positions `start` and `end`.
       * Omits any partial cluster at the end of the span.
       *
-      *     @see <a href='https://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries'>
+      *     @see <a href='http://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries'>
       *       Grapheme cluster boundaries in Unicode text segmentation</a>
       */
     final int bufferClusterCount( final int start, final int end ) {
@@ -2129,7 +2129,7 @@ public class BrecciaCursor implements ReusableCursor {
                     throw new MalformedText( characterPointer(b), "Hexadecimal digit expected" ); }}
             else if( !( 'A' <= ch && ch <= 'Z'
               || b > bContent && ( '0' <= ch && ch <= '9' || ch == ' ' || ch == '-' ))) {
-                // See Names § 4.8, `https://www.unicode.org/versions/Unicode13.0.0/ch04.pdf`
+                // See Names § 4.8, `http://unicode.org/versions/Unicode13.0.0/ch04.pdf`
                 throw new MalformedText( characterPointer(b),
                   "Character not allowed here, Unicode " + (int)ch ); }}
         throw truncatedPattern( characterPointer( b )); }

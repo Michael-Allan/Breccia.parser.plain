@@ -39,9 +39,8 @@ public class BrecciaCursor implements ReusableCursor {
 
     public BrecciaCursor() {
 
-      // ══════════════════════════
-      // Late field initializations — each would fail if written in line with the field declarator
-      // ══════════════════════════
+      // Late field initialization
+      // ─────────────────────────
 
       // `spooler` dependant
       // ┈┈┈┈┈┈┈┈┈

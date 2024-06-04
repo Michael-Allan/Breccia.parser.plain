@@ -2008,10 +2008,12 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
+      @SuppressWarnings("this-escape")
     private final SourceSpooler sourceSpooler = new SourceSpooler( this );
 
 
 
+      @SuppressWarnings("this-escape")
     final FractalSpooler spooler = new FractalSpooler( this );
 
 
@@ -2184,6 +2186,7 @@ public class BrecciaCursor implements ReusableCursor {
         private Afterlinker_ afterlinker;
 
 
+          @SuppressWarnings("this-escape")
         private final Afterlinker_ basicAfterlinker = new Afterlinker_( this ).endSet(); // [CIC]
 
 
@@ -2201,6 +2204,7 @@ public class BrecciaCursor implements ReusableCursor {
         private AlarmPoint alarmPoint;
 
 
+          @SuppressWarnings("this-escape")
         private final AlarmPoint_ basicAlarmPoint = new AlarmPoint_( this ).endSet(); // [CIC]
 
 
@@ -2218,6 +2222,7 @@ public class BrecciaCursor implements ReusableCursor {
         private AsidePoint asidePoint;
 
 
+          @SuppressWarnings("this-escape")
         private final AsidePoint_ basicAsidePoint = new AsidePoint_( this ).endSet(); // [CIC]
 
 
@@ -2263,6 +2268,7 @@ public class BrecciaCursor implements ReusableCursor {
         private Division_ division;
 
 
+          @SuppressWarnings("this-escape")
         private final Division_ basicDivision = new Division_( this ).endSet(); // [CIC]
 
 
@@ -2280,6 +2286,7 @@ public class BrecciaCursor implements ReusableCursor {
         private Empty empty;
 
 
+          @SuppressWarnings("this-escape")
         private final Empty_ basicEmpty = new Empty_( this ); // [CIC]
 
 
@@ -2290,6 +2297,7 @@ public class BrecciaCursor implements ReusableCursor {
         private FileFractum_ fileFractum;
 
 
+          @SuppressWarnings("this-escape")
         private final FileFractum_ basicFileFractum = new FileFractum_( this ).endSet(); // [CIC]
 
 
@@ -2321,6 +2329,7 @@ public class BrecciaCursor implements ReusableCursor {
         private Halt halt;
 
 
+          @SuppressWarnings("this-escape")
         private final Halt_ basicHalt = new Halt_( this ); // [CIC]
 
 
@@ -2331,6 +2340,7 @@ public class BrecciaCursor implements ReusableCursor {
         private NoteCarrier_ noteCarrier;
 
 
+          @SuppressWarnings("this-escape")
         private final NoteCarrier_ basicNoteCarrier = new NoteCarrier_( this ).endSet(); // [CIC]
 
 
@@ -2348,6 +2358,7 @@ public class BrecciaCursor implements ReusableCursor {
         private PlainCommandPoint plainCommandPoint;
 
 
+          @SuppressWarnings("this-escape")
         private final PlainCommandPoint_ basicPlainCommandPoint // [CIC]
           = new PlainCommandPoint_( this ).endSet();
 
@@ -2366,6 +2377,7 @@ public class BrecciaCursor implements ReusableCursor {
         private PlainPoint plainPoint;
 
 
+          @SuppressWarnings("this-escape")
         private final PlainPoint_ basicPlainPoint = new PlainPoint_( this ).endSet(); // [CIC]
 
 
@@ -2397,6 +2409,7 @@ public class BrecciaCursor implements ReusableCursor {
         private Privatizer privatizer;
 
 
+          @SuppressWarnings("this-escape")
         private final Privatizer_ basicPrivatizer = new Privatizer_( this ).endSet(); // [CIC]
 
 
@@ -2414,6 +2427,7 @@ public class BrecciaCursor implements ReusableCursor {
         private TaskPoint taskPoint;
 
 
+          @SuppressWarnings("this-escape")
         private final TaskPoint_ basicTaskPoint = new TaskPoint_( this ).endSet(); // [CIC]
 
 

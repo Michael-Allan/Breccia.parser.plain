@@ -3059,8 +3059,7 @@ public class BrecciaCursor implements ReusableCursor {
           *       or subsequent postgap).
           *     @throws MalformedText If no fractum locant occurs at `b`.
           */
-        int append( int b, final FractumLocant_ loF, final String failureMessage )
-              throws MalformedText {
+        int append( int b, final FractumLocant_ loF, final String failureMessage ) throws MalformedText {
             final int bOriginal = b;
             final GranalArrayList cc = loF.components;
             cc.clear();
@@ -3119,14 +3118,14 @@ public class BrecciaCursor implements ReusableCursor {
           *     @return The end boundary of the last thing that was parsed (fractal context locant
           *       or subsequent postgap), or `b` if no fractal context locant is present.
           */
-        int appendAny( int b, final Afterlinker_. FractalContextLocant_ loFC ) throws MalformedText {
+        int appendAny( int b, final Afterlinker_.FractalContextLocant_ loFC ) throws MalformedText {
             if( b < segmentEnd && buffer.get(b) == '@' ) {
                 final int bOriginal = b;
                 final GranalArrayList cc = loFC.components;
                 cc.clear();
                 final FlatGranum opC = loFC.contextOperator;
                 opC.text.delimit( b, ++b );
-                cc.add( opC );              // The context operator ‘@’,
+                cc.add( opC );        // The context operator ‘@’,
                 b = appendP( b, cc ); // and its trailing postgap.
                 final var loF = loFC.fractumLocant;
                 b = append( b, loF, "Fractum locant expected" ); // Which sets the parser fields.
@@ -3141,8 +3140,7 @@ public class BrecciaCursor implements ReusableCursor {
 
 
 
-        /** Parses any file locant at buffer position `a`,
-          * adding its components to `loFile.components`.
+        /** Parses any file locant at buffer position `a`, adding its components to `loFile.components`.
           *
           *     @return The end boundary of the file locant, or `a` if none was found.
           */

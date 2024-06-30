@@ -3133,7 +3133,6 @@ public class BrecciaCursor implements ReusableCursor {
 
               // Finalization
               // ────────────
-                wasAnyPostgapParsed = false;
                 loFC.text.delimit( bOriginal, b );
                 cc.flush(); }
             return b; }
